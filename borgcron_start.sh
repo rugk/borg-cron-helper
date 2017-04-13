@@ -5,6 +5,9 @@ BACKUP_NAME='good-backup'
 BASE_DIR='/home/borg-backup'
 REPOSITORY='ssh://user@somwehere.example/media/drive/borg/dir'
 
+# create installed list
+#apt list --installed > "$BASE_DIR/backup/aptinstalled.list"
+
 PASSPHRASE_FILE="$BASE_DIR/good-key"
 BACKUP_DIRS="$BASE_DIR/good"
 ARCHIVE_NAME="{hostname}-$BACKUP_NAME-{now:%Y-%m-%d}" # or %Y-%m-%dT%H:%M:%S
