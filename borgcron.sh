@@ -8,6 +8,23 @@
 SLEEP_TIME="5m" # the time the script should wait until trying a backup again if it failed
 REPEAT_NUMS="1 2 3" # = three times
 LAST_BACKUP_DIR="/var/log/borg/last"
+LOCAL_LOCK_DIR="$HOME/.config/borg"
+
+is_lock() {
+	[ -f "$LOCAL_LOCK_DIR/$BACKUP_NAME.lock" ]
+}
+do_lock() {
+	touch "$LOCAL_LOCK_DIR/$BACKUP_NAME.lock"
+}
+rm_lock() {
+	rm "$LOCAL_LOCK_DIR/$BACKUP_NAME.lock"
+}
+
+# check lock
+if is_lock; then
+	echo "Backup $BACKUP_NAME is locked. Prevent start."
+	exit 1
+fi
 
 # get passphrase
 if [ -f "$PASSPHRASE_FILE" ]; then
@@ -18,10 +35,20 @@ else
 fi
 
 # log
+echo
 echo "Backup $BACKUP_NAME started at $( date +'%F %T' )."
 
 for i in $REPEAT_NUMS; do
+	if is_lock; then
+		echo "Backup $BACKUP_NAME is locked. Cancel."
+		exit 1
+	fi
+
 	echo "$i. try…"
+
+	# add local lock
+	do_lock
+
 	# backup dir (some variables intentionally not quoted)
 	borg create -v --stats \
 		--compression "$COMPRESSION" \
@@ -31,15 +58,42 @@ for i in $REPEAT_NUMS; do
 
 	# check return code
 	errorcode="$?"
-	if [ ${errorcode} = 0 ]; then
-		echo "Borg has been successful."
+
+	# show output
+	case ${errorcode} in
+		2 )
+			echo "Borg exited with error ${errorcode}."
+			sleep "$SLEEP_TIME"
+
+			# break-lock as backup is not locked
+			if is_lock; then
+				echo "Backup $BACKUP_NAME is really locked locally. Cancel."
+				exit 1
+			fi
+			echo "Breaking lock…"
+			borg break-lock "$REPOSITORY"
+
+			;;
+		1 )
+			echo "Borg had some WARNINGS, but everything else was okay."
+			;;
+		0 )
+			echo "Borg has been successful."
+			;;
+		* )
+			echo "Unknown error with code ${errorcode} happened."
+			;;
+	esac
+
+	# remove local lock
+	rm_lock
+
+	# exit on non-critical errors (ignore 1 = warnings)
+	if [ ${errorcode} -le 1 ]; then
 		# save/update last backup time
 		date +'%s' > "$LAST_BACKUP_DIR/$BACKUP_NAME.time"
 		# get out of loop
 		break;
-	else
-		echo "Borg exited with error ${errorcode}."
-		sleep "$SLEEP_TIME"
 	fi
 done
 
