@@ -1,5 +1,5 @@
 #!/bin/sh
-# Cron script to execute borg backup regularely.
+# Cron script to execute borg backup regularely using a local lock & retry system.
 #
 # LICENSE: CC0/Public Domain - To the extent possible under law, rugk has waived all copyright and related or neighboring rights to this work. This work is published from: Deutschland.
 #
@@ -22,7 +22,7 @@ rm_lock() {
 
 # check lock
 if is_lock; then
-	echo "Backup $BACKUP_NAME is locked. Prevent start."
+	echo "[$( date +'%F %T' )] Backup $BACKUP_NAME is locked. Prevent start."
 	exit 1
 fi
 
@@ -59,13 +59,18 @@ for i in $REPEAT_NUMS; do
 	# check return code
 	errorcode="$?"
 
+	# remove local lock
+	rm_lock
+
 	# show output
 	case ${errorcode} in
 		2 )
-			echo "Borg exited with error ${errorcode}."
+			echo "Borg exited with fatal error." #(2)
+
+			# wait some time to recover from the error
 			sleep "$SLEEP_TIME"
 
-			# break-lock as backup is not locked
+			# break-lock if backup has not locked by another process in the meantime
 			if is_lock; then
 				echo "Backup $BACKUP_NAME is really locked locally. Cancel."
 				exit 1
@@ -84,9 +89,6 @@ for i in $REPEAT_NUMS; do
 			echo "Unknown error with code ${errorcode} happened."
 			;;
 	esac
-
-	# remove local lock
-	rm_lock
 
 	# exit on non-critical errors (ignore 1 = warnings)
 	if [ ${errorcode} -le 1 ]; then

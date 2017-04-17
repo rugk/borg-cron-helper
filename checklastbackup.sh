@@ -25,7 +25,7 @@ if [ -d "$LAST_BACKUP_DIR" ] && [ "$(dir_contains_files $LAST_BACKUP_DIR)" ]; th
 		fi
 	done
 else
-	echo "ERROR: No borg backup 'last' static files…"
+	echo "ERROR: No borg backup 'last' dir…"
 	wait=1
 fi
 
