@@ -68,11 +68,12 @@ for i in $REPEAT_NUMS; do
 			echo "Borg exited with fatal error." #(2)
 
 			# wait some time to recover from the error
+			echo "Wait $SLEEP_TIME…"
 			sleep "$SLEEP_TIME"
 
 			# break-lock if backup has not locked by another process in the meantime
 			if is_lock; then
-				echo "Backup $BACKUP_NAME is really locked locally. Cancel."
+				echo "Backup $BACKUP_NAME is locked locally by other process. Cancel."
 				exit 1
 			fi
 			echo "Breaking lock…"
