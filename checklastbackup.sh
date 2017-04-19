@@ -14,13 +14,13 @@ wait=0
 # check for borg backup notes
 if [ -d "$LAST_BACKUP_DIR" ] && [ "$(dir_contains_files $LAST_BACKUP_DIR)" ]; then
 	for file in $LAST_BACKUP_DIR/*; do
-		name=$(basename "$file")
+		name=$(basename "$file" .time)
 		time=$( cat "$file" )
 		relvtime=$(($(date +%s) - time))
 
 		if [ "$relvtime" -ge "$CRITICAL_TIME" ]; then
-			echo "WARNING: The borg backup named $name is outdated."
-			echo "         Last successful execution: $( date "--date=$time" +'%F %T' )"
+			echo "WARNING: The borg backup named '$name' is outdated."
+			echo "         Last successful execution: $( date --date=@"$time" +'%A, %F %T' )"
 			wait=1
 		fi
 	done
