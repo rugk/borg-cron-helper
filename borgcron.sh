@@ -26,6 +26,9 @@ if is_lock; then
 	exit 1
 fi
 
+# export borg repo variable
+export BORG_REPO="$REPOSITORY"
+
 # get passphrase
 if [ -f "$PASSPHRASE_FILE" ]; then
 	BORG_PASSPHRASE=$( cat "$PASSPHRASE_FILE" )
@@ -53,7 +56,7 @@ for i in $REPEAT_NUMS; do
 	borg create -v --stats \
 		--compression "$COMPRESSION" \
 		$ADD_BACKUP_PARAMS \
-		"$REPOSITORY::$ARCHIVE_NAME" \
+		"::$ARCHIVE_NAME" \
 		$BACKUP_DIRS
 
 	# check return code
@@ -104,7 +107,7 @@ done
 # this machine with this backup-type are touched.
 # (some variables intentionally not quoted)
 echo "Running prune for $BACKUP_NAME…"
-borg prune -v --list "$REPOSITORY" --prefix "{hostname}-$BACKUP_NAME-" $PRUNE_PARAMS
+borg prune -v --list --prefix "{hostname}-$BACKUP_NAME-" $PRUNE_PARAMS
 
 # log
 echo "Backup $BACKUP_NAME ended at $( date +'%F %T' )."
