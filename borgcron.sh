@@ -66,6 +66,7 @@ for i in $REPEAT_NUMS; do
 	rm_lock
 
 	# show output
+	# see https://borgbackup.readthedocs.io/en/stable/usage.html?highlight=return%20code#return-codes
 	case ${errorcode} in
 		2 )
 			echo "Borg exited with fatal error." #(2)
