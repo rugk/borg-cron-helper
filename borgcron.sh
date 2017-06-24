@@ -8,16 +8,21 @@
 SLEEP_TIME="5m" # the time the script should wait until trying a backup again if it failed
 REPEAT_NUMS="1 2 3" # = three times
 LAST_BACKUP_DIR="/var/log/borg/last"
-LOCAL_LOCK_DIR="$HOME/.config/borg"
+RUN_PID_DIR="/var/run/borg"
 
 is_lock() {
-	[ -f "$LOCAL_LOCK_DIR/$BACKUP_NAME.lock" ]
+	[ -f "$RUN_PID_DIR/BORG_$BACKUP_NAME.pid" ]
 }
 do_lock() {
-	touch "$LOCAL_LOCK_DIR/$BACKUP_NAME.lock"
+	if [ ! -d "$RUN_PID_DIR" ]; then
+		mkdir -p "$RUN_PID_DIR"
+	fi
+
+	# write PID into file
+	echo $$ > "$RUN_PID_DIR/$BACKUP_NAME.pid"
 }
 rm_lock() {
-	rm "$LOCAL_LOCK_DIR/$BACKUP_NAME.lock"
+	rm "$RUN_PID_DIR/$BACKUP_NAME.pid"
 }
 
 # check lock
@@ -31,8 +36,7 @@ export BORG_REPO="$REPOSITORY"
 
 # get passphrase
 if [ -f "$PASSPHRASE_FILE" ]; then
-	BORG_PASSPHRASE=$( cat "$PASSPHRASE_FILE" )
-	export BORG_PASSPHRASE
+	export BORG_PASSPHRASE=$( cat "$PASSPHRASE_FILE" )
 else
 	echo "No (valid) passphrase file given."
 fi
