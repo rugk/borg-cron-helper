@@ -7,8 +7,8 @@
 # constants
 SLEEP_TIME="5m" # the time the script should wait until trying a backup again if it failed
 REPEAT_NUMS="1 2 3" # = three times
-LAST_BACKUP_DIR="/var/log/borg/last"
-RUN_PID_DIR="/var/run/borg"
+LAST_BACKUP_DIR="/var/log/borg/last" # the dir, where stats about latest execution are saved
+RUN_PID_DIR="/var/run/borg" # temporary dir for "locking" backups
 
 is_lock() {
 	[ -f "$RUN_PID_DIR/BORG_$BACKUP_NAME.pid" ]

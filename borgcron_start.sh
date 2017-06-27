@@ -6,10 +6,17 @@ BASE_DIR='/home/borg-backup'
 REPOSITORY='ssh://user@somewhere.example:22/./dir'
 
 # create installed list
-#apt list --installed > "$BASE_DIR/backup/aptinstalled.list" 2>/dev/null
+#
+# RPM-based:
+# dnf list installed > "$BASE_DIR/backup/dnf.list" 2>/dev/null
+# rpm -qa > "$BASE_DIR/backup/rpm.list" 2>/dev/null
+#
+# DEB-based:
+# apt list --installed > "$BASE_DIR/backup/apt.list" 2>/dev/null
+# dpkg --get-selections > "$BASE_DIR/backup/dpkg.list" 2>/dev/null
 
 PASSPHRASE_FILE="$BASE_DIR/good-key"
-BACKUP_DIRS="$BASE_DIR/good"
+BACKUP_DIRS="/home /etc /srv /var/log /var/mail /var/lib /var/spool /opt /root /usr/local"
 ARCHIVE_NAME="{hostname}-$BACKUP_NAME-{now:%Y-%m-%d}" # or %Y-%m-%dT%H:%M:%S
 COMPRESSION="lz4" # lz4 | zlib,6 | lzma,9
 ADD_BACKUP_PARAMS="" # --one-file-system for backing up root file dir
