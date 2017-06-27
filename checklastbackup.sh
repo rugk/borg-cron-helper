@@ -1,5 +1,6 @@
 #!/bin/sh
-# Checks whether the backup is up-to-date.
+# Checks whether the backup is up-to-date. It is considered out-of-date when
+# no backup has been created during the "critical time" shown below.
 #
 # LICENSE: CC0/Public Domain - To the extent possible under law, rugk has waived all copyright and related or neighboring rights to this work. This work is published from: Deutschland.
 
