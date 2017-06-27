@@ -15,11 +15,11 @@ is_lock() {
 }
 do_lock() {
 	if [ ! -d "$RUN_PID_DIR" ]; then
-		mkdir -p "$RUN_PID_DIR"
+		mkdir -p "$RUN_PID_DIR" | exit 2
 	fi
 
 	# write PID into file
-	echo $$ > "$RUN_PID_DIR/$BACKUP_NAME.pid"
+	echo $$ > "$RUN_PID_DIR/$BACKUP_NAME.pid" | exit 2
 }
 rm_lock() {
 	rm "$RUN_PID_DIR/$BACKUP_NAME.pid"
