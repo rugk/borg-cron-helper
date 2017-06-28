@@ -11,17 +11,13 @@ BORG_BIN="borg" # the binary
 LAST_BACKUP_DIR="/var/log/borg/last" # the dir, where stats about latest execution are saved
 RUN_PID_DIR="/var/run/borg" # dir for "locking" backups
 
-# get own script name
-me=$(basename "$0")
-me="${me%.*}"
-
 is_lock() {
 	# when file is not present -> unlocked
 	if [ ! -f "$RUN_PID_DIR/BORG_$BACKUP_NAME.pid" ]; then
 		return 1 # false
 	fi
-	# when PID listed in file is not running (or belongs to other process) -> unlocked
-	if ! pgrep -F "$RUN_PID_DIR/BORG_$BACKUP_NAME.pid" "$me" > /dev/null; then 
+	# when PID listed in file is not running -> unlocked
+	if ! pgrep -F "$RUN_PID_DIR/BORG_$BACKUP_NAME.pid" > /dev/null; then 
 		return 1 # false
 	fi
 	
