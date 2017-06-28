@@ -19,11 +19,11 @@ Basically the local lock system writes it's PID into a `/var/run` dir (configura
 
 ## Less maintenance, more safety!
 
-Sometimes [backups stop mid-way ](https://borgbackup.readthedocs.io/en/stable/faq.html#if-a-backup-stops-mid-way-does-the-already-backed-up-data-stay-there). This can have different reasons such as an unreliable network connection or a server restart. In any case it is not always avoidable and you do not want to see your backup having failed three days in a row, when you suddenly need it.
+Sometimes [backups stop mid-way](https://borgbackup.readthedocs.io/en/stable/faq.html#if-a-backup-stops-mid-way-does-the-already-backed-up-data-stay-there). This can have different reasons such as an unreliable network connection or a server restart. In any case it is not always avoidable and you do not want to see your backup having failed three days in a row, when you suddenly need it.
 
 That's why the script integrates an **retry mechanism** to retry the backups in case of a failure for up to three times (by default). It also waits a certain amount of time in between, in case the issue needs some minutes to go away. (in case of a server restart e.g.)
 
-Additionally the script has the ability to write stats of the last executed backup and there is another script to . Both can be used (in conjunction with a script to check the last backup time) to **monitor your backups** and be automatically notified when a backup failed and
+Additionally the script has the ability to write stats of the last executed backup and there is another script to check the size of backups stored on the backup server. Both can be used (in conjunction with a script to check the last backup time) to **monitor your backups** and be automatically notified when a backup failed and
 something does not work.
 
 **Rest assured your backups are safe and recover themselve if possible.** (If they don't, you'll get to know that.)
