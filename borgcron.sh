@@ -7,11 +7,25 @@
 # constants
 SLEEP_TIME="5m" # the time the script should wait until trying a backup again if it failed
 REPEAT_NUMS="1 2 3" # = three times
+BORG_BIN="borg" # the binary
 LAST_BACKUP_DIR="/var/log/borg/last" # the dir, where stats about latest execution are saved
 RUN_PID_DIR="/var/run/borg" # dir for "locking" backups
 
+# get own script name
+me=$(basename "$0")
+me="${me%.*}"
+
 is_lock() {
-	[ -f "$RUN_PID_DIR/BORG_$BACKUP_NAME.pid" ]
+	# when file is not present -> unlocked
+	if [ ! -f "$RUN_PID_DIR/BORG_$BACKUP_NAME.pid" ]; then
+		return 1 # false
+	fi
+	# when PID listed in file is not running (or belongs to other process) -> unlocked
+	if ! pgrep -F "$RUN_PID_DIR/BORG_$BACKUP_NAME.pid" "$me" > /dev/null; then 
+		return 1 # false
+	fi
+	
+	return 0 # true, locked
 }
 do_lock() {
 	if [ ! -d "$RUN_PID_DIR" ]; then
@@ -19,10 +33,10 @@ do_lock() {
 	fi
 
 	# write PID into file
-	echo $$ > "$RUN_PID_DIR/$BACKUP_NAME.pid" | exit 2
+	echo $$ > "$RUN_PID_DIR/BORG_$BACKUP_NAME.pid" | exit 2
 }
 rm_lock() {
-	rm "$RUN_PID_DIR/$BACKUP_NAME.pid"
+	rm "$RUN_PID_DIR/BORG_$BACKUP_NAME.pid"
 }
 
 # check lock
@@ -57,7 +71,7 @@ for i in $REPEAT_NUMS; do
 	do_lock
 
 	# backup dir (some variables intentionally not quoted)
-	borg create -v --stats \
+	$BORG_BIN create -v --stats \
 		--compression "$COMPRESSION" \
 		$ADD_BACKUP_PARAMS \
 		"::$ARCHIVE_NAME" \
@@ -85,7 +99,7 @@ for i in $REPEAT_NUMS; do
 				exit 1
 			fi
 			echo "Breaking lock…"
-			borg break-lock "$REPOSITORY"
+			$BORG_BIN break-lock "$REPOSITORY"
 
 			;;
 		1 )
@@ -112,7 +126,7 @@ done
 # this machine with this backup-type are touched.
 # (some variables intentionally not quoted)
 echo "Running prune for $BACKUP_NAME…"
-borg prune -v --list --prefix "{hostname}-$BACKUP_NAME-" $PRUNE_PARAMS
+$BORG_BIN prune -v --list --prefix "{hostname}-$BACKUP_NAME-" $PRUNE_PARAMS
 
 # log
 echo "Backup $BACKUP_NAME ended at $( date +'%F %T' )."
