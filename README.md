@@ -44,7 +44,8 @@ Also, you can of course not use some features outlined here. That's why the whol
 * pruning included
 * privilege-separation (login scripts can have higher privilege than backup process)
 * also a good idea: dump your database before backing up
-* more to add…
+* tested in production (but no guarantees, use at your own risk! 😉)
+* more to come…
 
 ## What's in here?
 * [`borgcron.sh`](borgcron.sh) – Main "runner script". Does all stuff when a backup is triggered.
