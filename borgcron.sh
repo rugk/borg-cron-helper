@@ -11,6 +11,13 @@ BORG_BIN="borg" # the binary
 LAST_BACKUP_DIR="/var/log/borg/last" # the dir, where stats about latest execution are saved
 RUN_PID_DIR="/var/run/borg" # dir for "locking" backups
 
+trapterm() {
+    # rm_lock
+    echo "[$( date +'%F %T' )] Backup (PID: $$) interrupted." >&2
+    exit 2
+}
+trap trapterm INT TERM
+
 is_lock() {
 	# when file is not present -> unlocked
 	if [ ! -f "$RUN_PID_DIR/BORG_$BACKUP_NAME.pid" ]; then
