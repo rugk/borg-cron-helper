@@ -122,7 +122,11 @@ done
 # this machine with this backup-type are touched.
 # (some variables intentionally not quoted)
 echo "Running prune for $BACKUP_NAME…"
+# add local lock
+do_lock
 $BORG_BIN prune -v --list --prefix "{hostname}-$BACKUP_NAME-" $PRUNE_PARAMS
+# remove local lock
+rm_lock
 
 # log
 echo "Backup $BACKUP_NAME ended at $( date +'%F %T' )."
