@@ -4,8 +4,11 @@
 # LICENSE: CC0/Public Domain - To the extent possible under law, rugk has waived all copyright and related or neighboring rights to this work. This work is published from: Deutschland.
 #
 
-# constants
-SLEEP_TIME="5m" # the time the script should wait until trying a backup again if it failed
+# include settings file
+. ./borgcron_settings.sh
+
+# optional settings
+SLEEP_TIME="5m" # time, the script should wait until re-attempting the backup after a failed one
 REPEAT_NUMS="1 2 3" # = three times
 BORG_BIN="borg" # the binary
 LAST_BACKUP_DIR="/var/log/borg/last" # the dir, where stats about latest execution are saved
@@ -53,11 +56,7 @@ fi
 export BORG_REPO="$REPOSITORY"
 
 # get passphrase
-if [ -f "$PASSPHRASE_FILE" ]; then
-	export BORG_PASSPHRASE=$( cat "$PASSPHRASE_FILE" )
-else
-	echo "No (valid) passphrase file given."
-fi
+export BORG_PASSPHRASE=$( cat "$PASSPHRASE_FILE" )
 
 # log
 echo
