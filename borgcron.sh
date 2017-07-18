@@ -68,8 +68,10 @@ for i in $REPEAT_NUMS; do
 		exit 1
 	fi
 
-	echo "$i. try…"
-
+	if [ $i -gt 1 ]; then
+		echo "$i. try…"
+	fi
+	
 	# add local lock
 	do_lock
 
