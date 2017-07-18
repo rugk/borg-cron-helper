@@ -35,13 +35,14 @@ rm_lock() {
 	rm "$RUN_PID_DIR/BORG_$BACKUP_NAME.pid"
 }
 trapterm() {
-    rm_lock
-    echo "[$( date +'%F %T' )] Backup (PID: $$) interrupted." >&2
+    rm_lock 2> /dev/null
+    echo "[$( date +'%F %T' )] Backup (PID: $$) interrupted by $1." >&2
     exit 2
 }
 
 # add trap to catch terminating signals
-trap trapterm INT TERM
+trap 'trapterm INT' INT
+trap 'trapterm TERM' TERM
 
 # check lock
 if is_lock; then
