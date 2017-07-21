@@ -17,6 +17,9 @@ Basically the local lock system writes it's PID into a `/var/run` dir (configura
 
 **Attention:** As the name implies, this system assumes a "single-user" (one client, one server) mode of the borg repository. As the locking is managed locally, it should be satisfied that **only one client** can access respectively accesses the borg repository. Otherwise **data loss may occur**, as this script automatically breaks the remote lock in the borg repository, if it is not locked locally.
 
+**Note:** The dir, which is used for locking, (`RUN_PID_DIR`) should preferably already exist and must be writable for the process executing the backup. If not the script will fail, i.e. the backup will not be executed.  
+Note that `/var/run` is often mounted as a tempfs, so all data is deleted at shutdown and you have to recreate the dirs at the (next) startup.
+
 ## Less maintenance, more safety!
 
 Sometimes [backups stop mid-way](https://borgbackup.readthedocs.io/en/stable/faq.html#if-a-backup-stops-mid-way-does-the-already-backed-up-data-stay-there). This can have different reasons such as an unreliable network connection or a server restart. In any case it is not always avoidable and you do not want to see your backup having failed three days in a row, when you suddenly need it.
