@@ -17,19 +17,24 @@ is_lock() {
 		return 1 # false
 	fi
 	# when PID listed in file is not running -> unlocked
-	if ! pgrep -F "$RUN_PID_DIR/BORG_$BACKUP_NAME.pid" > /dev/null; then 
+	if ! pgrep -F "$RUN_PID_DIR/BORG_$BACKUP_NAME.pid" > /dev/null; then
 		return 1 # false
 	fi
-	
+
 	return 0 # true, locked
 }
 do_lock() {
 	if [ ! -d "$RUN_PID_DIR" ]; then
-		mkdir -p "$RUN_PID_DIR" | exit 2
+		mkdir -p "$RUN_PID_DIR" || exit 2
 	fi
 
 	# write PID into file
-	echo $$ > "$RUN_PID_DIR/BORG_$BACKUP_NAME.pid" | exit 2
+	echo $$ > "$RUN_PID_DIR/BORG_$BACKUP_NAME.pid" || exit 2
+
+	if ! is_lock; then
+		echo "Locking was not successful. Cancel."
+		exit 2
+	fi
 }
 rm_lock() {
 	rm "$RUN_PID_DIR/BORG_$BACKUP_NAME.pid"
