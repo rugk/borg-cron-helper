@@ -11,6 +11,10 @@ BORG_BIN="borg" # the binary
 LAST_BACKUP_DIR="/var/log/borg/last" # the dir, where stats about latest execution are saved
 RUN_PID_DIR="/var/run/borg" # dir for "locking" backups
 
+info_log() {
+	echo "[$( date +'%F %T' )] $*" >&2
+}
+
 is_lock() {
 	# when file is not present -> unlocked
 	if [ ! -f "$RUN_PID_DIR/BORG_$BACKUP_NAME.pid" ]; then
@@ -32,7 +36,7 @@ do_lock() {
 	echo $$ > "$RUN_PID_DIR/BORG_$BACKUP_NAME.pid" || exit 2
 
 	if ! is_lock; then
-		echo "Locking was not successful. Cancel."
+		info_log "Locking was not successful. Cancel."
 		exit 2
 	fi
 }
@@ -41,7 +45,7 @@ rm_lock() {
 }
 trapterm() {
     rm_lock 2> /dev/null
-    echo "[$( date +'%F %T' )] Backup (PID: $$) interrupted by $1." >&2
+    info_log "Backup (PID: $$) interrupted by $1." >&2
     exit 2
 }
 
@@ -51,7 +55,7 @@ trap 'trapterm TERM' TERM
 
 # check lock
 if is_lock; then
-	echo "[$( date +'%F %T' )] Backup $BACKUP_NAME is locked. Prevent start."
+	info_log "Backup $BACKUP_NAME is locked. Prevent start."
 	exit 1
 fi
 
@@ -62,20 +66,20 @@ export BORG_REPO="$REPOSITORY"
 if [ -f "$PASSPHRASE_FILE" ]; then
 	export BORG_PASSPHRASE=$( cat "$PASSPHRASE_FILE" )
 else
-	echo "No (valid) passphrase file given."
+	info_log "No (valid) passphrase file given."
 fi
 
 # log
 echo
-echo "Backup $BACKUP_NAME started at $( date +'%F %T' ) with $( borg -V ), PID: $$."
+info_log "Backup $BACKUP_NAME started with $( borg -V ), PID: $$."
 
 for i in $REPEAT_NUMS; do
 	if is_lock; then
-		echo "Backup $BACKUP_NAME is locked. Cancel."
+		info_log "Backup $BACKUP_NAME is locked. Cancel."
 		exit 1
 	fi
 
-	echo "$i. try…"
+	info_log "$i. try…"
 
 	# add local lock
 	do_lock
@@ -97,29 +101,29 @@ for i in $REPEAT_NUMS; do
 	# see https://borgbackup.readthedocs.io/en/stable/usage.html?highlight=return%20code#return-codes
 	case ${errorcode} in
 		2 )
-			echo "Borg exited with fatal error." #(2)
+			info_log "Borg exited with fatal error." #(2)
 
 			# wait some time to recover from the error
-			echo "Wait $SLEEP_TIME…"
+			info_log "Wait $SLEEP_TIME…"
 			sleep "$SLEEP_TIME"
 
 			# break-lock if backup has not locked by another process in the meantime
 			if is_lock; then
-				echo "Backup $BACKUP_NAME is locked locally by other process. Cancel."
+				info_log "Backup $BACKUP_NAME is locked locally by other process. Cancel."
 				exit 1
 			fi
-			echo "Breaking lock…"
+			info_log "Breaking lock…"
 			$BORG_BIN break-lock "$REPOSITORY"
 
 			;;
 		1 )
-			echo "Borg had some WARNINGS, but everything else was okay."
+			info_log "Borg had some WARNINGS, but everything else was okay."
 			;;
 		0 )
-			echo "Borg has been successful."
+			info_log "Borg has been successful."
 			;;
 		* )
-			echo "Unknown error with code ${errorcode} happened."
+			info_log "Unknown error with code ${errorcode} happened."
 			;;
 	esac
 
