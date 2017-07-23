@@ -23,6 +23,7 @@ Note that `/var/run` is often mounted as a tempfs, so all data is deleted at shu
 ## Less maintenance, more safety!
 
 Sometimes [backups stop mid-way](https://borgbackup.readthedocs.io/en/stable/faq.html#if-a-backup-stops-mid-way-does-the-already-backed-up-data-stay-there). This can have different reasons such as an unreliable network connection or a server restart. In any case it is not always avoidable and you do not want to see your backup having failed three days in a row, when you suddenly need it.
+This is also a workaround for the ["connection closed by remote" issue](https://github.com/borgbackup/borg/issues/636), which seems to affect some users.
 
 That's why the script integrates an **retry mechanism** to retry the backups in case of a failure for up to three times (by default). It also waits a certain amount of time in between, in case the issue needs some minutes to go away. (in case of a server restart e.g.)
 
