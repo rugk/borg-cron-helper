@@ -64,7 +64,8 @@ export BORG_REPO="$REPOSITORY"
 
 # get passphrase
 if [ -f "$PASSPHRASE_FILE" ]; then
-	export BORG_PASSPHRASE=$( cat "$PASSPHRASE_FILE" )
+	export BORG_PASSPHRASE
+	BORG_PASSPHRASE=$( cat "$PASSPHRASE_FILE" )
 else
 	info_log "No (valid) passphrase file given."
 fi
@@ -85,6 +86,7 @@ for i in $REPEAT_NUMS; do
 	do_lock
 
 	# backup dir (some variables intentionally not quoted)
+	# shellcheck disable=SC2086
 	$BORG_BIN create -v --stats \
 		--compression "$COMPRESSION" \
 		$ADD_BACKUP_PARAMS \
@@ -141,6 +143,7 @@ done
 # (some variables intentionally not quoted)
 echo "Running prune for $BACKUP_NAME…"
 do_lock
+# shellcheck disable=SC2086
 $BORG_BIN prune -v --list --prefix "{hostname}-$BACKUP_NAME-" $PRUNE_PARAMS
 rm_lock
 
