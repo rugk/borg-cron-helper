@@ -145,6 +145,9 @@ for i in $REPEAT_NUMS; do
 	if [ ${errorcode} -le 1 ]; then
 		# save/update last backup time
 		date +'%s' > "$LAST_BACKUP_DIR/$BACKUP_NAME.time"
+		if [ ! -d $LAST_BACKUP_DIR ]; then
+		mkdir -p $LAST_BACKUP_DIR
+		fi
 		# get out of loop
 		break;
 	fi
