@@ -2,8 +2,8 @@
 # Configure the main settings for borgcron
 
 BACKUP_NAME='good-backup'
-REPOSITORY='ssh://user@somewhere.example:22/./dir' #specify path without spaces, please
-BACKUP_DIRS="/home /etc /srv /var/log /var/mail /var/lib /var/spool /opt /root /usr/local"
+REPOSITORY='ssh://user@somewhere.example:22/./dir'
+BACKUP_DIRS="/home /etc /srv /var/log /var/mail /var/lib /var/spool /opt /root /usr/local" #specify path without spaces, please
 
 BASE_DIR='/home/borg-backup' # optional
 PASSPHRASE_FILE="$BASE_DIR/good-key" #specify the passphrase, if your repo is encrypted
