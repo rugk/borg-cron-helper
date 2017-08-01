@@ -164,3 +164,5 @@ rm_lock
 
 # log
 echo "Backup $BACKUP_NAME ended at $( date +'%F %T' )."
+
+done
