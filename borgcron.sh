@@ -4,12 +4,15 @@
 # LICENSE: MIT license, see LICENSE.md
 #
 
-# constants
-SLEEP_TIME="5m" # the time the script should wait until trying a backup again if it failed
+
+# optional settings
+CONFIG_DIR='config' #without ending slash (/), please
+
+SLEEP_TIME="5m" # time, the script should wait until re-attempting the backup after a failed one
 REPEAT_NUMS="1 2 3" # = three times
 BORG_BIN="borg" # the binary
 LAST_BACKUP_DIR="/var/log/borg/last" # the dir, where stats about latest execution are saved
-RUN_PID_DIR="/var/run/borg" # dir for "locking" backups
+RUN_PID_DIR="/tmp/borg" # dir for "locking" backups, /tmp/borg | /var/run/borg
 
 info_log() {
 	echo "[$( date +'%F %T' )] $*" >&2
