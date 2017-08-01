@@ -12,15 +12,20 @@ Obviously this is bad for an automated system, especially when talking about bac
 
 The issue [has been addressed](https://github.com/borgbackup/borg/pull/1674) in borg **v1.1.0** (currently beta), but I have not tested it and until it works there, here is my workaround.
 
-Basically the local lock system writes it's PID into a `/var/run` dir (configurable in `RUN_PID_DIR` in [`borgcron.sh`](borgcron.sh#L11)). As long as the PID is there and the process with this ID is running, the backup is considered to be "locked". When the backup process finishes (even if ending with an error), the lock is removed, allowing further backups to start. The whole thing is done locally, thus being more reliable than the "remote lock" system currently implemented in stable versions of borg.
-**For the system to work, the `RUN_PID_DIR` must exist and be writable by the user executing the script.** So please create it before executing the script and adjust the permissions.
+
+Basically the local lock system writes it's PID into a `/var/run` dir (configurable in `RUN_PID_DIR` in [`borgcron.sh`](borgcron.sh#L11)) and as long as the PID is there and the process with this ID is running, the backup is considered to be "locked". When the backup process ends (even when it ends with an error), this lock is removed, so that further backups can start. As the whole thing is done locally, this is considered to be more reliable than the "remote lock" system currently implemented in stable versions of borg.
+**For the system to work, the `RUN_PID_DIR` must exist and be writable by the user executing the script.** So please create it before executing the script and adjust the permissions. See [this AskUbuntu question](https://askubuntu.com/questions/303120/how-folders-created-in-var-run-on-each-reboot) for more details/instructions how to do so.
 
 **Attention:** As the name implies, this system assumes, that you access your borg repo in a "single-user" (one client, one server) environment. As the locking is managed locally, you should ensure, that **only one client** is allowed to access the borg repository. Otherwise **data loss may occur**, as this script automatically breaks the remote lock in the borg repository, if it is not locked locally.
+
+**Note:** The dir, which is used for locking, (`RUN_PID_DIR`) should preferably already exist and must be writable for the process executing the backup. If not the script will fail, i.e. the backup will not be executed.  
+Note that `/var/run` is often mounted as a tempfs, so all data is deleted at shutdown and you have to recreate the dirs at the (next) startup.
 
 ## Less maintenance, more safety!
 
 Sometimes [backups stop mid-way](https://borgbackup.readthedocs.io/en/stable/faq.html#if-a-backup-stops-mid-way-does-the-already-backed-up-data-stay-there). This can have different reasons (e.g. an unreliable network). However we still want our data to be backed up.
 That's why the script integrates a **retry mechanism** to retry the backup in case of a failure (for up to three times by default). Between the retry attempts the script pauses some minutes by default, to wait for your server to restart or the connection to reestablish.
+This is also a workaround for the ["connection closed by remote" issue](https://github.com/borgbackup/borg/issues/636), which seems to affect some users.
 
 Additionally the script has the ability to write stats of the last executed backup. [`cronsizecache.sh`](cronsizecache.sh) outputs the size of backups stored on the backup server. Both can be used (in conjunction with a script to check the last backup time) to **monitor your backups** and to automatically notify you, in case a backup failed/didn't work.
 
