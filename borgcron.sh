@@ -63,6 +63,7 @@ fi
 export BORG_REPO="$REPOSITORY"
 
 # get passphrase
+
 if [ -f "$PASSPHRASE_FILE" ]; then
 	export BORG_PASSPHRASE
 	BORG_PASSPHRASE=$( cat "$PASSPHRASE_FILE" )
@@ -80,7 +81,10 @@ for i in $REPEAT_NUMS; do
 		exit 1
 	fi
 
-	info_log "$i. try…"
+
+	if [ $i -gt 1 ]; then
+		info_log "$i. try…"
+	fi
 
 	# add local lock
 	do_lock
