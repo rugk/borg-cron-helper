@@ -163,6 +163,6 @@ $BORG_BIN prune -v --list --prefix "{hostname}-$BACKUP_NAME-" $PRUNE_PARAMS
 rm_lock
 
 # log
-echo "Backup $BACKUP_NAME ended at $( date +'%F %T' )."
+info_log "Backup $BACKUP_NAME ended."
 
 done
