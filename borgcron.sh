@@ -56,6 +56,11 @@ trapterm() {
 trap 'trapterm INT' INT
 trap 'trapterm TERM' TERM
 
+# load config file
+for CONFIGFILE in $CONFIG_DIR/*
+do
+. $CONFIGFILE
+
 # check lock
 if is_lock; then
 	info_log "Backup $BACKUP_NAME is locked. Prevent start."
