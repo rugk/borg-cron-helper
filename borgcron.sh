@@ -1,7 +1,7 @@
 #!/bin/sh
 # Cron script to execute borg backup regularely using a local lock & retry system.
 #
-# LICENSE: CC0/Public Domain - To the extent possible under law, rugk has waived all copyright and related or neighboring rights to this work. This work is published from: Deutschland.
+# LICENSE: MIT license, see LICENSE.md
 #
 
 # constants
