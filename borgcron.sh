@@ -51,11 +51,11 @@ trapterm() {
     info_log "Backup (PID: $$) interrupted by $1." >&2
     exit 2
 }
+backup_routine() {
 
-# add trap to catch terminating signals
-trap 'trapterm INT' INT
-trap 'trapterm TERM' TERM
-
+if [ -n $1 ]; then
+CONFIGFILE=$1
+else
 # load config file
 for CONFIGFILE in $CONFIG_DIR/*
 do
@@ -164,5 +164,24 @@ rm_lock
 
 # log
 info_log "Backup $BACKUP_NAME ended."
+}
 
-done
+# add trap to catch terminating signals
+trap 'trapterm INT' INT
+trap 'trapterm TERM' TERM
+
+# check, if parameters are given at start
+if [ $# != 0 ]; then
+	# check, if given file exists
+	if [ -f "$CONFIGFILE" ]; then
+		for CONFIGFILE in "$@"
+		do
+			. "$CONFIG_DIR"/"$CONFIGFILE"
+			backup_routine
+		done
+	else
+		info_log "No backup-settings file(s) found. There has not been created a backup!"	
+	fi
+else
+	echo "No backup-settings file given. Please specify one as parameter when starting the script.\n\nUsage: ./borgcron.sh <backup_config_filename>..."
+fi
