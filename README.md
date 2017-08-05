@@ -1,4 +1,4 @@
-# Borg cron helper scripts
+﻿# Borg cron helper scripts
 **Automate backups with borg in a more convenient and reliable way!**
 These scripts are some small and handy shell scripts to automate the backup process with [BorgBackup](https://borgbackup.readthedocs.io/). They are POSIX-compatible, so they should run with all shells. You're free to modify them for your needs!
 
@@ -50,8 +50,9 @@ Also, you can of course not use some features outlined here. That's why the whol
 * more to come…
 
 ## What's in here?
-* [`borgcron.sh`](borgcron.sh) – Main "runner script". Does all stuff when a backup is triggered.
-* [`borgcron_start.sh`](borgcron_start.sh) – Header file with config options for a specific backup. This calls [`borgcron.sh`](borgcron.sh) internally.
-* [`checklastbackup.sh`](checklastbackup.sh) – Script, which you can execute at login (Add to your `.bashrc` file or so), which notifies you when a backup has failed. Otherwise it remains silent.
-* [`cronsizecache.sh`](cronsizecache.sh) – Small one-liner to cache the size of the dir where backups are stored. (useful for remote backup servers) You can then include the result with `cat` in your login script.
-* [`databasedump.sh`](databasedump.sh) – Dumps one or several databases into a dir/file. Make sure, that this script and the dump dir are only readable by your backup user. Script might have to be executed with higher privileges (i.e. root) for creating the backup.
+* [`borgcron.sh`](borgcron.sh) – Interprets user input, feeds the backup routine.
+* [`backup_routine.sh`](core/backup_routine.sh) Main script. Does all stuff, when a backup is triggered.
+* [`good-backup`](config/good-backup) – Example configuration file for one backup. Please use this template, to add your backup(s)!
+* [`checklastbackup.sh`](core/checklastbackup.sh) – Script, which you can execute at login (Add to your `.bashrc` file or so), which notifies you when a backup has failed. Otherwise it remains silent.
+* [`cronsizecache.sh`](core/cronsizecache.sh) – Small one-liner to cache the size of the dir where backups are stored. (useful for remote backup servers) You can then include the result with `cat` in your login script.
+* [`databasedump.sh`](core/databasedump.sh) – Dumps one or several databases into a dir/file. Make sure, that this script and the dump dir are only readable by your backup user. Script might have to be executed with higher privileges (i.e. root) for creating the backup.
