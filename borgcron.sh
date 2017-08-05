@@ -7,52 +7,43 @@
 # dir where config files are stored
 CONFIG_DIR="$( dirname "$0" )/config"
 
-info_log() {
-	echo "[$( date +'%F %T' )] $*" >&2
+help() {
+	echo "Usage:"
+	echo "$( basename "$0" ) [<files>]"
+	echo
+	echo "files	If <files> is given, it will cycle through each given config file and"
+	echo "		execute the backups exactly as given on the command line."
+	echo "		If it is not given, it will just run all backups one by one."
 }
-trapterm() {
-    rm_lock 2> /dev/null
-    info_log "Backup (PID: $$) interrupted by $1." >&2
-    exit 2
+dir_contains_files() {
+	ls -A "$1"
 }
 
-# add trap to catch terminating signals
-trap 'trapterm INT' INT
-trap 'trapterm TERM' TERM
+# check for error if config dir is empty
+if [ "$( ! dir_contains_files "$CONFIG_DIR" )" ]; then
+	echo "No backup settings file(s) could be found in the config folder \"$CONFIG_DIR\"."
+	echo "To get help enter: $( basename "$0" ) --help"
+fi
 
-# select action from user input
-
-HELPTEXT="Usage:\n"$(basename "$0")" 	will execute backup(s)for every backup-config file within the configured config folder\n"$(basename "$0")" [<file>]... 	will execute only the given backup(s)"
+# parse parameters
 case "$1" in
-		'') # process all backup files in CONFIG_DIR
-			for CONFIGFILE in $CONFIG_DIR/*;
-			do
-				if [ -f "$CONFIGFILE" ]; then
-					./borgcron_worker.sh "$CONFIGFILE"
-				else
-					#user should feel "safe" with standard --help command, altough you could likewise enter some rubbish as argument
-					info_log "No backup-settings file(s) found in your configured folder \"$CONFIG_DIR\". There has not been created a backup!\nFor help enter:\n"$(basename "$0")" --help\n"
-
-				fi
-			done
-			;;
-		--help) #show help message
-			echo $HELPTEXT
-			exit
-				;;
-		*) # config file passed
-			while [ "$1" != '' ]; do
-				CONFIGFILE=$1
-				echo hier
-				echo "$CONFIG_DIR/$CONFIGFILE"
-				if [ -f "$CONFIG_DIR/$CONFIGFILE" ]; then
-					echo "$CONFIG_DIR/$CONFIGFILE"
-					./borgcron_worker.sh "$CONFIG_DIR/$CONFIGFILE"
-				else
-				info_log "Your backup-settings file(s) "$CONFIGFILE" has not been found. There has not been created a backup!\n\n$HELPTEXT"
-				exit
-				fi
-			shift 1
-			done
-			;;
+	'' ) # process all backup config files in $CONFIG_DIR
+		for configfile in $CONFIG_DIR/*.sh;
+		do
+			./borgcron_worker.sh "$CONFIG_DIR/$configfile"
+		done
+		;;
+	--help|-h|-? ) # show help message
+		help
+		exit
+		;;
+	*)  # specific config file(s) passed
+		for configfile in "$@"; do
+			if [ -e "$CONFIG_DIR/$configfile" ]; then
+				./borgcron_worker.sh "$CONFIG_DIR/$configfile"
+			else
+				echo "The backup settings file \"$configfile\" could not be found." >&2
+			fi
+		done
+		;;
 esac
