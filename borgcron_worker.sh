@@ -1,31 +1,20 @@
 #!/bin/sh
-# Backup routine to execute borg backups. To be started with the wrapper-script borgcron.sh
+# Backup routine to execute borg backups.
+# Should be started with the wrapper script borgcron.sh.
 #
 # LICENSE: MIT license, see LICENSE.md
 #
 
+BORG_BIN="borg"
+LAST_BACKUP_DIR="work"
+RUN_PID_DIR="/var/run/borg"
+
 # default settings for backup
 # (can be overwritten by config files)
 COMPRESSION="lz4"
-LAST_BACKUP_DIR="work"
-RUN_PID_DIR="work"
-ARCHIVE_NAME="{hostname}-$BACKUP_NAME-{now:%Y-%m-%dT%H:%M:%S}"
 ADD_BACKUP_PARAMS=""
 SLEEP_TIME="5m"
-REPEAT_NUMS="1 2 3"
-BORG_BIN="borg"
-
-
-# abort, if started without backup config file as input
-if [ "$1" != '' ]; then
-	# shellcheck source=config/good-backup.sh
-	. "$1"
-else
-	echo "Please call $(basename "$0") with the wrapper script borgcron.sh"
-	exit 1
-fi
-
-# backup routine
+REPEAT_NUM="3"
 
 info_log() {
 	echo "[$( date +'%F %T' )] $*" >&2
@@ -58,13 +47,24 @@ do_lock() {
 rm_lock() {
 	rm "$RUN_PID_DIR/BORG_$BACKUP_NAME.pid"
 }
+
+# add trap to catch backup interruptions
 trapterm() {
     rm_lock 2> /dev/null
-    info_log "Backup (PID: $$) interrupted by $1." >&2
+    info_log "Backup $BACKUP_NAME (PID: $$) interrupted by $1."
     exit 2
 }
 trap 'trapterm INT' INT
 trap 'trapterm TERM' TERM
+
+# abort, if started without backup config file as input
+if [ "$1" != '' ]; then
+	# shellcheck source=config/example-backup.sh
+	. "$1"
+else
+	echo "Please pass a path of a config file to $(basename "$0")."
+	exit 1
+fi
 
 # check lock
 if is_lock; then
@@ -72,11 +72,19 @@ if is_lock; then
 	exit 1
 fi
 
+# check that variables are set
+if [ "$BACKUP_NAME" = "" ] ||
+   [ "$REPOSITORY" = "" ] ||
+   [ "$ARCHIVE_NAME" = "" ] ||
+   [ "$BACKUP_DIRS" = "" ]; then
+	echo 'Some required variables may not be set in the config file. Cancel backup.'
+	exit 1
+fi
+
 # export borg repo variable
 export BORG_REPO="$REPOSITORY"
 
 # get passphrase
-
 if [ -f "$PASSPHRASE_FILE" ]; then
 	export BORG_PASSPHRASE
 	BORG_PASSPHRASE=$( cat "$PASSPHRASE_FILE" )
@@ -88,15 +96,13 @@ fi
 echo
 info_log "Backup $BACKUP_NAME started with $( borg -V ), PID: $$."
 
-REPEAT_NUMS=$( seq $REPEAT_NUMS ) #expanding repeat number string (e.g. from "3" to "1 2 3")
-for i in $REPEAT_NUMS; do
+for i in $( seq "$REPEAT_NUM" ); do
 	if is_lock; then
 		info_log "Backup $BACKUP_NAME is locked. Cancel."
 		exit 1
 	fi
 
-
-	if [ $i -gt 1 ]; then
+	if [ "$i" -gt 1 ]; then
 		info_log "$i. try…"
 	fi
 
@@ -150,10 +156,9 @@ for i in $REPEAT_NUMS; do
 	# exit on non-critical errors (ignore 1 = warnings)
 	if [ ${errorcode} -le 1 ]; then
 		# save/update last backup time
-		if [ ! -d $LAST_BACKUP_DIR ]; then
-		mkdir -p $LAST_BACKUP_DIR
+		if [ -d $LAST_BACKUP_DIR ]; then
+			date +'%s' > "$LAST_BACKUP_DIR/$BACKUP_NAME.time"
 		fi
-		date +'%s' > "$LAST_BACKUP_DIR/$BACKUP_NAME.time"
 		# get out of loop
 		break;
 	fi
@@ -169,8 +174,6 @@ if [ "$PRUNE_PARAMS" ]; then
 	# shellcheck disable=SC2086
 	$BORG_BIN prune -v --list --prefix "{hostname}-$BACKUP_NAME-" $PRUNE_PARAMS
 	rm_lock
-else
-	echo "No parameters for pruning given. Skip pruning..."
 fi
 
 # log
