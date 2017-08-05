@@ -1,5 +1,5 @@
 # Borg cron helper scripts
-
+**Automate backups with borg in a more convenient and reliable way!**
 These scripts are some small and handy shell scripts to automate the backup process with [BorgBackup](https://borgbackup.readthedocs.io/). They are POSIX-compatible, so they should run with all shells. You're free to modify them for your needs!
 
 They add some convienent features around borg, regarding environments with only **one client**.
@@ -42,7 +42,7 @@ Also, you can of course not use some features outlined here. That's why the whol
 * easy to understand, easy to modify
 * POSIX-compatible
 * pretty logs
-* passphrase protected, because saved in an external file
+* passphrase can be protected better, because it's saved in an external file
 * pruning after the backup
 * script to dump databases before backing up
 * tested in production (but no guarantees, use at your own risk! 😉)
