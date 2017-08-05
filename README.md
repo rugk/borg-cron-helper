@@ -45,6 +45,7 @@ Also, you can of course not use some features outlined here. That's why the whol
 * passphrase can be protected better, because it's saved in an external file
 * pruning after the backup
 * script to dump databases before backing up
+* privilege-separation (login scripts can have higher privilege than backup process)
 * tested in production (but no guarantees, use at your own risk! 😉)
 * more to come…
 
