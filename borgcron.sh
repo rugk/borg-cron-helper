@@ -89,7 +89,9 @@ case "$1" in
 					. $CONFIGFILE
 					. core/backup_routine.sh
 				else
-					info_log "No backup-settings file(s) found in your configured folder \"$CONFIG_DIR\". There has not been created a backup!\nFor help enter:\n"$(basename "$0")" --help\n" #user should feel "safe" with standard --help command, altough you could likewise enter some rubbish as argument
+					#user should feel "safe" with standard --help command, altough you could likewise enter some rubbish as argument
+					info_log "No backup-settings file(s) found in your configured folder \"$CONFIG_DIR\". There has not been created a backup!\nFor help enter:\n"$(basename "$0")" --help\n"
+
 				fi
 			done
 			;;
