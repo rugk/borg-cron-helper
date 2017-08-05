@@ -22,10 +22,11 @@ BORG_BIN="borg"
 
 # abort, if started without backup config file as input
 if [ "$1" != '' ]; then
-	. $1
+	# shellcheck source=config/good-backup.sh
+	. "$1"
 else
-	echo "Please call "$(basename "$0")" with the wrapper script borgcron.sh"
-	exit
+	echo "Please call $(basename "$0") with the wrapper script borgcron.sh"
+	exit 1
 fi
 
 # backup routine
