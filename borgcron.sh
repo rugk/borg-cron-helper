@@ -4,14 +4,8 @@
 # LICENSE: MIT license, see LICENSE.md
 #
 
-
-###########
-# Default settings (see also borgcron_worker.sh)
-###########
-CONFIG_DIR='config'
-
-
-
+# dir where config files are stored
+CONFIG_DIR="$( dirname "$0" )/config"
 
 info_log() {
 	echo "[$( date +'%F %T' )] $*" >&2
@@ -25,7 +19,6 @@ trapterm() {
 # add trap to catch terminating signals
 trap 'trapterm INT' INT
 trap 'trapterm TERM' TERM
-
 
 # select action from user input
 
@@ -63,5 +56,3 @@ case "$1" in
 			done
 			;;
 esac
-
-
