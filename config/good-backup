@@ -16,7 +16,7 @@ ARCHIVE_NAME="{hostname}-$BACKUP_NAME-{now:%Y-%m-%dT%H:%M:%S}" # or %Y-%m-%d
 ADD_BACKUP_PARAMS="" # --one-file-system for backing up root file dir
 
 SLEEP_TIME="5m" # time, the script should wait until re-attempting the backup after a failed one
-REPEAT_NUMS="1 2 3" # = three times
+REPEAT_NUMS="3" # = three retries after accepting a failed backup
 
 # create installed list
 #

@@ -22,6 +22,7 @@ fi
 echo
 info_log "Backup $BACKUP_NAME started with $( borg -V ), PID: $$."
 
+REPEAT_NUMS=$( seq $REPEAT_NUMS ) #expanding repeat number string (e.g. from "3" to "1 2 3")
 for i in $REPEAT_NUMS; do
 	if is_lock; then
 		info_log "Backup $BACKUP_NAME is locked. Cancel."
