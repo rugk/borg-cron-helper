@@ -177,4 +177,4 @@ else
 fi
 
 # log
-info_log "Backup $BACKUP_NAME ended."
+info_log "Backup "$BACKUP_NAME" ended."
