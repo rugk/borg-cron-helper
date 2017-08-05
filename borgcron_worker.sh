@@ -1,8 +1,34 @@
 #!/bin/sh
-# Cron script to execute borg backup regularely using a local lock & retry system.
+# Backup routine to execute borg backups. To be started with the wrapper-script borgcron.sh
 #
 # LICENSE: MIT license, see LICENSE.md
 #
+
+
+###########
+# Default settings
+###########
+
+COMPRESSION="lz4"
+CONFIG_DIR='config'
+LAST_BACKUP_DIR="work"
+RUN_PID_DIR="work"
+ARCHIVE_NAME="{hostname}-$BACKUP_NAME-{now:%Y-%m-%dT%H:%M:%S}"
+ADD_BACKUP_PARAMS=""
+SLEEP_TIME="5m"
+REPEAT_NUMS="1 2 3"
+BORG_BIN="borg"
+
+
+# abort, if started without backup config file as input
+if [ "$1" != '' ]; then
+	. $1
+else
+	echo "Please call "$(basename "$0")" with the wrapper script borgcron.sh"
+	exit
+fi
+
+# backup routine
 
 info_log() {
 	echo "[$( date +'%F %T' )] $*" >&2
@@ -35,9 +61,13 @@ do_lock() {
 rm_lock() {
 	rm "$RUN_PID_DIR/BORG_$BACKUP_NAME.pid"
 }
-
-# shellcheck source=config/good-backup.sh
-. "$1"
+trapterm() {
+    rm_lock 2> /dev/null
+    info_log "Backup (PID: $$) interrupted by $1." >&2
+    exit 2
+}
+trap 'trapterm INT' INT
+trap 'trapterm TERM' TERM
 
 # check lock
 if is_lock; then
@@ -136,7 +166,7 @@ done
 # this machine with this backup-type are touched.
 # (some variables intentionally not quoted)
 
-if [ $PRUNE_PARAMS ]; then
+if [ "$PRUNE_PARAMS" ]; then
 	echo "Running prune for $BACKUP_NAME…"
 	do_lock
 	# shellcheck disable=SC2086
