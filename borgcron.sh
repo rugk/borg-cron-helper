@@ -4,20 +4,9 @@
 # LICENSE: MIT license, see LICENSE.md
 #
 
-
-# optional settings
-CONFIG_DIR='config' #without ending slash (/), please
-
-SLEEP_TIME="5m" # time, the script should wait until re-attempting the backup after a failed one
-REPEAT_NUMS="1 2 3" # = three times
-BORG_BIN="borg" # the binary
-LAST_BACKUP_DIR="/var/log/borg/last" # the dir, where stats about latest execution are saved
-RUN_PID_DIR="/tmp/borg" # dir for "locking" backups, /tmp/borg | /var/run/borg
-
 info_log() {
 	echo "[$( date +'%F %T' )] $*" >&2
 }
-
 is_lock() {
 	# when file is not present -> unlocked
 	if [ ! -f "$RUN_PID_DIR/BORG_$BACKUP_NAME.pid" ]; then
@@ -51,137 +40,59 @@ trapterm() {
     info_log "Backup (PID: $$) interrupted by $1." >&2
     exit 2
 }
-backup_routine() {
-
-if [ -n $1 ]; then
-CONFIGFILE=$1
-else
-# load config file
-for CONFIGFILE in $CONFIG_DIR/*
-do
-. $CONFIGFILE
-
-# check lock
-if is_lock; then
-	info_log "Backup $BACKUP_NAME is locked. Prevent start."
-	exit 1
-fi
-
-# export borg repo variable
-export BORG_REPO="$REPOSITORY"
-
-# get passphrase
-
-if [ -f "$PASSPHRASE_FILE" ]; then
-	export BORG_PASSPHRASE
-	BORG_PASSPHRASE=$( cat "$PASSPHRASE_FILE" )
-else
-	info_log "No (valid) passphrase file given."
-fi
-
-# log
-echo
-info_log "Backup $BACKUP_NAME started with $( borg -V ), PID: $$."
-
-for i in $REPEAT_NUMS; do
-	if is_lock; then
-		info_log "Backup $BACKUP_NAME is locked. Cancel."
-		exit 1
-	fi
-
-
-	if [ $i -gt 1 ]; then
-		info_log "$i. try…"
-	fi
-
-	# add local lock
-	do_lock
-
-	# backup dir (some variables intentionally not quoted)
-	# shellcheck disable=SC2086
-	$BORG_BIN create -v --stats \
-		--compression "$COMPRESSION" \
-		$ADD_BACKUP_PARAMS \
-		"::$ARCHIVE_NAME" \
-		$BACKUP_DIRS
-
-	# check return code
-	errorcode="$?"
-
-	# remove local lock
-	rm_lock
-
-	# show output
-	# see https://borgbackup.readthedocs.io/en/stable/usage.html?highlight=return%20code#return-codes
-	case ${errorcode} in
-		2 )
-			info_log "Borg exited with fatal error." #(2)
-
-			# wait some time to recover from the error
-			info_log "Wait $SLEEP_TIME…"
-			sleep "$SLEEP_TIME"
-
-			# break-lock if backup has not locked by another process in the meantime
-			if is_lock; then
-				info_log "Backup $BACKUP_NAME is locked locally by other process. Cancel."
-				exit 1
-			fi
-			info_log "Breaking lock…"
-			$BORG_BIN break-lock "$REPOSITORY"
-
-			;;
-		1 )
-			info_log "Borg had some WARNINGS, but everything else was okay."
-			;;
-		0 )
-			info_log "Borg has been successful."
-			;;
-		* )
-			info_log "Unknown error with code ${errorcode} happened."
-			;;
-	esac
-
-	# exit on non-critical errors (ignore 1 = warnings)
-	if [ ${errorcode} -le 1 ]; then
-		# save/update last backup time
-		if [ ! -d $LAST_BACKUP_DIR ]; then
-		mkdir -p $LAST_BACKUP_DIR
-		fi
-		date +'%s' > "$LAST_BACKUP_DIR/$BACKUP_NAME.time"
-		# get out of loop
-		break;
-	fi
-done
-
-# The '{hostname}-$BACKUP_NAME-' prefix makes sure only backups from
-# this machine with this backup-type are touched.
-# (some variables intentionally not quoted)
-echo "Running prune for $BACKUP_NAME…"
-do_lock
-# shellcheck disable=SC2086
-$BORG_BIN prune -v --list --prefix "{hostname}-$BACKUP_NAME-" $PRUNE_PARAMS
-rm_lock
-
-# log
-info_log "Backup $BACKUP_NAME ended."
-}
 
 # add trap to catch terminating signals
 trap 'trapterm INT' INT
 trap 'trapterm TERM' TERM
 
-# check, if parameters are given at start
-if [ $# != 0 ]; then
-	# check, if given file exists
-	if [ -f "$CONFIGFILE" ]; then
-		for CONFIGFILE in "$@"
-		do
-			. "$CONFIG_DIR"/"$CONFIGFILE"
-			backup_routine
-		done
-	else
-		info_log "No backup-settings file(s) found. There has not been created a backup!"	
-	fi
-else
-	echo "No backup-settings file given. Please specify one as parameter when starting the script.\n\nUsage: ./borgcron.sh <backup_config_filename>..."
+
+# default settings
+COMPRESSION="lz4"
+CONFIG_DIR='config'
+LAST_BACKUP_DIR="work"
+RUN_PID_DIR="work"
+ARCHIVE_NAME="{hostname}-$BACKUP_NAME-{now:%Y-%m-%dT%H:%M:%S}"
+ADD_BACKUP_PARAMS=""
+SLEEP_TIME="5m"
+REPEAT_NUMS="1 2 3"
+BORG_BIN="borg"
+
+
+# select action from user input
+
+# help dialog
+if [ "$1" = "--help" ] || [ $# = 0 ]; then
+	echo "Usage: "$(basename "$0")" (--single <file>... | --all)\n\n  --all		Execute every backup, found in config-folder\n  --single <file>...	Execute given backup by filename within the configured config folder"
+	exit
 fi
+
+# config file passed
+if [ "$1" = "--single" ]; then
+	# jump to filename, shift $2 to $1
+	shift 1
+	while [ "$1" != '' ]; do
+		CONFIGFILE=$1
+		if [ -f "$CONFIG_DIR/$CONFIGFILE" ]; then
+			. "$CONFIG_DIR/$CONFIGFILE"
+			. core/backup_routine.sh
+		else
+		info_log "Your backup-settings file(s) "$CONFIGFILE" has not been found. There has not been created a backup!"
+		fi
+	shift 1
+	done
+fi
+
+
+# process all backup files in CONFIG_DIR
+if [ "$1" = "--all" ]; then
+	for CONFIGFILE in $CONFIG_DIR/*;
+	do
+		if [ -f "$CONFIGFILE" ]; then
+			. $CONFIGFILE
+			. core/backup_routine.sh
+		else
+			info_log "No backup-settings file(s) found in your configured folder \"$CONFIG_DIR\". There has not been created a backup!\n"
+		fi
+	done
+fi
+echo lol
