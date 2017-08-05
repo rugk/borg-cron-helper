@@ -66,33 +66,34 @@ if [ "$1" = "--help" ] || [ $# = 0 ]; then
 	exit
 fi
 
-# config file passed
-if [ "$1" = "--single" ]; then
-	# jump to filename, shift $2 to $1
-	shift 1
-	while [ "$1" != '' ]; do
-		CONFIGFILE=$1
-		if [ -f "$CONFIG_DIR/$CONFIGFILE" ]; then
-			. "$CONFIG_DIR/$CONFIGFILE"
-			. core/backup_routine.sh
-		else
-		info_log "Your backup-settings file(s) "$CONFIGFILE" has not been found. There has not been created a backup!"
-		fi
-	shift 1
-	done
-fi
+case "$1" in
+		--single) # config file passed
+			# jump to filename, shift $2 to $1
+			shift 1
+			while [ "$1" != '' ]; do
+				CONFIGFILE=$1
+				if [ -f "$CONFIG_DIR/$CONFIGFILE" ]; then
+					. "$CONFIG_DIR/$CONFIGFILE"
+					. core/backup_routine.sh
+				else
+				info_log "Your backup-settings file(s) "$CONFIGFILE" has not been found. There has not been created a backup! For help enter:\n"$(basename "$0")" --help"
+				fi
+			shift 1
+			done
+			;;
 
-
-# process all backup files in CONFIG_DIR
-if [ "$1" = "--all" ]; then
-	for CONFIGFILE in $CONFIG_DIR/*;
-	do
-		if [ -f "$CONFIGFILE" ]; then
-			. $CONFIGFILE
-			. core/backup_routine.sh
-		else
-			info_log "No backup-settings file(s) found in your configured folder \"$CONFIG_DIR\". There has not been created a backup!\n"
-		fi
-	done
-fi
-echo lol
+		--all) # process all backup files in CONFIG_DIR
+			for CONFIGFILE in $CONFIG_DIR/*;
+			do
+				if [ -f "$CONFIGFILE" ]; then
+					. $CONFIGFILE
+					. core/backup_routine.sh
+				else
+					info_log "No backup-settings file(s) found in your configured folder \"$CONFIG_DIR\". There has not been created a backup!\nFor help enter:\n"$(basename "$0")" --help\n" #user should feel "safe" with standard --help command, altough you could likewise enter some rubbish as argument
+				fi
+			done
+			;;
+		*) #show help message
+				echo "Usage: "$(basename "$0")" (--single <file>... | --all)\n\n  --all		Execute every backup, found in config-folder\n  --single <file>...	Execute given backup by filename within the configured config folder"
+				exit
+esac
