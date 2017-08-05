@@ -4,13 +4,9 @@
 # LICENSE: MIT license, see LICENSE.md
 #
 
-
-###########
-# Default settings
-###########
-
+# default settings for backup
+# (can be overwritten by config files)
 COMPRESSION="lz4"
-CONFIG_DIR='config'
 LAST_BACKUP_DIR="work"
 RUN_PID_DIR="work"
 ARCHIVE_NAME="{hostname}-$BACKUP_NAME-{now:%Y-%m-%dT%H:%M:%S}"
@@ -178,4 +174,4 @@ else
 fi
 
 # log
-info_log "Backup "$BACKUP_NAME" ended."
+info_log "Backup \"$BACKUP_NAME\" ended."
