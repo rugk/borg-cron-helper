@@ -4,77 +4,6 @@
 # LICENSE: MIT license, see LICENSE.md
 #
 
-
-info_log() {
-	echo "[$( date +'%F %T' )] $*" >&2
-}
-trapterm() {
-    rm_lock 2> /dev/null
-    info_log "Backup (PID: $$) interrupted by $1." >&2
-    exit 2
-}
-
-# add trap to catch terminating signals
-trap 'trapterm INT' INT
-trap 'trapterm TERM' TERM
-
-
-# default settings
-COMPRESSION="lz4"
-CONFIG_DIR='config'
-LAST_BACKUP_DIR="work"
-RUN_PID_DIR="work"
-ARCHIVE_NAME="{hostname}-$BACKUP_NAME-{now:%Y-%m-%dT%H:%M:%S}"
-ADD_BACKUP_PARAMS=""
-SLEEP_TIME="5m"
-REPEAT_NUMS="1 2 3"
-BORG_BIN="borg"
-
-
-# select action from user input
-
-# help dialog
-if [ "$1" = "--help" ] || [ $# = 0 ]; then
-	echo "Usage: "$(basename "$0")" <backup file>"
-	exit
-fi
-
-case "$1" in
-		--single) # config file passed
-			# jump to filename, shift $2 to $1
-			shift 1
-			while [ "$1" != '' ]; do
-				CONFIGFILE=$1
-				if [ -f "$CONFIG_DIR/$CONFIGFILE" ]; then
-					. "$CONFIG_DIR/$CONFIGFILE"
-				else
-				info_log "Your backup-settings file(s) "$CONFIGFILE" has not been found. There has not been created a backup! For help enter:\n"$(basename "$0")" --help"
-				fi
-			shift 1
-			done
-			;;
-
-		--all) # process all backup files in CONFIG_DIR
-			for CONFIGFILE in $CONFIG_DIR/*;
-			do
-				if [ -f "$CONFIGFILE" ]; then
-					. $CONFIGFILE
-				else
-					#user should feel "safe" with standard --help command, altough you could likewise enter some rubbish as argument
-					info_log "No backup-settings file(s) found in your configured folder \"$CONFIG_DIR\". There has not been created a backup!\nFor help enter:\n"$(basename "$0")" --help\n"
-
-				fi
-			done
-			;;
-		*) #show help message
-				echo "Usage: "$(basename "$0")" (--single <file>... | --all)\n\n  --all		Execute every backup, found in config-folder\n  --single <file>...	Execute given backup by filename within the configured config folder"
-				exit
-esac
-
-
-
-# backup routine
-
 is_lock() {
 	# when file is not present -> unlocked
 	if [ ! -f "$RUN_PID_DIR/BORG_$BACKUP_NAME.pid" ]; then
@@ -103,6 +32,72 @@ do_lock() {
 rm_lock() {
 	rm "$RUN_PID_DIR/BORG_$BACKUP_NAME.pid"
 }
+info_log() {
+	echo "[$( date +'%F %T' )] $*" >&2
+}
+trapterm() {
+    rm_lock 2> /dev/null
+    info_log "Backup (PID: $$) interrupted by $1." >&2
+    exit 2
+}
+
+# add trap to catch terminating signals
+trap 'trapterm INT' INT
+trap 'trapterm TERM' TERM
+
+
+# default settings
+COMPRESSION="lz4"
+CONFIG_DIR='config'
+LAST_BACKUP_DIR="work"
+RUN_PID_DIR="work"
+ARCHIVE_NAME="{hostname}-$BACKUP_NAME-{now:%Y-%m-%dT%H:%M:%S}"
+ADD_BACKUP_PARAMS=""
+SLEEP_TIME="5m"
+REPEAT_NUMS="1 2 3"
+BORG_BIN="borg"
+
+
+# select action from user input
+HELPTEXT="Usage:\n"$(basename "$0")" 	will execute backup(s)for every backup-config file within the configured config folder\n"$(basename "$0")" [<file>]... 	will execute only the given backup(s)"
+case "$1" in
+		'') # process all backup files in CONFIG_DIR
+			for CONFIGFILE in $CONFIG_DIR/*;
+			do
+				if [ -f "$CONFIGFILE" ]; then
+				echo $CONFIGFILE
+					. $CONFIGFILE
+				else
+					#user should feel "safe" with standard --help command, altough you could likewise enter some rubbish as argument
+					info_log "No backup-settings file(s) found in your configured folder \"$CONFIG_DIR\". There has not been created a backup!\nFor help enter:\n"$(basename "$0")" --help\n"
+
+				fi
+			done
+			;;
+		--help) #show help message
+			echo $HELPTEXT
+			exit
+				;;
+		*) # config file passed
+			# jump to filename, shift $2 to $1
+			while [ "$1" != '' ]; do
+				CONFIGFILE=$1
+				if [ -f "$CONFIG_DIR/$CONFIGFILE" ]; then
+					. "$CONFIG_DIR/$CONFIGFILE"
+				else
+				info_log "Your backup-settings file(s) "$CONFIGFILE" has not been found. There has not been created a backup!\n\n$HELPTEXT"
+				exit
+				fi
+			shift 1
+			done
+			;;
+esac
+
+
+
+# backup routine
+
+
 # check lock
 if is_lock; then
 	info_log "Backup $BACKUP_NAME is locked. Prevent start."
