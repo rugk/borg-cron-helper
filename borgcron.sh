@@ -3,6 +3,26 @@
 #
 # LICENSE: MIT license, see LICENSE.md
 #
+# add trap to catch terminating signals
+trap 'trapterm INT' INT
+trap 'trapterm TERM' TERM
+###########
+# Default settings
+###########
+COMPRESSION="lz4"
+CONFIG_DIR='config'
+LAST_BACKUP_DIR="work"
+RUN_PID_DIR="work"
+ARCHIVE_NAME="{hostname}-$BACKUP_NAME-{now:%Y-%m-%dT%H:%M:%S}"
+ADD_BACKUP_PARAMS=""
+SLEEP_TIME="5m"
+REPEAT_NUMS="1 2 3"
+BORG_BIN="borg"
+
+
+
+
+
 
 is_lock() {
 	# when file is not present -> unlocked
@@ -40,23 +60,6 @@ trapterm() {
     info_log "Backup (PID: $$) interrupted by $1." >&2
     exit 2
 }
-
-# add trap to catch terminating signals
-trap 'trapterm INT' INT
-trap 'trapterm TERM' TERM
-
-
-# default settings
-COMPRESSION="lz4"
-CONFIG_DIR='config'
-LAST_BACKUP_DIR="work"
-RUN_PID_DIR="work"
-ARCHIVE_NAME="{hostname}-$BACKUP_NAME-{now:%Y-%m-%dT%H:%M:%S}"
-ADD_BACKUP_PARAMS=""
-SLEEP_TIME="5m"
-REPEAT_NUMS="1 2 3"
-BORG_BIN="borg"
-
 
 # select action from user input
 HELPTEXT="Usage:\n"$(basename "$0")" 	will execute backup(s)for every backup-config file within the configured config folder\n"$(basename "$0")" [<file>]... 	will execute only the given backup(s)"
