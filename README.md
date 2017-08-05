@@ -1,20 +1,20 @@
-# Borg cron helper scripts with local lock system
+# Borg cron helper scripts
 
-**Automate backups with borg in a more convenient and reliable way!**
-
-This scripts are some small and handy shell scripts to automate the backup process with [BorgBackup](https://borgbackup.readthedocs.io/). They are POSIX-compatible, so they should run with all shells. You're free to modify them for your needs!
+These scripts are some small and handy shell scripts to automate the backup process with [BorgBackup](https://borgbackup.readthedocs.io/). They are POSIX-compatible, so they should run with all shells. You're free to modify them for your needs!
 
 They add some convienent features around borg, regarding environments with only **one client**.
 
+The local lock system cirumvents the issue of [stale](https://github.com/borgbackup/borg/issues/813) [lock files](https://github.com/borgbackup/borg/issues/2306).
+
+## 
 ## Local lock
-The local lock system cirumvents the issue of [stale](https://github.com/borgbackup/borg/issues/813) [lock files](https://github.com/borgbackup/borg/issues/2306). When the backup process is interrupted, it can happen, that the remote borg repository stays locked. That's why further backups will fail.
-Obviously this is bad for an automated system, especially when talking about backup software.
 
-The issue [has been addressed](https://github.com/borgbackup/borg/pull/1674) in borg **v1.1.0** (currently beta), but I have not tested it and until it works there, here is my workaround.
+When the backup process is interrupted, sometimes the remote borg repository stays locked. That's why further backups will fail.
 
+The issue [has been addressed](https://github.com/borgbackup/borg/pull/1674) in borg **v1.1.0** (currently beta), but I have not tested it and until it works there, here is my workaround:
 
-Basically the local lock system writes it's PID into a `/var/run` dir (configurable in `RUN_PID_DIR` in [`borgcron.sh`](borgcron.sh#L11)) and as long as the PID is there and the process with this ID is running, the backup is considered to be "locked". When the backup process ends (even when it ends with an error), this lock is removed, so that further backups can start. As the whole thing is done locally, this is considered to be more reliable than the "remote lock" system currently implemented in stable versions of borg.
-**For the system to work, the `RUN_PID_DIR` must exist and be writable by the user executing the script.** So please create it before executing the script and adjust the permissions. See [this AskUbuntu question](https://askubuntu.com/questions/303120/how-folders-created-in-var-run-on-each-reboot) for more details/instructions how to do so.
+Borg's current PID is written into a file (configurable in `RUN_PID_DIR` in [`borgcron.sh`](borgcron.sh#L11)). As long as the file exists the backup is considered to be "locked". At the end of the backup process (no matter whether it was succesful or not), the local lock is being removed, permitting further backups to start. The "local lock" is more reliable than the "remote lock" system, currently implemented in stable versions of borg.
+**For the system to work, the `RUN_PID_DIR` must exist and be writable.**. (If you want to comply with Linux' best practices, see [this AskUbuntu question](https://askubuntu.com/questions/303120/how-folders-created-in-var-run-on-each-reboot).)
 
 **Attention:** As the name implies, this system assumes, that you access your borg repo in a "single-user" (one client, one server) environment. As the locking is managed locally, you should ensure, that **only one client** is allowed to access the borg repository. Otherwise **data loss may occur**, as this script automatically breaks the remote lock in the borg repository, if it is not locked locally.
 
@@ -40,13 +40,12 @@ Also, you can of course not use some features outlined here. That's why the whol
 
 
 ## Feature list
-* easy to understand, easy to modify (main script with less than 120 LOC)
+* easy to understand, easy to modify
 * POSIX-compatible
-* logging-friendly
-* passphrase saved in external file, which you may protect in a better way
-* pruning included
-* privilege-separation (login scripts can have higher privilege than backup process)
-* also a good idea: dump your database before backing up
+* pretty logs
+* passphrase protected, because saved in an external file
+* pruning after the backup
+* script to dump databases before backing up
 * tested in production (but no guarantees, use at your own risk! 😉)
 * more to come…
 
