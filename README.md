@@ -6,7 +6,6 @@ They add some convienent features around borg, regarding environments with only 
 
 The local lock system cirumvents the issue of [stale](https://github.com/borgbackup/borg/issues/813) [lock files](https://github.com/borgbackup/borg/issues/2306).
 
-## 
 ## Local lock
 
 When the backup process is interrupted, sometimes the remote borg repository stays locked. That's why further backups will fail.
