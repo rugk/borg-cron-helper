@@ -20,6 +20,11 @@ info_log() {
 	echo "[$( date +'%F %T' )] $*" >&2
 }
 is_lock() {
+	# check if locking system is disabled
+	if [ "$RUN_PID_DIR" = "" ]; then
+		return 1 # not locked
+	fi
+
 	# when file is not present -> unlocked
 	if [ ! -f "$RUN_PID_DIR/BORG_$BACKUP_NAME.pid" ]; then
 		return 1 # false
@@ -32,6 +37,11 @@ is_lock() {
 	return 0 # true, locked
 }
 do_lock() {
+	# check if locking system is disabled
+	if [ "$RUN_PID_DIR" = "" ]; then
+		return
+	fi
+
 	if [ ! -d "$RUN_PID_DIR" ]; then
 		mkdir -p "$RUN_PID_DIR" || exit 2
 	fi
@@ -45,6 +55,11 @@ do_lock() {
 	fi
 }
 rm_lock() {
+	# check if locking system is disabled
+	if [ "$RUN_PID_DIR" = "" ]; then
+		return
+	fi
+
 	rm "$RUN_PID_DIR/BORG_$BACKUP_NAME.pid"
 }
 
@@ -138,9 +153,11 @@ for i in $( seq "$REPEAT_NUM" ); do
 				info_log "Backup $BACKUP_NAME is locked locally by other process. Cancel."
 				exit 1
 			fi
-			info_log "Breaking lock…"
-			$BORG_BIN break-lock "$REPOSITORY"
 
+			if [ "$RUN_PID_DIR" != "" ]; then
+				info_log "Breaking lock…"
+				$BORG_BIN break-lock "$REPOSITORY"
+			fi
 			;;
 		1 )
 			info_log "Borg had some WARNINGS, but everything else was okay."

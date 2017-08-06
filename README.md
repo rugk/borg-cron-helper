@@ -69,7 +69,7 @@ Also, you can of course not use some features outlined here. That's why the whol
    To do so just run `gpg --verify download.zip.asc`.
 3. Make sure that all script are not writable by the backup user, if it is different than root.
 
-## 2. Setup statistics (optional)
+### 2. Setup statistics (optional)
 
 In order to use the logging and reporting functionality, you have to create some dirs. They all have to be writable by the user running the scripts.
 
@@ -78,13 +78,14 @@ In order to use the logging and reporting functionality, you have to create some
 3. Include/add the [`tools/checklastbackup.sh`](tools/checklastbackup.sh) script to your `~/.bashrc`, `~/.zshrc` or similar depending on your shell). It will use the `.time` files to check the latest execution of the backups. You may also configure it's [`CRITICAL_TIME`](tools/checklastbackup.sh#L8), which defines the time the backup notifies you of a problem.
 
 
-### 3. Setup local log
+### 3. Setup local log (optional)
 
 By default `RUN_PID_DIR`, where the PID files are saved, is set to `/var/run`. It is configurable in `RUN_PID_DIR` in [`borgcron.sh`](borgcron.sh#L10). Note that for the system to work, the `RUN_PID_DIR` must **exist and be writable**. This is [usually done](https://askubuntu.com/questions/303120/how-folders-created-in-var-run-on-each-reboot) by init scripts or systemd, because `/var/run` is often mounted as a tempfs, so all data is deleted at shutdown and you have to recreate the dirs at the (next) startup. Of course, this does not matter, when running the backup as root, as it can easily recreate the directory itself, then. So either:
   * change the configuration to use a dir writable by the user, or
   * create a init.d script or systemd service file, which creates the dir
 
 If the dir does not exist, the backup will not run for security reasons.
+To disable this feature, set [`RUN_PID_DIR`](borgcron.sh#L10) to an empty string (`""`). This will disable the local locking system and use borg's default locking mechanism. This is useful when you run borg v1.1.0 or higher.
 
 **Attention:** This system assumes that you access your borg repo in a "single-user" (one client, one server) environment. As the locking is managed locally, you should ensure, that **only one client** is allowed to access the borg repository. Otherwise **data loss may occur**, as this script automatically breaks the remote lock in the borg repository, if it is not locked locally.
 
