@@ -1,26 +1,26 @@
-﻿# Borg cron helper scripts
+# Borg cron helper scripts
+
 **Automate backups with borg in a more convenient and reliable way!**
 These scripts are some small and handy shell scripts to automate the backup process with [BorgBackup](https://borgbackup.readthedocs.io/). They are POSIX-compatible, so they should run with all shells. You're free to modify them for your needs!
 
 They add some convienent features around borg, regarding environments with only **one client**.
 
-The local lock system cirumvents the issue of [stale](https://github.com/borgbackup/borg/issues/813) [lock files](https://github.com/borgbackup/borg/issues/2306).
+## Features
+* **[Local lock system](#local-lock):** Cirumvent the issue of [stale](https://github.com/borgbackup/borg/issues/813) [lock files](https://github.com/borgbackup/borg/issues/2306).
+* **[Automatic retries](#less-maintenance-more-safety):** When backups [stop mid-way](https://borgbackup.readthedocs.io/en/stable/faq.html#if-a-backup-stops-mid-way-does-the-already-backed-up-data-stay-there) they are automatically restarted.
+* **[Easy configuration](config/example-backup.sh):** Using shell-scripts you can configure each backup and then execute it the order/way you want.
+* **[Status information](#less-maintenance-more-safety):** You can use a login script to get a notice when backups failed.
+* **[Optional & adjustable](#modular-approach):** You do not have to use all features and you can adjust them in a simply way.
 
-## Local lock
+### Local lock
 
 When the backup process is interrupted, sometimes the remote borg repository stays locked. That's why further backups will fail.
 
 The issue [has been addressed](https://github.com/borgbackup/borg/pull/1674) in borg **v1.1.0** (currently beta), but I have not tested it and until it works there, here is my workaround.
 
-Borg's current PID is written into a file (configurable in `RUN_PID_DIR` in [`borgcron.sh`](borgcron.sh#L11)). As long as the file exists the backup is considered to be "locked". At the end of the backup process (no matter whether it was succesful or not), the local lock is being removed, permitting further backups to start. The "local lock" is more reliable than the "remote lock" system, currently implemented in stable versions of borg.
-**For the system to work, the `RUN_PID_DIR` must exist and be writable.**. (If you want to comply with Linux' best practices, see [this AskUbuntu question](https://askubuntu.com/questions/303120/how-folders-created-in-var-run-on-each-reboot).)
+Borg's current PID is written into a file. As long as the file exists the backup is considered to be "locked". At the end of the backup process (no matter whether it was succesful or not), the local lock is being removed, permitting further backups to start. The "local lock" is more reliable than the "remote lock" system, currently implemented in stable versions of borg.
 
-**Attention:** As the name implies, this system assumes, that you access your borg repo in a "single-user" (one client, one server) environment. As the locking is managed locally, you should ensure, that **only one client** is allowed to access the borg repository. Otherwise **data loss may occur**, as this script automatically breaks the remote lock in the borg repository, if it is not locked locally.
-
-**Note:** The dir, which is used for locking, (`RUN_PID_DIR`) should preferably already exist and must be writable for the process executing the backup. If not the script will fail, i.e. the backup will not be executed.  
-Note that `/var/run` is often mounted as a tempfs, so all data is deleted at shutdown and you have to recreate the dirs at the (next) startup.
-
-## Less maintenance, more safety!
+### Less maintenance, more safety!
 
 Sometimes [backups stop mid-way](https://borgbackup.readthedocs.io/en/stable/faq.html#if-a-backup-stops-mid-way-does-the-already-backed-up-data-stay-there). This can have different reasons (e.g. an unreliable network). However we still want our data to be backed up.
 That's why the script integrates a **retry mechanism** to retry the backup in case of a failure (for up to three times by default). Between the retry attempts the script pauses some minutes by default, to wait for your server to restart or the connection to reestablish.
@@ -30,15 +30,15 @@ Additionally the script has the ability to write stats of the last executed back
 
 **Rest assured your backups are safe and recover themselve if possible.** (If they don't, you'll get to know that.)
 
-## Modularity for multiple backups
+### Modular approach
 
-The main "work" is done by [`borgcron.sh`](borgcron.sh).
-However, for easier configuration and in order to setup multiple backup cron processes, the "configuration" and other backup/repository-specific stuff is done in the header file [`borgcron_start.sh`](borgcron_start.sh), which you can copy and rename as you want. It is also the file, which you have to start, when you want to start a backup process. (So put this into cron!)
+The main "work" is done by [`borgcron.sh`](borgcron.sh). This script can be used to execute a single backup.
+The configuration per repository/backup is saved in the  [`config`](config/) dir.
+The file [`borgcron_starter.sh`](borgcron_starter.sh) is the file you should call from cron or when debugging manually. Using it, you can execute multiple backups by passing the config names to it.
 
 Also, you can of course not use some features outlined here. That's why the whole functionality is broken into multiple scripts.
 
-
-## Feature list
+### More features…
 * easy to understand, easy to modify
 * POSIX-compatible
 * pretty logs
@@ -47,12 +47,63 @@ Also, you can of course not use some features outlined here. That's why the whol
 * script to dump databases before backing up
 * privilege-separation (login scripts can have higher privilege than backup process)
 * tested in production (but no guarantees, use at your own risk! 😉)
+* logging if backup is interruped by signals (e.g. at shutdown)
 * more to come…
 
 ## What's in here?
-* [`borgcron.sh`](borgcron.sh) – Interprets user input, feeds the backup routine.
-* [`backup_routine.sh`](core/backup_routine.sh) Main script. Does all stuff, when a backup is triggered.
-* [`good-backup`](config/good-backup) – Example configuration file for one backup. Please use this template, to add your backup(s)!
-* [`checklastbackup.sh`](core/checklastbackup.sh) – Script, which you can execute at login (Add to your `.bashrc` file or so), which notifies you when a backup has failed. Otherwise it remains silent.
-* [`cronsizecache.sh`](core/cronsizecache.sh) – Small one-liner to cache the size of the dir where backups are stored. (useful for remote backup servers) You can then include the result with `cat` in your login script.
-* [`databasedump.sh`](core/databasedump.sh) – Dumps one or several databases into a dir/file. Make sure, that this script and the dump dir are only readable by your backup user. Script might have to be executed with higher privileges (i.e. root) for creating the backup.
+* [`borgcron_starter.sh`](borgcron_starter.sh) – Interprets user input, feeds the backup routine.
+* [`borgcron.sh`](borgcron.sh) Main script. Does all stuff, when a backup is triggered.
+* [`config`](config/) – Directory for config files
+   * [`example-backup.sh`](config/example-backup.sh) – Example configuration file for one backup. Please use this template to add your backup(s).
+* [`tools/`](tools/) – additional scripts
+   * [`checklastbackup.sh`](tools/checklastbackup.sh) – Script, which you can execute at login (add to your `.bashrc` file or so),. It notifies you when a backup has failed. Otherwise it remains silent.
+   * [`cronsizecache.sh`](tools/cronsizecache.sh) – Small one-liner to cache the size of the dir where backups are stored. (useful for remote backup servers) You can then include the result with `cat` in your login script.
+   * [`databasedump.sh`](tools/databasedump.sh) – Dumps one or several databases into a dir/file. Make sure, that this script and the dump dir are only readable by your backup user. Script might have to be executed with higher privileges (i.e. root) for creating the backup.
+
+## How to setup?
+
+### 1. Download
+
+1. Download the  [latest release](releases) of the scripts.
+2. It is suggested to verify them with my [public key](https://github.com/rugk/otherfiles/blob/master/RugkGitSoftwareSignKey.txt) and/or look through the scripts, so you know what they do and that they do not do anything malicious.
+   To do so just run `gpg --verify download.zip.asc`.
+3. Make sure that all script are not writable by the backup user, if it is different than root.
+
+## 2. Setup statistics (optional)
+
+In order to use the logging and reporting functionality, you have to create some dirs. They all have to be writable by the user running the scripts.
+
+1. For logging: Create `/var/log/borg` with appropiate permissions.
+2. Create a subdirectry called `/var/log/borg/last` (configurable as [`LAST_BACKUP_DIR`](borgcron.sh#L9)). There the `.time` files will be written to containing the tiome of the last backup execution.
+3. Include/add the [`tools/checklastbackup.sh`](tools/checklastbackup.sh) script to your `~/.bashrc`, `~/.zshrc` or similar depending on your shell). It will use the `.time` files to check the latest execution of the backups. You may also configure it's [`CRITICAL_TIME`](tools/checklastbackup.sh#L8), which defines the time the backup notifies you of a problem.
+
+
+### 3. Setup local log
+
+By default `RUN_PID_DIR`, where the PID files are saved, is set to `/var/run`. It is configurable in `RUN_PID_DIR` in [`borgcron.sh`](borgcron.sh#L10). Note that for the system to work, the `RUN_PID_DIR` must **exist and be writable**. This is [usually done](https://askubuntu.com/questions/303120/how-folders-created-in-var-run-on-each-reboot) by init scripts or systemd, because `/var/run` is often mounted as a tempfs, so all data is deleted at shutdown and you have to recreate the dirs at the (next) startup. Of course, this does not matter, when running the backup as root, as it can easily recreate the directory itself, then. So either:
+  * change the configuration to use a dir writable by the user, or
+  * create a init.d script or systemd service file, which creates the dir
+
+If the dir does not exist, the backup will not run for security reasons.
+
+**Attention:** This system assumes that you access your borg repo in a "single-user" (one client, one server) environment. As the locking is managed locally, you should ensure, that **only one client** is allowed to access the borg repository. Otherwise **data loss may occur**, as this script automatically breaks the remote lock in the borg repository, if it is not locked locally.
+
+### 4. Setup MySQL dump (optional)
+
+The [`databasedump.sh`](tools/databasedump.sh) script can be used to dump the database into a dir before executing the backup. You can do this either directly before running the backup by including the file in your config file, or you can setup a new cron job using another user, who is allowed to dump the databases into a dir. The cron job should, of course, be executed before executing the actual backup.
+
+### 5. Setup cron/anacron
+
+Finally test the backup process and add the scripts to cron (use the `crontab -e` command to edit the files): 
+```
+# daily backup at midnight
+00 00 * * * /path/to/borgcron_starter.sh >> /var/log/borg/allbackups.log 2>&1
+```
+
+Or anacron creating the following file in `/etc/cron.daily`, `/etc/cron.weekly` or similar:
+``` 
+#!/bin/sh
+/path/to/borgcron_starter.sh >> /var/log/borg/allbackups.log 2>&1
+```
+
+Do not forget to make the anacron file executable (`chmod +x`).
