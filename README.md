@@ -64,7 +64,7 @@ Also, you can of course not use some features outlined here. That's why the whol
 
 ### 1. Download
 
-1. Download the  [latest release](releases) of the scripts.
+1. Download the  [latest release](https://github.com/rugk/borg-cron-helper/releases) of the scripts.
 2. It is suggested to verify them with my [public key](https://github.com/rugk/otherfiles/blob/master/RugkGitSoftwareSignKey.txt) and/or look through the scripts, so you know what they do and that they do not do anything malicious.
    To do so just run `gpg --verify download.zip.asc`.
 3. Make sure that all script are not writable by the backup user, if it is different than root.
