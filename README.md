@@ -55,7 +55,7 @@ Also, you can of course not use some features outlined here. That's why the whol
 * [`borgcron.sh`](borgcron.sh) Main script. Does all stuff, when a backup is triggered.
 * [`config`](config/) – Directory for config files
    * [`example-backup.sh`](config/example-backup.sh) – Example configuration file for one backup. Please use this template to add your backup(s).
-* [`tools/`](tools/) – additional scripts
+* [`tools`](tools/) – additional scripts
    * [`checklastbackup.sh`](tools/checklastbackup.sh) – Script, which you can execute at login (add to your `.bashrc` file or so),. It notifies you when a backup has failed. Otherwise it remains silent.
    * [`cronsizecache.sh`](tools/cronsizecache.sh) – Small one-liner to cache the size of the dir where backups are stored. (useful for remote backup servers) You can then include the result with `cat` in your login script.
    * [`databasedump.sh`](tools/databasedump.sh) – Dumps one or several databases into a dir/file. Make sure, that this script and the dump dir are only readable by your backup user. Script might have to be executed with higher privileges (i.e. root) for creating the backup.
@@ -76,7 +76,6 @@ In order to use the logging and reporting functionality, you have to create some
 1. For logging: Create `/var/log/borg` with appropiate permissions.
 2. Create a subdirectry called `/var/log/borg/last` (configurable as [`LAST_BACKUP_DIR`](borgcron.sh#L9)). There the `.time` files will be written to containing the tiome of the last backup execution.
 3. Include/add the [`tools/checklastbackup.sh`](tools/checklastbackup.sh) script to your `~/.bashrc`, `~/.zshrc` or similar depending on your shell). It will use the `.time` files to check the latest execution of the backups. You may also configure it's [`CRITICAL_TIME`](tools/checklastbackup.sh#L8), which defines the time the backup notifies you of a problem.
-
 
 ### 3. Setup local log (optional)
 
