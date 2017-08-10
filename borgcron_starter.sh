@@ -48,8 +48,8 @@ case "$1" in
 		;;
 	*)  # specific config file(s) passed
 		for configfile in "$@"; do
-			if [ -e "$CONFIG_DIR/$configfile" ]; then
-				./borgcron.sh "$( get_full_path "$CONFIG_DIR/$configfile" )"
+			if [ -e "$CONFIG_DIR/$configfile.sh" ]; then
+				./borgcron.sh "$( get_full_path "$CONFIG_DIR/$configfile.sh" )"
 			else
 				echo "The backup settings file \"$configfile\" could not be found." >&2
 			fi
