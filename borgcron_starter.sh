@@ -18,6 +18,10 @@ help() {
 dir_contains_files() {
 	ls -A "$1"
 }
+get_full_path() {
+	# thanks https://stackoverflow.com/questions/5265702/how-to-get-full-path-of-a-file
+	readlink -f "$1" || realpath "$1"
+}
 
 # check for error if config dir is empty
 if [ ! "$(  dir_contains_files "$CONFIG_DIR" )" ]; then
@@ -30,7 +34,7 @@ case "$1" in
 	'' ) # process all backup config files in $CONFIG_DIR
 		for configfile in $CONFIG_DIR/*.sh;
 		do
-			./borgcron.sh "$CONFIG_DIR/$configfile"
+			./borgcron.sh "$( get_full_path "$configfile" )"
 		done
 		;;
 	--help|-h|-? ) # show help message
@@ -40,7 +44,7 @@ case "$1" in
 	*)  # specific config file(s) passed
 		for configfile in "$@"; do
 			if [ -e "$CONFIG_DIR/$configfile" ]; then
-				./borgcron.sh "$CONFIG_DIR/$configfile"
+				./borgcron.sh "$( get_full_path "$CONFIG_DIR/$configfile" )"
 			else
 				echo "The backup settings file \"$configfile\" could not be found." >&2
 			fi
