@@ -6,8 +6,8 @@
 #
 
 BORG_BIN="borg"
-LAST_BACKUP_DIR="work"
-RUN_PID_DIR="work"
+LAST_BACKUP_DIR="/var/log/borg/last"
+RUN_PID_DIR="/var/run/borg"
 
 # default settings for backup
 # (can be overwritten by config files)
