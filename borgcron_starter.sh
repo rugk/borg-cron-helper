@@ -30,7 +30,7 @@ case "$1" in
 	'' ) # process all backup config files in $CONFIG_DIR
 		for configfile in $CONFIG_DIR/*.sh;
 		do
-			./borgcron.sh "$CONFIG_DIR/$configfile"
+			./borgcron.sh "$configfile"
 		done
 		;;
 	--help|-h|-? ) # show help message
