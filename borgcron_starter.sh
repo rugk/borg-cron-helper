@@ -20,7 +20,12 @@ dir_contains_files() {
 }
 get_full_path() {
 	# thanks https://stackoverflow.com/questions/5265702/how-to-get-full-path-of-a-file
-	readlink -f "$1" || realpath "$1"
+	# use realpath command, if it exists
+	if command -v realpath >/dev/null 2>&1; then
+		realpath "$1"
+	else
+		readlink -f "$1"
+	fi
 }
 
 # check for error if config dir is empty
