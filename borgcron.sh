@@ -89,22 +89,15 @@ fi
 
 # check that variables are set
 if [ "$BACKUP_NAME" = "" ] ||
-   [ "$REPOSITORY" = "" ] ||
+   [ "$BORG_REPO" = "" ] ||
    [ "$ARCHIVE_NAME" = "" ] ||
    [ "$BACKUP_DIRS" = "" ]; then
 	echo 'Some required variables may not be set in the config file. Cancel backup.'
 	exit 1
 fi
-
-# export borg repo variable
-export BORG_REPO="$REPOSITORY"
-
-# get passphrase
-if [ -f "$PASSPHRASE_FILE" ]; then
-	export BORG_PASSPHRASE
-	BORG_PASSPHRASE=$( cat "$PASSPHRASE_FILE" )
-else
-	info_log "No (valid) passphrase file given."
+if ! export|grep "BORG_REPO"; then
+	echo 'The BORG_REPO variable is not exported in the config file. Cancel backup.'
+	exit 1
 fi
 
 # log
