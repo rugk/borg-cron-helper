@@ -1,0 +1,18 @@
+# Executes borg via it's wrapper.
+# This file is part of borg-cron-helper.
+
+[Unit]
+Description=BorgBackup
+After=local-fs.target time-sync.target network.target
+
+[Service]
+Type=oneshot
+ExecStart=/path/to/borgcron_starter.sh
+StandardOutput=journal
+StandardError=journal
+# See 'man systemd.exec' for ways to redirect the STDOUT/STDERR to a file.
+# Alternatively you may also do this:
+# ExecStart=/bin/sh -c '/path/to/borgcron_starter.sh >> /var/log/borg/allbackups.log 2>&1'
+User=backupuser
+Group=backupuser
+IOSchedulingClass=idle
