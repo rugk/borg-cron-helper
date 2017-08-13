@@ -83,11 +83,17 @@ To use the logging and reporting functionality, you have to create some dirs. Th
 
 ### 4. Setup local log (optional)
 
-By default `RUN_PID_DIR`, where the PID files are saved, is set to `/var/run`. It is configurable in `RUN_PID_DIR` in [`borgcron.sh`](borgcron.sh#L10). Note that for the system to work, the `RUN_PID_DIR` must **exist and be writable**. This is [usually done](https://askubuntu.com/questions/303120/how-folders-created-in-var-run-on-each-reboot) by init scripts or systemd, because `/var/run` is often mounted as a tempfs, so all data is deleted at shutdown and you have to recreate the dirs at the (next) startup. Of course, this does not matter, when running the backup as root, as it can easily recreate the directory itself, then. So either:
+By default `RUN_PID_DIR`, where the PID files are saved, is set to `/var/run`. It is configurable in `RUN_PID_DIR` in [`borgcron.sh`](borgcron.sh#L10). Note that for the system to work, the `RUN_PID_DIR` must **exist and be writable**. This is [usually done](https://askubuntu.com/questions/303120/how-folders-created-in-var-run-on-each-reboot) by init scripts or systemd, because `/var/run` is often mounted as a tempfs, so all data is deleted at shutdown and you have to recreate the dirs at the (next) startup. So either:
   * change the configuration to use a dir writable by the user, or
   * create a init.d script or systemd service file, which creates the dir in `/var/run`
 
-If the given dir does not exist, the backup will not run for security reasons.
+In order to do the second, we provide some scripts:
+* If you use systemd, copy the [`tmpfile`](`system/tmpfile`) configuration file to `/usr/lib/tmpfiles.d` (suggested name: `borg.conf`) and adjust the username/group in the script to match the user, you are running the backup.
+* If you use init.d, copy the [`init`](`system/init`) script to `/etc/init.d` (suggested name: `borg`), make it executable (`chmod +x`) if necessary and enable it (`update-rc.d borg defaults`).
+
+The script also tries to create the dirs by itself, but this may only be the last fallback and certainly only works for the default configuration when it is running as root.
+
+If the configured dir does not exist, the backup will not run for security reasons.
 To disable this feature, set [`RUN_PID_DIR`](borgcron.sh#L10) to an empty string (`""`). This will disable the local locking system and use borg's default locking mechanism. This is useful when you run borg v1.1.0 or higher.
 
 **Attention:** This system assumes, that you access your borg repo in a "single-user" (one client, one server) environment. As the locking is managed locally, you should ensure, that **only one client** is allowed to access the borg repository. Otherwise **data loss may occur**, as this script automatically breaks the remote lock in the borg repository, if it is not locked locally.
@@ -96,7 +102,7 @@ To disable this feature, set [`RUN_PID_DIR`](borgcron.sh#L10) to an empty string
 
 The [`databasedump.sh`](tools/databasedump.sh) script can be used to dump your database(s) into a dir before executing the backup. You can do this either directly before running the backup by including [`databasedump.sh`](tools/databasedump.sh) in your config file, or you can setup a new cron job using another user, who is allowed to dump the databases into a dir. The cron job should, of course, be executed before executing the actual backup.
 
-### 6. Setup cron/anacron
+### 6. Setup cron/anacron/systemd timers
 
 Finally test the backup process. Then add the cron entry for the script (use the `crontab -e` command to edit the files): 
 ```
@@ -111,3 +117,13 @@ Or anacron creating the following file in `/etc/cron.daily`, `/etc/cron.weekly` 
 ```
 
 Do not forget to make the anacron file executable (`chmod +x`).
+
+Alternatively you can also use systemd:
+1. Copy the [`borg.service`](`system/borg.service`) and [`borg.timer`](`system/borg.timer`) scripts to `/usr/lib/systemd/system`.
+2. Adjust the files, especially the `User` and `Group` in the service file.
+3. Enable the timer: `systemctl enable borg.timer`
+
+You can test the execution with `systemctl start borg`.
+
+### 7. Setup logrotate
+If you use a logfile to save the output, you may also use logrotate to remove old logs. Just put the [`logrotate`](`system/logrotate`) into `/etc/logrotate.d`.
