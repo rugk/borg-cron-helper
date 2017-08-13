@@ -89,8 +89,8 @@ By default `RUN_PID_DIR`, where the PID files are saved, is set to `/var/run`. I
   * create a init.d script or systemd service file, which creates the dir in `/var/run`
 
 In order to do the second, we provide some scripts:
-* If you use systemd, copy the [`tmpfile`](`system/tmpfile`) configuration file to `/usr/lib/tmpfiles.d` (suggested name: `borg.conf`) and adjust the username/group in the script to match the user, you are running the backup.
-* If you use init.d, copy the [`init`](`system/init`) script to `/etc/init.d` (suggested name: `borg`), make it executable (`chmod +x`) if necessary and enable it (`update-rc.d borg defaults`).
+* If you use systemd, copy the [`tmpfile`](system/tmpfile) configuration file to `/usr/lib/tmpfiles.d` (suggested name: `borg.conf`) and adjust the username/group in the script to match the user, you are running the backup.
+* If you use init.d, copy the [`init`](system/init) script to `/etc/init.d` (suggested name: `borg`), make it executable (`chmod +x`) if necessary and enable it (`update-rc.d borg defaults`).
 
 The script also tries to create the dirs by itself, but this may only be the last fallback and certainly only works for the default configuration when it is running as root.
 
@@ -120,11 +120,11 @@ Or anacron creating the following file in `/etc/cron.daily`, `/etc/cron.weekly` 
 Do not forget to make the anacron file executable (`chmod +x`).
 
 Alternatively you can also use systemd:
-1. Copy the [`borg.service`](`system/borg.service`) and [`borg.timer`](`system/borg.timer`) scripts to `/usr/lib/systemd/system`.
+1. Copy the [`borg.service`](system/borg.service) and [`borg.timer`](system/borg.timer) scripts to `/usr/lib/systemd/system`.
 2. Adjust the files, especially the `User` and `Group` in the service file.
 3. Enable the timer: `systemctl enable borg.timer`
 
 You can test the execution with `systemctl start borg`.
 
 ### 7. Setup logrotate
-If you use a logfile to save the output, you may also use logrotate to remove old logs. Just put the [`logrotate`](`system/logrotate`) into `/etc/logrotate.d`.
+If you use a logfile to save the output, you may also use logrotate to remove old logs. Just put the [`logrotate`](system/logrotate) into `/etc/logrotate.d`.
