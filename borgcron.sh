@@ -16,9 +16,17 @@ ADD_BACKUP_PARAMS=""
 SLEEP_TIME="5m"
 REPEAT_NUM="3"
 
-info_log() {
-	echo "[$( date +'%F %T' )] $*" >&2
+# log system
+log_line() {
+	echo "[$( date +'%F %T' )]"
 }
+info_log() {
+	echo "$( log_line ) $*" >&1
+}
+error_log() {
+	echo "$( log_line ) $*" >&2
+}
+
 is_lock() {
 	# check if locking system is disabled
 	if [ "$RUN_PID_DIR" = "" ]; then
@@ -50,7 +58,7 @@ do_lock() {
 	echo $$ > "$RUN_PID_DIR/BORG_$BACKUP_NAME.pid" || exit 2
 
 	if ! is_lock; then
-		info_log "Locking was not successful. Cancel."
+		error_log "Locking was not successful. Cancel."
 		exit 2
 	fi
 }
@@ -66,7 +74,7 @@ rm_lock() {
 # add trap to catch backup interruptions
 trapterm() {
     rm_lock 2> /dev/null
-    info_log "Backup $BACKUP_NAME (PID: $$) interrupted by $1."
+    error_log "Backup $BACKUP_NAME (PID: $$) interrupted by $1."
     exit 2
 }
 trap 'trapterm INT' INT
@@ -83,7 +91,7 @@ fi
 
 # check lock
 if is_lock; then
-	info_log "Backup $BACKUP_NAME is locked. Prevent start."
+	error_log "Backup $BACKUP_NAME is locked. Prevent start."
 	exit 1
 fi
 
@@ -106,7 +114,7 @@ info_log "Backup $BACKUP_NAME started with $( borg -V ), PID: $$."
 
 for i in $( seq "$REPEAT_NUM" ); do
 	if is_lock; then
-		info_log "Backup $BACKUP_NAME is locked. Cancel."
+		error_log "Backup $BACKUP_NAME is locked. Cancel."
 		exit 1
 	fi
 
@@ -135,7 +143,7 @@ for i in $( seq "$REPEAT_NUM" ); do
 	# see https://borgbackup.readthedocs.io/en/stable/usage.html?highlight=return%20code#return-codes
 	case ${errorcode} in
 		2 )
-			info_log "Borg exited with fatal error." #(2)
+			error_log "Borg exited with fatal error." #(2)
 
 			# wait some time to recover from the error
 			info_log "Wait $SLEEP_TIME…"
@@ -143,7 +151,7 @@ for i in $( seq "$REPEAT_NUM" ); do
 
 			# break-lock if backup has not locked by another process in the meantime
 			if is_lock; then
-				info_log "Backup $BACKUP_NAME is locked locally by other process. Cancel."
+				error_log "Backup $BACKUP_NAME is locked locally by other process. Cancel."
 				exit 1
 			fi
 
@@ -153,13 +161,13 @@ for i in $( seq "$REPEAT_NUM" ); do
 			fi
 			;;
 		1 )
-			info_log "Borg had some WARNINGS, but everything else was okay."
+			error_log "Borg had some WARNINGS, but everything else was okay."
 			;;
 		0 )
 			info_log "Borg has been successful."
 			;;
 		* )
-			info_log "Unknown error with code ${errorcode} happened."
+			error_log "Unknown error with code ${errorcode} happened."
 			;;
 	esac
 

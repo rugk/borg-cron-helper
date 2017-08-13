@@ -7,7 +7,7 @@
 # dir where config files are stored
 CONFIG_DIR="$( dirname "$0" )/config"
 
-help() {
+cli_help() {
 	echo "Usage:"
 	echo "$( basename "$0" ) [<files>]"
 	echo
@@ -43,7 +43,7 @@ case "$1" in
 		done
 		;;
 	--help|-h|-? ) # show help message
-		help
+		cli_help
 		exit
 		;;
 	*)  # specific config file(s) passed
