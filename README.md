@@ -71,7 +71,8 @@ Also, you can of course not use some features outlined here. That's why the whol
 
 ### 2. Enter the backup parameters
 
-In the ['config directory'](config/) you will find an example configuration file. Set the variables according to your already initialized borg backup. Each backup has its own configuration file.
+In the [config directory](config/) you will find an example configuration file. Set the variables according to your already initialized borg backup. Each backup has its own configuration file.
+Copy the template file if you want to setup more backups.
 
 ### 3. Setup statistics (optional)
 
