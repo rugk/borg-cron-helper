@@ -1,0 +1,13 @@
+# This runs all borg backups regularely.
+# This file is part of borg-cron-helper.
+
+[Unit]
+Description=Daily backup via borg
+
+[Timer]
+OnCalendar=daily
+Persistent=true
+RandomizedDelaySec=2h
+
+[Install]
+WantedBy=timers.target
