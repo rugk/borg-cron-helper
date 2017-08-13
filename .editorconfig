@@ -12,8 +12,10 @@ insert_final_newline = true
 [*.sh]
 indent_style = tab
 
+[system/logrotate]
+indent_style = tab
+
 [*.{md,markdown}]
 indent_style = space
 indent_size = 2
 trim_trailing_whitespace = false
-
