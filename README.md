@@ -12,7 +12,7 @@ They add some convienent features around borg, regarding environments with only 
 * **[Status information](#less-maintenance-more-safety):** You can use a login script to get a notice when backups failed.
 * **[Optional & adjustable](#modular-approach):** You do not have to use all features and you can adjust them in a simply way.
 
-### Local lock (only for borg version < 1.1.0)
+### Local lock (borg < v1.1.0)
 
 When the backup process is interrupted, sometimes the remote borg repository stays locked. That's why further backups will fail.
 
@@ -79,9 +79,9 @@ To use the logging and reporting functionality, you have to create some dirs. Th
 
 1. For logging: Create `/var/log/borg` with appropiate permissions.
 2. Create a subdirectry called `/var/log/borg/last` (configurable as [`LAST_BACKUP_DIR`](borgcron.sh#L9)). There the `.time` files will be written to containing the tiome of the last backup execution.
-3. Include/add the [`tools/checklastbackup.sh`](tools/checklastbackup.sh) script to your `~/.bashrc`, `~/.zshrc` or similar, depending on your shell). It will read the `.time` files to display the time of  the last execution of your backups, when you login into your shell. You may also set a period of time ([`CRITICAL_TIME`](tools/checklastbackup.sh#L8)) in order to get a notification, if no successful backup has been made within that time.
+3. Include/add the [`tools/checklastbackup.sh`](tools/checklastbackup.sh) script to your `~/.bashrc`, `~/.zshrc` or similar, depending on your shell). It will read the `.time` files to display the time of the last execution of your backups, when you login into your shell. You may also adjust the time period ([`CRITICAL_TIME`](tools/checklastbackup.sh#L8)) in order to get a notification, if no successful backup has been made within that time.
 
-### 4. Setup local log (recommended for borg version **<** 1.1.0)
+### 4. Setup local log (optional)
 
 By default `RUN_PID_DIR`, where the PID files are saved, is set to `/var/run`. It is configurable in `RUN_PID_DIR` in [`borgcron.sh`](borgcron.sh#L10). Note that for the system to work, the `RUN_PID_DIR` must **exist and be writable**. This is [usually done](https://askubuntu.com/questions/303120/how-folders-created-in-var-run-on-each-reboot) by init scripts or systemd, because `/var/run` is often mounted as a tempfs, so all data is deleted at shutdown and you have to recreate the dirs at the (next) startup. Of course, this does not matter, when running the backup as root, as it can easily recreate the directory itself, then. So either:
   * change the configuration to use a dir writable by the user, or
@@ -94,11 +94,11 @@ To disable this feature, set [`RUN_PID_DIR`](borgcron.sh#L10) to an empty string
 
 ### 5. Setup MySQL dump (optional)
 
-The [`databasedump.sh`](tools/databasedump.sh) script can be used to dump your database(s) into a dir before executing the backup. You can do this either directly before running the backup by including the content of [`databasedump.sh`](tools/databasedump.sh) in your config file, or you can setup a new cron job using another user, who is allowed to dump the databases into a dir. The cron job should, of course, be executed before executing the actual backup.
+The [`databasedump.sh`](tools/databasedump.sh) script can be used to dump your database(s) into a dir before executing the backup. You can do this either directly before running the backup by including [`databasedump.sh`](tools/databasedump.sh) in your config file, or you can setup a new cron job using another user, who is allowed to dump the databases into a dir. The cron job should, of course, be executed before executing the actual backup.
 
 ### 6. Setup cron/anacron
 
-Finally test the backup process,before you add the scripts into cron (use the `crontab -e` command to edit the files): 
+Finally test the backup process. Then add the cron entry for the script (use the `crontab -e` command to edit the files): 
 ```
 # daily backup at midnight
 00 00 * * * /path/to/borgcron_starter.sh >> /var/log/borg/allbackups.log 2>&1
