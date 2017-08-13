@@ -2,7 +2,7 @@
 # config file for the settings of this backup
 
 # basic, required information
-BACKUP_NAME='example-backup' # name for this backup avoid spaces
+BACKUP_NAME='example-backup' # name for this backup, avoid spaces
 export BORG_REPO='ssh://user@somewhere.example:22/./dir'
 ARCHIVE_NAME="{hostname}-$BACKUP_NAME-{now:%Y-%m-%dT%H:%M:%S}" # or %Y-%m-%d
 BACKUP_DIRS="/home /etc /srv /var/log /var/mail /var/lib /var/spool /opt /root /usr/local" # path to be backed up, without spaces
