@@ -1,12 +1,12 @@
 #!/bin/sh
 
 ### BEGIN INIT INFO
-# Provides:          borg-cron-helper
+# Provides:          borg-dir
 # Required-Start:    $local_fs
 # Required-Stop:
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: Creates the RUNTIME dir at startup for the local lock system.
+# Short-Description: Creates the runtime dir at startup for the local lock system.
 ### END INIT INFO
 
 # settings for directory
