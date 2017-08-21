@@ -109,6 +109,7 @@ The [`databasedump.sh`](tools/databasedump.sh) script can be used to dump your d
 Finally test the backup process. Then add the cron entry for the script (use the `crontab -e` command to edit the files): 
 ```
 # daily backup at midnight
+RANDOM_DELAY=120
 00 00 * * * /path/to/borgcron_starter.sh >> /var/log/borg/allbackups.log 2>&1
 ```
 
