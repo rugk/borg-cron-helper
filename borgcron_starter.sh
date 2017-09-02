@@ -4,8 +4,9 @@
 # LICENSE: MIT license, see LICENSE.md
 #
 
+CURRENT_DIR="$( dirname "$0" )"
 # dir where config files are stored
-CONFIG_DIR="$( dirname "$0" )/config"
+CONFIG_DIR="$CURRENT_DIR/config"
 
 cli_help() {
 	echo "Usage:"
@@ -39,7 +40,7 @@ case "$1" in
 	'' ) # process all backup config files in $CONFIG_DIR
 		for configfile in $CONFIG_DIR/*.sh;
 		do
-			./borgcron.sh "$( get_full_path "$configfile" )"
+			"$CURRENT_DIR/borgcron.sh" "$( get_full_path "$configfile" )"
 		done
 		;;
 	--help|-h|-? ) # show help message
@@ -52,7 +53,7 @@ case "$1" in
                         configfile="$( echo "$configfile"|sed 's/.sh$//')"
 
                         if [ -e "$CONFIG_DIR/$configfile.sh" ]; then
-                                ./borgcron.sh "$( get_full_path "$CONFIG_DIR/$configfile.sh" )"
+                                "$CURRENT_DIR/borgcron.sh" "$( get_full_path "$CONFIG_DIR/$configfile.sh" )"
                         else
                                 echo "The backup settings file \"$configfile.sh\" could not be found." >&2
                         fi
