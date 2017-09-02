@@ -49,7 +49,7 @@ case "$1" in
         *)  # specific config file(s) passed
                 for configfile in "$@"; do
                         # remove possible ".sh" ending
-                        configfile="$( echo $configfile|sed 's/.sh$//')"
+                        configfile="$( echo "$configfile"|sed 's/.sh$//')"
 
                         if [ -e "$CONFIG_DIR/$configfile.sh" ]; then
                                 ./borgcron.sh "$( get_full_path "$CONFIG_DIR/$configfile.sh" )"
