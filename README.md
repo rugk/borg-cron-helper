@@ -51,12 +51,12 @@ Also, you can of course not use some features outlined here. That's why the whol
 * more to come…
 
 ## What's in here?
-* [`borgcron_starter.sh`](borgcron_starter.sh) – Interprets user input, feeds the backup routine.
-* [`borgcron.sh`](borgcron.sh) Main script. Does all stuff, when a backup is triggered.
+* [`borgcron_starter.sh`](borgcron_starter.sh) – Cycles through backup files and interprets passed parameters.
+* [`borgcron.sh`](borgcron.sh) Main script. Actually executes the backup and runs borg.
 * [`config`](config/) – Directory for config files
-   * [`example-backup.sh`](config/example-backup.sh) – Example configuration file for one backup. Please use this template to add your backup(s).
+   * [`example-backup.sh`](config/example-backup.sh) – Example configuration file for a backup. Please use this template to add your backup(s).
 * [`tools`](tools/) – additional scripts
-   * [`checklastbackup.sh`](tools/checklastbackup.sh) – Script, which you can execute at login (add to your `.bashrc` file or so),. It notifies you when a backup has failed. Otherwise it remains silent.
+   * [`checklastbackup.sh`](tools/checklastbackup.sh) – Script, which you can execute at login (add it to your `.bashrc` file or so). It notifies you when a backup has failed. Otherwise it remains silent.
    * [`cronsizecache.sh`](tools/cronsizecache.sh) – Small one-liner to cache the size of the dir where backups are stored. (useful for remote backup servers) You can then include the result with `cat` in your login script.
    * [`databasedump.sh`](tools/databasedump.sh) – Dumps one or several databases into a dir/file. Make sure, that this script and the dump dir are only readable by your backup user. Script might have to be executed with higher privileges (i.e. root) for creating the backup.
 * [`system`](system/) – Various system scripts, you may need for your setup.
