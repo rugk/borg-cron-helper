@@ -103,7 +103,7 @@ if [ "$BACKUP_NAME" = "" ] ||
 	echo 'Some required variables may not be set in the config file. Cancel backup.'
 	exit 1
 fi
-if ! export|grep "BORG_REPO"; then
+if ! export|grep -q "BORG_REPO"; then
 	echo 'The BORG_REPO variable is not exported in the config file. Cancel backup.'
 	exit 1
 fi
