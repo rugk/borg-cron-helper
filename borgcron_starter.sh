@@ -47,7 +47,7 @@ case "$1" in
 		cli_help
 		exit
 		;;
-        *)  # specific config file(s) passed
+        *) # specific config file(s) passed
                 for configfile in "$@"; do
                         # remove possible ".sh" ending
                         configfile="$( echo "$configfile"|sed 's/.sh$//')"
