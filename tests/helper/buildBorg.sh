@@ -45,6 +45,7 @@ case "$BORG" in
 		gpg --verify "$BORG_VARIANT.asc"
 
 		echo "Installing borg…"
+		ls -la
 		mv "$BORG_VARIANT" "$PWD/$CUSTOM_BINARY_DIR"
 		chmod +x "$PWD/$CUSTOM_BINARY_DIR/$BORG_VARIANT"
 		;;
