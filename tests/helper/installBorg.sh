@@ -9,7 +9,7 @@ if [[ "$BORG" = false ]]; then exit 0; fi
 
 # set defaults vars
 [[ "$BORG_VARIANT" = false ]] || BORG_VARIANT="borg-linux32"
-[[ "$BORG_SOURCE" = false ]] || BORG_VARIANT="binary"
+[[ "$BORG_SOURCE" = false ]] || BORG_SOURCE="binary"
 
 # constants
 CUSTOM_BINARY_DIR="$PWD/custombin/"
