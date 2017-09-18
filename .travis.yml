@@ -20,11 +20,12 @@ script:
 
 addons:
   apt:
+    sources:
+    - debian-sid
     packages:
     # use more recent version of git, which supports commit/tag verification
     - git
     - shellcheck
-    # - borgbackup
 
 matrix:
   allow_failures:
