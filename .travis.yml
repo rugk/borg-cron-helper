@@ -1,4 +1,4 @@
-language: bash
+language: shell
 sudo: false
 dist: trusty
 
@@ -20,18 +20,14 @@ script:
 
 addons:
   apt:
-    # use more recent version of git, which supports commit/tag verification
     sources:
     - sourceline: 'ppa:git-core/ppa'
-    packages:
-    - git
-    sources:
     - debian-sid
-    packages:
-    - shellcheck
-    sources:
     - debian-stretch
     packages:
+    # use more recent version of git, which supports commit/tag verification
+    - git
+    - shellcheck
     - borgbackup
 
 matrix:
