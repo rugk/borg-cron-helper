@@ -40,7 +40,7 @@ case "$BORG" in
 		# install borg + dependencies into virtualenv
 		pip install -r requirements.d/development.txt
 		pip install -r requirements.d/docs.txt  # optional, to build the docs
-		pip install -r requirements.d/fuse.txt  # optional, for FUSE support
+		# pip install -r requirements.d/fuse.txt  # optional, for FUSE support
 		pip install -e .  # in-place editable mode
 		;;
 	stable)
@@ -72,7 +72,7 @@ case "$BORG" in
 				exit 2
 				;;
 			pip)
-				pip install "borgbackup[fuse]==$BORG"
+				pip install "borgbackup==$BORG"
 				;;
 			*)
 				echo "Invalid input…"
