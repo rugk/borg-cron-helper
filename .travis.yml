@@ -1,4 +1,4 @@
-language: shell
+language: shell # (unofficial)
 sudo: false
 dist: trusty
 
