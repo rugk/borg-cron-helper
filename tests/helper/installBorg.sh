@@ -30,25 +30,18 @@ case "$BORG" in
 	nightly)
 		importgpgkey
 
-		case "$BORG_SOURCE" in
-			git)
-				echo "Not yet implemented."
-				exit 2
-				# TODO: installation via git
-				;;
-			pip)
-				echo "Not yet implemented."
-				exit 2
-				# TODO: installation via pip
-				;;
-			*)
-				# e.g. when trying to use (nonexiistent) binaries as a installation
-				# source for nightly versions
-				echo "Invalid input…"
-				exit 2
-				;;
-		esac
+		# get borg from github
+		git clone -b master "https://github.com/borgbackup/borg.git"
+		cd borg
+		# NOTE: Currently head commits are not signed.
+		# Therefore the following command for verification is disabled
+		# git verify-commit HEAD
 
+		# install borg + dependencies into virtualenv
+		pip install -r requirements.d/development.txt
+		pip install -r requirements.d/docs.txt  # optional, to build the docs
+		pip install -r requirements.d/fuse.txt  # optional, for FUSE support
+		pip install -e .  # in-place editable mode
 		;;
 	stable)
 		# from the repository, this implies $BORG_SOURCE=distro
@@ -71,16 +64,15 @@ case "$BORG" in
 				# install borg
 				mv "$BORG_VARIANT" "$CUSTOM_BINARY_DIR"
 				chmod +x "$CUSTOM_BINARY_DIR/$BORG_VARIANT"
+				ln -s "$CUSTOM_BINARY_DIR/$BORG_VARIANT" "$CUSTOM_BINARY_DIR/borg"
 				;;
 			git)
-				echo "Not yet implemented."
+				echo "Not supported."
+				# Why compile yourself, when you have prebuilt stuff?
 				exit 2
-				# TODO: installation via git
 				;;
 			pip)
-				echo "Not yet implemented."
-				exit 2
-				# TODO: installation via pip
+				pip install "borgbackup[fuse]==$BORG"
 				;;
 			*)
 				echo "Invalid input…"

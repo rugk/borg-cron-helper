@@ -9,13 +9,10 @@ case "$TEST_SHELL" in
 		;;
 esac
 
-which "$TEST_SHELL"
-ls -la "/bin/$TEST_SHELL"
-
 echo "Installed Python3: $( python3 --version )"
 
 # exit if borg is not installed
 if [ "$BORG" = false ]; then exit 0; fi
 
-echo "$PATH"
 echo "Installed borg version: $( borg -V )"
+which borg

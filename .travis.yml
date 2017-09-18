@@ -7,8 +7,8 @@ env:
   - TEST_SHELL=sh BORG=1.0.2 BORG_SOURCE=binary BORG_VARIANT=borg-linux64 # old, Ubuntu Xenial
   - TEST_SHELL=zsh BORG=1.0.11 BORG_SOURCE=binary BORG_VARIANT=borg-linux64 # up-to-date/stable
   - TEST_SHELL=bash BORG=1.0.11 BORG_SOURCE=binary BORG_VARIANT=borg-linux64 # up-to-date/stable
-  - TEST_SHELL=sh BORG=1.1.0rc3 BORG_SOURCE=binary BORG_VARIANT=borg-linux64 # bleeding edge/RC
-  # - TEST_SHELL=sh BORG=nightly BORG_SOURCE=pip # dev version, not yet implemented
+  - TEST_SHELL=sh BORG=1.1.0rc3 BORG_SOURCE=pip BORG_VARIANT=borg-linux64 # bleeding edge/RC
+  - TEST_SHELL=sh BORG=nightly BORG_SOURCE=git # dev version, not yet implemented
 before_script:
   # add custom binary path
   - mkdir "$PWD/custombin/"
@@ -29,6 +29,12 @@ addons:
     packages:
     - shellcheck
     - zsh
+    # dependencies for pip/git
+    - python3 python3-dev python3-pip python-virtualenv
+    - libssl-dev openssl libacl1-dev libacl1 liblz4-dev liblz4-1
+    - libzmq3-dev libzmq3 build-essential
+    # for FUSE
+    - libfuse-dev fuse pkg-config
 
 matrix:
   allow_failures:
