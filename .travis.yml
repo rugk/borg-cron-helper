@@ -21,7 +21,7 @@ script:
 addons:
   apt:
     sources:
-    - debian-sid
+    - debian-stretch
     packages:
     # use more recent version of git, which supports commit/tag verification
     - git
