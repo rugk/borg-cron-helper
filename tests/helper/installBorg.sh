@@ -8,7 +8,8 @@ set -ex
 if [[ "$BORG" = false ]]; then exit 0; fi
 
 # set defaults vars
-[[ "$BORG" = false ]] || BORG_VARIANT="borg-linux32"
+[[ "$BORG_VARIANT" = false ]] || BORG_VARIANT="borg-linux32"
+[[ "$BORG_SOURCE" = false ]] || BORG_VARIANT="binary"
 
 # constants
 CUSTOM_BINARY_DIR="$PWD/custombin/"
@@ -29,25 +30,64 @@ case "$BORG" in
 	nightly)
 		importgpgkey
 
-		echo "Not yet supported…" #TODO
-		exit 1
+		case "$BORG_SOURCE" in
+			git)
+				echo "Not yet implemented."
+				exit 2
+				# TODO: installation via git
+				;;
+			pip)
+				echo "Not yet implemented."
+				exit 2
+				# TODO: installation via pip
+				;;
+			*)
+				# e.g. when trying to use (nonexiistent) binaries as a installation
+				# source for nightly versions
+				echo "Invalid input…"
+				exit 2
+				;;
+		esac
+
 		;;
 	stable)
-		# nothing to do, stable borgbackup should be installed by Travis
+		# from the repository, this implies $BORG_SOURCE=distro
+		echo "Not supported (by current Travis-CI)…"
+		# The container version of Travis-CI does only allow whitelisted packages
+		exit 1
 		;;
 	# usual version number --> download prebuilt binaries from GitHub
 	[0-9]*\.[0-9]*\.[0-9]*)
 		importgpgkey
 
-		wget "https://github.com/borgbackup/borg/releases/download/$BORG/$BORG_VARIANT"
-		wget "https://github.com/borgbackup/borg/releases/download/$BORG/$BORG_VARIANT.asc"
+		case "$BORG_SOURCE" in
+			binary)
+				# download prebuilt borg binaries
+				wget "https://github.com/borgbackup/borg/releases/download/$BORG/$BORG_VARIANT"
+				wget "https://github.com/borgbackup/borg/releases/download/$BORG/$BORG_VARIANT.asc"
 
-		gpg --verify "$BORG_VARIANT.asc"
+				gpg --verify "$BORG_VARIANT.asc"
 
-		echo "Installing borg…"
-		ls -la
-		mv "$BORG_VARIANT" "$CUSTOM_BINARY_DIR"
-		chmod +x "$CUSTOM_BINARY_DIR/$BORG_VARIANT"
+				# install borg
+				mv "$BORG_VARIANT" "$CUSTOM_BINARY_DIR"
+				chmod +x "$CUSTOM_BINARY_DIR/$BORG_VARIANT"
+				;;
+			git)
+				echo "Not yet implemented."
+				exit 2
+				# TODO: installation via git
+				;;
+			pip)
+				echo "Not yet implemented."
+				exit 2
+				# TODO: installation via pip
+				;;
+			*)
+				echo "Invalid input…"
+				exit 2
+				;;
+		esac
+
 		;;
 	*)
 		echo "Invalid value for borg version: $BORG"

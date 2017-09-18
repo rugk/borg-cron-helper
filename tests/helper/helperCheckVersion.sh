@@ -1,8 +1,13 @@
 #!/usr/bin/env sh
 set -ex
 
-echo "Installed shell: $SHELL"
-$SHELL --version
+usedShell=$( ps -p$$ -ocmd= )
+
+echo "Used shell: $usedShell"
+$usedShell --version
+$usedShell -v
+$usedShell -V
+$usedShell -?
 
 echo "Installed Python3: $( python3 --version )"
 

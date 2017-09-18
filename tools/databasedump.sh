@@ -22,5 +22,7 @@ for db in $databases; do
 	fi
 
 	echo "Dumping database: $db"
+	# (variable intentionally not quoted as it is contains custom directives)
+	# shellcheck disable=SC2086
 	mysqldump -u $USER $PASSWORD $specialParams --databases "$db" > "$DIR/$db.sql"
 done
