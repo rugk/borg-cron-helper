@@ -7,8 +7,7 @@ set -e
 echo "Shellcheck version:"
 shellcheck -V
 
-# run test for each *.sh file
-find . -type f -iname "*.sh" -exec sh ./tests/testShellcheckExec.sh "{}" \;
-# TODO: errors are currently ignored as find does not pass the exit code to this script.
+# run test for each *.sh file and exit on errors
+find . -type f -iname "*.sh" -exec sh -c 'for n in "$@"; do ./tests/testShellcheckExec.sh "$n" || exit $?; done' _ {} +
 
 echo "Finished shellcheck test."
