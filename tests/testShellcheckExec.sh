@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 #
-# Inner part of find to actually execute the shellcheck test.
+# Inner part for find to actually execute the shellcheck test.
 #
 set -e
 

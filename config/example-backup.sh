@@ -1,5 +1,9 @@
 #!/bin/sh
+# shellcheck disable=SC2034
 # config file for the settings of this backup
+
+# (Shellcheck cannot know that this file is sourced and variables will be used later.
+#  That's why we disable this check.)
 
 # basic, required information
 BACKUP_NAME='example-backup' # name for this backup, avoid spaces
