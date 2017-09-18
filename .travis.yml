@@ -22,9 +22,9 @@ addons:
   apt:
     packages:
     # use more recent version of git, which supports commit/tag verification
-    - git
+    # - git
     - shellcheck
-    - borgbackup
+    # - borgbackup
 
 matrix:
   allow_failures:
