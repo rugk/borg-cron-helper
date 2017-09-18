@@ -1,13 +1,16 @@
 #!/usr/bin/env sh
 set -ex
 
-usedShell=$( ps -p$$ -ocmd= )
+echo "Used shell: $TEST_SHELL"
+# print version, if possible
+case "$TEST_SHELL" in
+	zsh|bash)
+		$TEST_SHELL --version
+		;;
+esac
 
-echo "Used shell: $usedShell"
-$usedShell --version
-$usedShell -v
-$usedShell -V
-$usedShell -?
+which "$TEST_SHELL"
+ls -la "/bin/$TEST_SHELL"
 
 echo "Installed Python3: $( python3 --version )"
 

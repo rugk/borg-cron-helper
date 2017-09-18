@@ -3,11 +3,12 @@ sudo: false
 dist: trusty
 
 env:
-  # - SHELL=sh BORG=stable BORG_VARIANT=borg-linux64 BORG_SOURCE=binary # stable unsupported by TravisCi
-  - SHELL=sh BORG=1.0.2 BORG_SOURCE=binary BORG_VARIANT=borg-linux64 # old, Ubuntu Xenial
-  - SHELL=sh BORG=1.0.11 BORG_SOURCE=binary BORG_VARIANT=borg-linux64 # up-to-date/stable
-  - SHELL=sh BORG=1.1.0rc3 BORG_SOURCE=binary BORG_VARIANT=borg-linux64 # bleeding edge/RC
-  - SHELL=sh BORG=nightly BORG_SOURCE=pip # dev version
+  # - TEST_SHELL=sh BORG=stable BORG_VARIANT=borg-linux64 BORG_SOURCE=binary # stable, unsupported by TravisCi
+  - TEST_SHELL=sh BORG=1.0.2 BORG_SOURCE=binary BORG_VARIANT=borg-linux64 # old, Ubuntu Xenial
+  - TEST_SHELL=zsh BORG=1.0.11 BORG_SOURCE=binary BORG_VARIANT=borg-linux64 # up-to-date/stable
+  - TEST_SHELL=bash BORG=1.0.11 BORG_SOURCE=binary BORG_VARIANT=borg-linux64 # up-to-date/stable
+  - TEST_SHELL=sh BORG=1.1.0rc3 BORG_SOURCE=binary BORG_VARIANT=borg-linux64 # bleeding edge/RC
+  # - TEST_SHELL=sh BORG=nightly BORG_SOURCE=pip # dev version, not yet implemented
 before_script:
   # add custom binary path
   - mkdir "$PWD/custombin/"
@@ -17,8 +18,9 @@ before_script:
 
 script:
   - tests/helper/verifySignature.sh
-  - tests/helper/helperCheckVersion.sh
+  - $TEST_SHELL tests/helper/helperCheckVersion.sh
   - tests/testShellcheck.sh
+  # - $TEST_SHELL tests/testUnit.sh
 
 addons:
   apt:
@@ -29,7 +31,7 @@ addons:
 
 matrix:
   allow_failures:
-  - env: SHELL=sh BORG=nightly
+  - env: BORG=nightly
 
 notifications:
   email:
