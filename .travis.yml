@@ -28,6 +28,7 @@ addons:
     - debian-sid
     packages:
     - shellcheck
+    - zsh
 
 matrix:
   allow_failures:
