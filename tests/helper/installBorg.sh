@@ -46,8 +46,8 @@ case "$BORG" in
 
 		echo "Installing borg…"
 		ls -la
-		mv "$BORG_VARIANT" "$PWD/$CUSTOM_BINARY_DIR"
-		chmod +x "$PWD/$CUSTOM_BINARY_DIR/$BORG_VARIANT"
+		mv "$BORG_VARIANT" "$CUSTOM_BINARY_DIR"
+		chmod +x "$CUSTOM_BINARY_DIR/$BORG_VARIANT"
 		;;
 	*)
 		echo "Invalid value for borg version: $BORG"

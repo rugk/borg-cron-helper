@@ -10,8 +10,8 @@ before_script:
   # add custom binary path
   - mkdir "$PWD/custombin/"
   - export PATH="$PATH:$PWD/custombin/"
-  -
-  - tests/helper/buildBorg.sh
+  # installing borg
+  - tests/helper/installBorg.sh
 
 script:
   - tests/helper/verifySignature.sh
