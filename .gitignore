@@ -1,2 +1,4 @@
 config/
 !config/example-backup.sh
+
+custombin/
