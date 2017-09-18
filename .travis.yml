@@ -1,0 +1,44 @@
+language: bash
+sudo: false
+dist: trusty
+
+env:
+  - SHELL=sh BORG=stable BORG_VARIANT=borg-linux32
+  - SHELL=sh BORG=1.0.11 BORG_VARIANT=borg-linux32
+  - SHELL=sh BORG=1.1.0rc3 BORG_VARIANT=borg-linux32
+before_script:
+  # add custom binary path
+  - mkdir "$PWD/custombin/"
+  - export PATH="$PATH:$PWD/custombin/"
+  -
+  - tests/helper/buildBorg.sh
+
+script:
+  - tests/helper/verifySignature.sh
+  - tests/helper/helperCheckVersion.sh
+  - tests/testShellcheck.sh
+
+addons:
+  apt:
+    # use more recent version of git, which supports commit/tag verification
+    sources:
+    - sourceline: 'ppa:git-core/ppa'
+    packages:
+    - git
+    sources:
+    - debian-sid
+    packages:
+    - shellcheck
+    sources:
+    - debian-stretch
+    packages:
+    - borgbackup
+
+matrix:
+  allow_failures:
+  - env: SHELL=sh BORG=nightly
+
+notifications:
+  email:
+    on_success: change
+    on_failure: change
