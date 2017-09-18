@@ -13,7 +13,7 @@ export BORG_PASSCOMMAND='cat "path/to/example-key"' # command to get passphrase 
 COMPRESSION="lz4" # lz4 | zlib,6 | lzma,9
 
 PRUNE_PARAMS="--keep-daily=14 --keep-weekly=8 --keep-monthly=6 --keep-yearly=0"
-# for web servers (only disaster recovery): --keep-daily=7 --keep-weekly=4 --keep-monthly=1 --keep-yearly=0
+# for web servers (only disaster recovery): --keep-daily=7 --keep-weekly=5 --keep-monthly=2 --keep-yearly=0
 
 # additional settings
 ADD_BACKUP_PARAMS="" # --one-file-system for backing up root file dir
