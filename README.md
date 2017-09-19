@@ -60,6 +60,7 @@ Also, you can of course not use some features outlined here. That's why the whol
    * [`cronsizecache.sh`](tools/cronsizecache.sh) – Small one-liner to cache the size of the dir where backups are stored. (useful for remote backup servers) You can then include the result with `cat` in your login script.
    * [`databasedump.sh`](tools/databasedump.sh) – Dumps one or several databases into a dir/file. Make sure, that this script and the dump dir are only readable by your backup user. Script might have to be executed with higher privileges (i.e. root) for creating the backup.
 * [`system`](system/) – Various system scripts, you may need for your setup.
+* [`tests`](tests/) – Scripts for unit testing, etc. See Readme inside of it, not needed in production.
 
 ## How to setup?
 

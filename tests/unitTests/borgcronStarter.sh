@@ -12,7 +12,6 @@ CURRDIR=$( dirname "$0" )
 
 # constants
 TMPDIR="$( mktemp -d )"
-TEST_CONFIG_FILE="$TEST_DIR/config/borgcron_starter.sh"
 
 # make sure, original files are backed up…
 oneTimeSetUp(){
