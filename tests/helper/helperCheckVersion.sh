@@ -11,6 +11,9 @@ esac
 
 echo "Installed Python3: $( python3 --version )"
 
+ls -la
+ls -la tests/
+
 # exit if borg is not installed
 if [ "$BORG" = false ]; then exit 0; fi
 
