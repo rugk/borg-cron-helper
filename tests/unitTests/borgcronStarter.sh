@@ -6,12 +6,13 @@
 # * $TEST_SHELL
 #
 
+CURRDIR=$( dirname "$0" )
+# shellcheck source=./common.sh
+. "$CURRDIR/common.sh"
+
 # constants
 TMPDIR="$( mktemp -d )"
-BASE_DIR="."
-TEST_DIR="$BASE_DIR/tests"
-CONFIG_DIR="$BASE_DIR/config"
-TEST_CONFIG_DIR="$TEST_DIR/config/borgcron_starter"
+TEST_CONFIG_FILE="$TEST_DIR/config/borgcron_starter.sh"
 
 # make sure, original files are backed up…
 oneTimeSetUp(){
@@ -52,32 +53,10 @@ tearDown(){
 
 # helpers for tests
 addConfigFile(){
-	# syntax: filename.sh
-	# add static head
-	{
-		echo "#!/bin/sh"
-		echo "CURRDIR='$CONFIG_DIR'"
-		echo "FILENAME='$1'"
-	} > "$CONFIG_DIR/$1"
+	# syntax: filename.sh "[shell commands to inject, overwrite previous ones]"
 
-	# add template
-	cat "$TEST_CONFIG_DIR/base.sh" >> "$CONFIG_DIR/$1"
-}
-addFakeBorg(){
-	# adds a fake "borg" binary, which is a simple shell script
-	mv "$BASE_DIR/custombin/borg" "$BASE_DIR/custombin/borg-disabled"
-	cp "$TEST_DIR/fakeBorg.sh" "$BASE_DIR/custombin/borg"
-}
-removeFakeBorg(){
-	# restores the original borg
-	if [ -e "$BASE_DIR/custombin/borg-disabled" ]; then
-		rm "$BASE_DIR/custombin/borg"
-		mv "$BASE_DIR/custombin/borg-disabled" "$BASE_DIR/custombin/borg"
-
-		# remove loggers
-		[ -e "$BASE_DIR/custombin/counter" ] && rm "$BASE_DIR/custombin/counter"
-		[ -e "$BASE_DIR/custombin/list" ] && rm "$BASE_DIR/custombin/list"
-	fi
+	# pass to common function
+	addConfigFileToDir "$CONFIG_DIR" "$@"
 }
 
 # actual unit tests
@@ -182,7 +161,7 @@ ZLastExecuteUpperLetter.sh" \
 }
 
 testExecuteMultipleConfigsPartially(){
-	addConfigFile "0_Backup3.sh" # should not be executed
+	addConfigFile "0_Backup3.sh"
 	addConfigFile "DoNotExexuteNoShellFile.jpg" # should still not be executed
 	addConfigFile "aFirstExecuteLetter.sh"
 	addConfigFile "h_Backup1.sh"
