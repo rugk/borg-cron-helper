@@ -12,7 +12,6 @@ CURRDIR=$( dirname "$0" )
 
 # constants
 TMPDIR=""
-TEST_CONFIG_FILE="$TEST_DIR/config/borgcron.sh"
 
 # make sure, original files are backed up…
 oneTimeSetUp(){
@@ -45,6 +44,7 @@ tearDown(){
 	rm -rf "$TMPDIR"
 }
 
+# helper functions
 addConfigFile(){
 	# syntax: filename.sh "[shell commands to inject, overwrite previous ones]"
 
@@ -55,12 +55,32 @@ getConfigFilePath(){
 	# syntax: filename.sh
 	echo "$TMPDIR/$1"
 }
+doLock(){
+	echo "$1" > "/tmp/RUN_PID_DIR/BORG_unit-test-fake-backup.pid"
+}
+rmLock(){
+	[ -f "/tmp/RUN_PID_DIR/BORG_unit-test-fake-backup.pid" ] && rm "/tmp/RUN_PID_DIR/BORG_unit-test-fake-backup.pid"
+}
 
 # actual unit tests
 testMissingParameter(){
 	assertEquals "stops on missing config dir" \
 				 "Please pass a path of a config file to borgcron.sh." \
 				 "$( $TEST_SHELL "$BASE_DIR/borgcron.sh" )"
+}
+
+testWrongFilename(){
+	addConfigFile "testWrongName.sh"
+	assertFalse "fails with wrong filename" \
+				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath testWrongName_WRONG.sh )' "
+}
+
+testWorks(){
+	# this is important for further tests below, because they would all succeed
+	# if the basic test taht it "works by default" is not satisfied
+	addConfigFile "testWorks.sh"
+	assertTrue "works without many modification" \
+			   "$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath testWorks.sh )' "
 }
 
 testMissingVariables(){
@@ -101,6 +121,122 @@ export BORG_REPO="ssh://9876_uniquestring_BORG_REPO__user@somewhere.example:22/.
 				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath secDataLeak.sh )'|grep '1234_uniquestring_BORG_REPO'"
 	assertFalse "do not output repo address" \
 				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath secDataLeak.sh )'|grep '9876_uniquestring_BORG_REPO'"
+}
+
+testLockDisable(){
+	addConfigFile "lockTest.sh" 'RUN_PID_DIR=""'
+
+	# PID 1 is always running
+	doLock "1"
+
+	assertTrue "does not error when locking is disabled" \
+				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath lockTest.sh )'"
+
+	rmLock
+}
+testLockStopsWhenLocked(){
+	addConfigFile "lockTest.sh"
+
+	# PID 1 is always running
+	doLock "1"
+
+	assertTrue "stops when locked at start" \
+				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath lockTest.sh )' $PIPE_STDERR_ONLY|grep 'is locked'"
+
+	rmLock
+
+	# test whether a lock during the sleep period is also detected
+	addFakeBorgCommand "$TEST_SHELL -c 'sleep 5s&&echo 1 > /tmp/RUN_PID_DIR/BORG_unit-test-fake-backup.pid' &"
+	# let the backup fail to trigger retry
+	addFakeBorgCommand 'exit 2'
+
+	assertTrue "stops when locked during sleep period" \
+				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath lockTest.sh )' $PIPE_STDERR_ONLY|grep 'is locked'"
+
+	rmLock
+}
+testLockPid(){
+	addConfigFile "lockPidTest.sh"
+
+	# add PID, which is not running
+	doLock "123456789"
+
+	assertTrue "ignores not running processes" \
+				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath lockPidTest.sh )'"
+
+	rmLock
+}
+testLocksWhenBorgRuns(){
+	# adding prune params to also test prune borg call
+	addConfigFile "runningPidTest.sh" 'PRUNE_PARAMS="--test-fake"'
+
+	lockCountFile="/tmp/RUN_PID_DIR/lockCounter"
+	echo "0" > "$lockCountFile"
+
+	doNotCountVersionRequestsInBorg
+	# test whether the lock is there
+	addFakeBorgCommand "lockCountFile='$lockCountFile'"
+	# shellcheck disable=SC2016
+	addFakeBorgCommand 'lockCount=$( cat "$lockCountFile" )'
+	# shellcheck disable=SC2016
+	addFakeBorgCommand 'lockCount=$(( lockCount+1 ))'
+	# shellcheck disable=SC2016
+	addFakeBorgCommand 'echo $lockCount > "$lockCountFile"'
+
+	assertTrue "process succeeds" \
+				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath runningPidTest.sh )'"
+
+	count=$( cat "$BASE_DIR/custombin/counter" )
+	lockCount=$( cat "$lockCountFile" )
+
+	assertEquals "does lock in each case borg runs" \
+				"$count" \
+				"$lockCount"
+}
+testLockRemoved(){
+	addConfigFile "rmPidTest.sh"
+
+	# add PID, which is not running
+	doLock "123456789"
+
+	# after
+	# shellcheck disable=SC2016
+	addFakeBorgCommand 'if [ "$count" -le 1 ] || [ "$count" -ge 3 ]; then exit 0; fi'
+	# test whether the lock is removed after borg ended
+	addFakeBorgCommand "$TEST_SHELL -c 'sleep 5s;[ -f /tmp/RUN_PID_DIR/BORG_unit-test-fake-backup.pid ]&&echo 1 > /tmp/RUN_PID_DIR/testFail' &"
+	# let the backup fail to trigger retry
+	addFakeBorgCommand 'exit 2'
+
+	assertTrue "process succeeds" \
+				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath rmPidTest.sh )'"
+
+	assertFalse "does remove lock when borg finished" \
+				"[ -e /tmp/RUN_PID_DIR/testFail ]"
+
+	rmLock
+}
+
+testRetry(){
+	addConfigFile "retryTest.sh"
+
+	doNotCountVersionRequestsInBorg
+
+	# test exit 1 error
+	# shellcheck disable=SC2016
+	addFakeBorgCommand '[ $count -eq 1 ] && exit 2'
+	# shellcheck disable=SC2016
+	addFakeBorgCommand '[ $count -eq 2 ] && exit 2'
+	# checks case with errorlevel=1 here, it should *NOT* trigger a retry
+	# shellcheck disable=SC2016
+	addFakeBorgCommand '[ $count -eq 3 ] && exit 1'
+	addFakeBorgCommand 'exit 2'
+
+	assertTrue "process succeeds" \
+				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath retryTest.sh )'"
+
+	assertEquals "retry 3 times" \
+				"3" \
+				"$( cat "$BASE_DIR/custombin/counter" )"
 }
 
 # shellcheck source=../shunit2/source/2.1/src/shunit2

@@ -50,8 +50,28 @@ removeFakeBorg(){
 		[ -e "$BASE_DIR/custombin/list" ] && rm "$BASE_DIR/custombin/list"
 	fi
 }
+addFakeBorgCommand(){
+	echo "$*" >> "$BASE_DIR/custombin/borg"
+}
+addFakeBorgCommandOnBeginning(){
+	echo "#!/bin/sh
+$1
+$( cat "$BASE_DIR/custombin/borg" )" > "$BASE_DIR/custombin/borg"
+}
+resetFakeBorg(){
+	# (overwrites by default)
+	cp "$TEST_DIR/fakeBorg.sh" "$BASE_DIR/custombin/borg"
+}
+doNotCountVersionRequestsInBorg(){
+	# ignore easy -V commands for all counts
+	# shellcheck disable=SC2016
+	addFakeBorgCommandOnBeginning '[ "$1" = "-V" ] && exit 0'
+}
 
 CURRDIR="$( get_full_path "$CURRDIR" )"
 BASE_DIR="$( get_full_path "$CURRDIR/../.." )"
 TEST_DIR="$BASE_DIR/tests"
 CONFIG_DIR="$BASE_DIR/config"
+TEST_CONFIG_FILE="$TEST_DIR/config/template.sh"
+PIPE_STDERR="2>&1"
+PIPE_STDERR_ONLY="$PIPE_STDERR >/dev/null"
