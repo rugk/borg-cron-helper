@@ -192,4 +192,4 @@ Z_Backup2.sh
 }
 
 # shellcheck source=./shunit2/source/2.1/src/shunit2
-source "$TEST_DIR/shunit2/source/2.1/src/shunit2"
+. "$TEST_DIR/shunit2/source/2.1/src/shunit2"
