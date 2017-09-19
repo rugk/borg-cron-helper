@@ -3,38 +3,38 @@ sudo: false
 dist: trusty
 
 env:
-  # - TEST_SHELL=sh BORG=stable BORG_VARIANT=borg-linux64 BORG_SOURCE=binary # stable, unsupported by TravisCi
+  # outdated/legacy
   - TEST_SHELL=sh BORG=1.0.2 BORG_SOURCE=binary BORG_VARIANT=borg-linux64 # old, Ubuntu Xenial
+  # stable
+  # - TEST_SHELL=sh BORG=stable BORG_VARIANT=borg-linux64 BORG_SOURCE=binary # stable, unsupported by current TravisCi config
   - TEST_SHELL=zsh BORG=1.0.11 BORG_SOURCE=binary BORG_VARIANT=borg-linux64 # up-to-date/stable
   - TEST_SHELL=bash BORG=1.0.11 BORG_SOURCE=binary BORG_VARIANT=borg-linux64 # up-to-date/stable
-  - TEST_SHELL=sh BORG=1.1.0rc3 BORG_SOURCE=pip # bleeding edge/RC
-  - TEST_SHELL=sh BORG=nightly # dev version, not yet implemented
+  # more up-to-date
+  - TEST_SHELL=sh BORG=1.1.0rc3 BORG_SOURCE=binary BORG_VARIANT=borg-linux64 # bleeding edge/RC
+  # - TEST_SHELL=sh BORG=nightly # dev version,, unsupported by current TravisCi config
 before_script:
   # add custom binary path
   - mkdir "$PWD/custombin/"
-  - export PATH="$PATH:$PWD/custombin/"
+  - export PATH="$PWD/custombin/:$PATH"
   # installing borg
   - tests/helper/installBorg.sh
+  # install shunit2
+  - cd tests&&git clone https://github.com/kward/shunit2&&cd ..
 
 script:
   - tests/helper/verifySignature.sh
   - $TEST_SHELL tests/helper/helperCheckVersion.sh
   - tests/testShellcheck.sh
-  # - $TEST_SHELL tests/testUnit.sh
+  - tests/testUnit.sh
 
 addons:
   apt:
-    # sources:
-    # - debian-sid
+    sources:
+    - debian-sid
     packages:
     - shellcheck
+    # shells to check
     - zsh
-    # dependencies for pip/git
-    - python3 python3-dev python3-pip python-virtualenv
-    - libssl-dev openssl libacl1-dev libacl1 liblz4-dev liblz4-1
-    - libzmq3-dev libzmq3 build-essential
-    # for FUSE
-    - libfuse-dev fuse pkg-config
 
 matrix:
   allow_failures:
