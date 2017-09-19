@@ -161,12 +161,24 @@ testExecuteMultipleConfigsAll(){
 				 "4" \
 				 "$( cat "$CONFIG_DIR/counter" )"
 
-	assertEquals "executes shell scripts in correct order" \
-				 "0FirstExecuteNumber.sh
+	case "$TEST_SHELL" in
+		sh ) # sh in Travis-CI does sort files differently
+			assertEquals "executes shell scripts in correct order" \
+				 		"0FirstExecuteNumber.sh
+ZLastExecuteUpperLetter.sh
+aFirstExecuteLetter.sh
+hSecondExecuteLetter.sh" \
+			"$( cat "$CONFIG_DIR/list" )"
+			;;
+		* ) # zsh, bash
+			assertEquals "executes shell scripts in correct order" \
+				 		"0FirstExecuteNumber.sh
 aFirstExecuteLetter.sh
 hSecondExecuteLetter.sh
 ZLastExecuteUpperLetter.sh" \
-				 "$( cat "$CONFIG_DIR/list" )"
+			"$( cat "$CONFIG_DIR/list" )"
+			;;
+	esac
 }
 
 testExecuteMultipleConfigsPartially(){
@@ -184,11 +196,22 @@ testExecuteMultipleConfigsPartially(){
 				 "3" \
 				 "$( cat "$CONFIG_DIR/counter" )"
 
-	assertEquals "executes shell scripts in correct order" \
-				 "h_Backup1.sh
+	case "$TEST_SHELL" in
+		sh ) # sh in Travis-CI does sort files differently
+		assertEquals "executes shell scripts in correct order" \
+					 "Z_Backup2.sh
+h_Backup1.sh
+0_Backup3.sh" \
+		"$( cat "$CONFIG_DIR/list" )"
+		;;
+		* ) # zsh, bash
+			assertEquals "executes shell scripts in correct order" \
+						 "h_Backup1.sh
 Z_Backup2.sh
 0_Backup3.sh" \
-				 "$( cat "$CONFIG_DIR/list" )"
+			"$( cat "$CONFIG_DIR/list" )"
+			;;
+	esac
 }
 
 # shellcheck source=../shunit2/source/2.1/src/shunit2
