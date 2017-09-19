@@ -25,7 +25,7 @@ script:
   - tests/helper/verifySignature.sh
   - $TEST_SHELL tests/helper/helperCheckVersion.sh
   - tests/testShellcheck.sh
-  - tests/testUnit.sh
+  - tests/unitTests/borgcronStarter.sh
 
 addons:
   apt:
