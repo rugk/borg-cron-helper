@@ -4,9 +4,17 @@
 #
 set -e
 
-echo "Testing $1…"
-if shellcheck -x "$1"; then
-	echo "Could not find errors in ""$1""…"
+# switch to affected directory, so that "shellcheck source" works correctly from
+# current dir
+cd "$( dirname "$1" )"
+
+displayName="$1"
+baseName="$( basename "$1" )"
+
+# test file
+echo "Testing $displayName…"
+if shellcheck -x "$baseName"; then
+	echo "Could not find errors in ""$displayName""…"
 else
 	exit $?
 fi

@@ -8,6 +8,6 @@ echo "Shellcheck version:"
 shellcheck -V
 
 # run test for each *.sh file and exit on errors
-find . -type f -iname "*.sh" -exec sh -c 'for n in "$@"; do ./tests/testShellcheckExec.sh "$n" || exit 1; done' _ {} +
+find . -type f -iname "*.sh" -not -path "./tests/shunit2/*" -exec sh -c 'for n in "$@"; do ./tests/testShellcheckExec.sh "$n" || exit 1; done' _ {} +
 
 echo "Finished shellcheck test."
