@@ -26,6 +26,7 @@ script:
   - $TEST_SHELL tests/helper/helperCheckVersion.sh
   - tests/testShellcheck.sh
   - tests/unitTests/borgcronStarter.sh
+  - tests/unitTests/borgcron.sh
 
 addons:
   apt:
