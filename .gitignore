@@ -1,6 +1,6 @@
-config/
-!config/example-backup.sh
+/config/
+!/config/example-backup.sh
 
 # ignore test stuff
-custombin/
-tests/shunit2
+/custombin/
+/tests/shunit2
