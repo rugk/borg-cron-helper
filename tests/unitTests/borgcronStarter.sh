@@ -196,22 +196,11 @@ testExecuteMultipleConfigsPartially(){
 				 "3" \
 				 "$( cat "$CONFIG_DIR/counter" )"
 
-	case "$TEST_SHELL" in
-		sh ) # sh in Travis-CI does sort files differently
-		assertEquals "executes shell scripts in correct order" \
-					 "Z_Backup2.sh
-h_Backup1.sh
-0_Backup3.sh" \
-		"$( cat "$CONFIG_DIR/list" )"
-		;;
-		* ) # zsh, bash
-			assertEquals "executes shell scripts in correct order" \
-						 "h_Backup1.sh
+	assertEquals "executes shell scripts in correct order" \
+				 "h_Backup1.sh
 Z_Backup2.sh
 0_Backup3.sh" \
-			"$( cat "$CONFIG_DIR/list" )"
-			;;
-	esac
+				 "$( cat "$CONFIG_DIR/list" )"
 }
 
 # shellcheck source=../shunit2/source/2.1/src/shunit2
