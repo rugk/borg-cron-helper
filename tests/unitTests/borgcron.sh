@@ -82,14 +82,13 @@ testMissingExportedVariables(){
 	assertFalse "stops on missing exported BORG_REPO" \
 				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath missingExportedVars.sh )'"
 
-	# zsh does not have this does not support the -n switch
-	[ "$TEST_SHELL" = "zsh" ] && startSkipping
+	unexportCmd='export -n BORG_REPO'
+	# The Travis-CI version of zsh, may not support the -n switch for "export", so we use a different way
+	[ "$TEST_SHELL" = "zsh" ] && unexportCmd='unset BORG_REPO&&BORG_REPO=1234'
 
-	addConfigFile "missingExportedVars2.sh" 'export -n BORG_REPO'
+	addConfigFile "missingExportedVars2.sh" "$unexportCmd"
 	assertFalse "stops on only locally set variable (not exported)" \
 				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath missingExportedVars.sh )'"
-
-	[ "$TEST_SHELL" = "zsh" ] && endSkipping
 }
 
 testSecurityDataLeak(){
