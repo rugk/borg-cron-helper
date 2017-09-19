@@ -64,27 +64,32 @@ testMissingParameter(){
 }
 
 testMissingVariables(){
-	addConfigFile "missingVars.sh" 'BACKUP_NAME=""'
+	addConfigFile "missingVars1.sh" 'BACKUP_NAME=""'
 	assertFalse "stops on missing BACKUP_NAME" \
 				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath missingVars.sh )' "
 
-	addConfigFile "missingVars.sh" 'ARCHIVE_NAME=""'
+	addConfigFile "missingVars2.sh" 'ARCHIVE_NAME=""'
 	assertFalse "stops on missing ARCHIVE_NAME" \
 				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath missingVars.sh )'"
 
-	addConfigFile "missingVars.sh" 'BACKUP_DIRS=""'
+	addConfigFile "missingVars3.sh" 'BACKUP_DIRS=""'
 	assertFalse "stops on missing BACKUP_DIRS" \
 				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath missingVars.sh )'"
 }
 
 testMissingExportedVariables(){
-	addConfigFile "missingExportedVars.sh" 'export BORG_REPO=""'
+	addConfigFile "missingExportedVars1.sh" 'export BORG_REPO=""'
 	assertFalse "stops on missing exported BORG_REPO" \
 				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath missingExportedVars.sh )'"
 
-	addConfigFile "missingExportedVars.sh" 'export -n BORG_REPO'
+	# zsh does not have this does not support the -n switch
+	[ "$TEST_SHELL" = "zsh" ] && startSkipping
+
+	addConfigFile "missingExportedVars2.sh" 'export -n BORG_REPO'
 	assertFalse "stops on only locally set variable (not exported)" \
 				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath missingExportedVars.sh )'"
+
+	[ "$TEST_SHELL" = "zsh" ] && endSkipping
 }
 
 testSecurityDataLeak(){
