@@ -3,6 +3,8 @@
 #
 # Common variables/fucntions used by unit tests.
 #
+# LICENSE: MIT license, see LICENSE.md
+#
 
 get_full_path() {
 	# thanks https://stackoverflow.com/questions/5265702/how-to-get-full-path-of-a-file

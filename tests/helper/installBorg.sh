@@ -2,6 +2,9 @@
 #
 # Installs a custom borg version, if needed.
 #
+#
+# LICENSE: MIT license, see LICENSE.md
+#
 set -ex
 
 # ignore script if borg should not be installed
