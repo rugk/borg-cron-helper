@@ -27,6 +27,7 @@ script:
   - tests/testShellcheck.sh
   - tests/unitTests/borgcronStarter.sh
   - tests/unitTests/borgcron.sh
+  - tests/unitTests/borgcronReal.sh
 
 addons:
   apt:

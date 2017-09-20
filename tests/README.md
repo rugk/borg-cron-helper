@@ -15,3 +15,6 @@ All tests are usual `.sh` files. They may require a specific shell or be POSIX-c
 ## Automatic execution
 
 All tests are configured to be run on pull requests and commits automatically, [via Travis-CI](https://travis-ci.org/rugk/borg-cron-helper/builds). We use the docker container infrastructure, as it is faster.
+
+**Current status:** 
+[![Build Status](https://travis-ci.org/rugk/borg-cron-helper.svg?branch=master)](https://travis-ci.org/rugk/borg-cron-helper)
