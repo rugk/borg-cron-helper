@@ -1,5 +1,7 @@
 # Borg cron helper scripts
 
+[![Build Status](https://travis-ci.org/rugk/borg-cron-helper.svg?branch=master)](https://travis-ci.org/rugk/borg-cron-helper)
+
 **Automate backups with borg in a more convenient and reliable way!**
 These scripts are some small and handy shell scripts to automate the backup process with [BorgBackup](https://borgbackup.readthedocs.io/). They are POSIX-compatible, so they should run with all shells. You're free to modify them for your needs!
 
@@ -48,6 +50,7 @@ Also, you can of course not use some features outlined here. That's why the whol
 * privilege-separation (login scripts can have higher privilege than backup process)
 * tested in production (but no guarantees, use at your own risk! 😉)
 * logging if backup is interruped by signals (e.g. at shutdown)
+* tested with automated unit tests (see Travis-CI badge above)
 * more to come…
 
 ## What's in here?

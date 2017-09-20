@@ -13,6 +13,27 @@ get_full_path() {
 		readlink -f "$1"
 	fi
 }
+assertAndCatchOutput(){
+	# syntax: assertWhat message commandToExecute
+	# output: $output
+	outputfile="$TMPDIR/runoutput"
+	output=''
+
+	touch "$outputfile"
+	$1 "$2" "$3 $STDERR_TO_STDOUT|tee '$outputfile'"
+
+	# show output
+	output=$( cat "$outputfile" )
+
+	rm "$outputfile"
+}
+assertAndOutput(){
+	# syntax: assertWhat message commandToExecute
+	# output: $output, STDOUT
+	assertAndCatchOutput "$@"
+
+	echo "$output"
+}
 
 addConfigFileToDir(){
 	# syntax: dir filename.sh "[shell commands to inject, overwrite previous ones]"
@@ -34,6 +55,8 @@ addConfigFileToDir(){
 		} >> "$1/$2"
 	fi
 }
+
+
 addFakeBorg(){
 	# adds a fake "borg" binary, which is a simple shell script
 	mv "$BASE_DIR/custombin/borg" "$BASE_DIR/custombin/borg-disabled"
@@ -73,5 +96,5 @@ BASE_DIR="$( get_full_path "$CURRDIR/../.." )"
 TEST_DIR="$BASE_DIR/tests"
 CONFIG_DIR="$BASE_DIR/config"
 TEST_CONFIG_FILE="$TEST_DIR/config/template.sh"
-PIPE_STDERR="2>&1"
-PIPE_STDERR_ONLY="$PIPE_STDERR >/dev/null"
+STDERR_TO_STDOUT="2>&1"
+STDERR_OUTPUT_ONLY="$STDERR_TO_STDOUT >/dev/null"

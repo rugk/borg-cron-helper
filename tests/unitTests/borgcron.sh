@@ -23,7 +23,7 @@ oneTimeSetUp(){
 #
 # }
 
-# cleanup tests to always have an empty config dir
+# cleanup tests to always have an empty temp dirs
 setUp(){
 	addFakeBorg
 
@@ -141,7 +141,7 @@ testLockStopsWhenLocked(){
 	doLock "1"
 
 	assertTrue "stops when locked at start" \
-				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath lockTest.sh )' $PIPE_STDERR_ONLY|grep 'is locked'"
+				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath lockTest.sh )' $STDERR_OUTPUT_ONLY|grep 'is locked'"
 
 	rmLock
 
@@ -151,7 +151,7 @@ testLockStopsWhenLocked(){
 	addFakeBorgCommand 'exit 2'
 
 	assertTrue "stops when locked during sleep period" \
-				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath lockTest.sh )' $PIPE_STDERR_ONLY|grep 'is locked'"
+				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath lockTest.sh )' $STDERR_OUTPUT_ONLY|grep 'is locked'"
 
 	rmLock
 }
@@ -226,7 +226,7 @@ testRetry(){
 	addFakeBorgCommand '[ $count -eq 1 ] && exit 2'
 	# shellcheck disable=SC2016
 	addFakeBorgCommand '[ $count -eq 2 ] && exit 2'
-	# checks case with errorlevel=1 here, it should *NOT* trigger a retry
+	# checks case with exit code=1 here, it should *NOT* trigger a retry
 	# shellcheck disable=SC2016
 	addFakeBorgCommand '[ $count -eq 3 ] && exit 1'
 	addFakeBorgCommand 'exit 2'
