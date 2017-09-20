@@ -5,6 +5,8 @@
 # * $PATH set to include custom binary path
 # * $TEST_SHELL
 #
+# LICENSE: MIT license, see LICENSE.md
+#
 
 CURRDIR=$( dirname "$0" )
 # shellcheck source=./common.sh
