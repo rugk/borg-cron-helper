@@ -6,8 +6,14 @@
 # LICENSE: MIT license, see LICENSE.md
 #
 
+escapeStringForSed(){
+	# thanks https://stackoverflow.com/questions/407523/escape-a-string-for-a-sed-replace-pattern#answer-2705678
+	echo "$1"|sed -e 's/[]\#$*.^|[]/\\&/g'
+}
 # thanks to https://stackoverflow.com/questions/16989598/bash-comparing-version-numbers#answer-24067243
-version_gt() { test "$(echo "$@" | tr " " "\n" | sort -V | head -n 1)" != "$1"; }
+version_gt() {
+	test "$(echo "$@" | tr " " "\n" | sort -V | head -n 1)" != "$1";
+}
 get_full_path() {
 	# thanks https://stackoverflow.com/questions/5265702/how-to-get-full-path-of-a-file
 	# use realpath command, if it exists
@@ -66,8 +72,8 @@ addConfigFileToDir(){
 
 addFakeBorg(){
 	# adds a fake "borg" binary, which is a simple shell script
-	mv "$BASE_DIR/custombin/borg" "$BASE_DIR/custombin/borg-disabled"
-	cp "$TEST_DIR/fakeBorg.sh" "$BASE_DIR/custombin/borg"
+	mv "$BASE_DIR/custombin/borg" "$BASE_DIR/custombin/borg-disabled"||exit 1
+	cp "$TEST_DIR/fakeBorg.sh" "$BASE_DIR/custombin/borg"||exit 1
 }
 removeFakeBorg(){
 	# restores the original borg
@@ -96,6 +102,11 @@ doNotCountVersionRequestsInBorg(){
 	# ignore easy -V commands for all counts
 	# shellcheck disable=SC2016
 	addFakeBorgCommandOnBeginning '[ "$1" = "-V" ] && exit 0'
+}
+doNotCountLockBreakingsInBorg(){
+	# ignore break-lock commands for all counts
+	# shellcheck disable=SC2016
+	addFakeBorgCommandOnBeginning '[ "$1" = "break-lock" ] && exit 0'
 }
 
 CURRDIR="$( get_full_path "$CURRDIR" )"

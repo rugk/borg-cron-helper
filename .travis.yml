@@ -28,6 +28,7 @@ script:
   - tests/unitTests/borgcronStarter.sh
   - tests/unitTests/borgcron.sh
   - tests/unitTests/borgcronReal.sh
+  - tests/unitTests/checkLastBackup.sh
 
 addons:
   apt:
