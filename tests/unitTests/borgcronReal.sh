@@ -166,14 +166,14 @@ testBorgUnencrypted(){
 	# and to really verify, look for borg output
 	# shellcheck disable=SC2016
 	assertTrue "backup shows backup name" \
-			  'echo "$output"|grep "Archive name: $archiveName"'
+				'echo "$output"|grep "Archive name: $archiveName"'
 
 	# also list backup content again to check whether archive really contains expected stuff
 	# shellcheck disable=SC2034
 	archiveContent=$( $TEST_SHELL -c "borg list '/tmp/borg_repodir::$archiveName'" )
 	# shellcheck disable=SC2016
 	assertTrue "has (correct) content" \
-			   'echo "$archiveContent"|grep ".git/"'
+				'echo "$archiveContent"|grep ".git/"'
 
 	# also check that prune executed
 	# shellcheck disable=SC2016

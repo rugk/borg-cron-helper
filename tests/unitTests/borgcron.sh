@@ -67,8 +67,8 @@ rmLock(){
 # actual unit tests
 testMissingParameter(){
 	assertEquals "stops on missing config dir" \
-				 "Please pass a path of a config file to borgcron.sh." \
-				 "$( $TEST_SHELL "$BASE_DIR/borgcron.sh" )"
+				"Please pass a path of a config file to borgcron.sh." \
+				"$( $TEST_SHELL "$BASE_DIR/borgcron.sh" )"
 }
 
 testWrongFilename(){
@@ -82,7 +82,7 @@ testWorks(){
 	# if the basic test taht it "works by default" is not satisfied
 	addConfigFile "testWorks.sh"
 	assertTrue "works without many modification" \
-			   "$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath testWorks.sh )' "
+				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath testWorks.sh )' "
 }
 
 testMissingVariables(){
