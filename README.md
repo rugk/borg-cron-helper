@@ -8,7 +8,7 @@ These scripts are some small and handy shell scripts to automate the backup proc
 They add some convienent features around borg, regarding environments with only **one client**.
 
 ## Features
-* **[Local lock system](#local-lock):** Cirumvent the issue of [stale](https://github.com/borgbackup/borg/issues/813) [lock files](https://github.com/borgbackup/borg/issues/2306).
+* **[Local lock system](#local-lock-borg--v110):** Cirumvent the issue of [stale](https://github.com/borgbackup/borg/issues/813) [lock files](https://github.com/borgbackup/borg/issues/2306).
 * **[Automated retries](#less-maintenance-more-safety):** When backups [stop mid-way](https://borgbackup.readthedocs.io/en/stable/faq.html#if-a-backup-stops-mid-way-does-the-already-backed-up-data-stay-there) they are automatically restarted.
 * **[Simple configuration](config/example-backup.sh):** Using shell-scripts you can configure each backup and then execute it the order/way you want.
 * **[Status information](#less-maintenance-more-safety):** You can use a login script to get a notice when backups failed.
