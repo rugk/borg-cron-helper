@@ -2,7 +2,6 @@
 #
 # Executes final unit tests using the real borg binary.
 # Required envorimental variables:
-# * $PATH set to include custom binary path
 # * $TEST_SHELL
 #
 # LICENSE: MIT license, see LICENSE.md
@@ -22,7 +21,7 @@ oneTimeSetUp(){
 	echo
 	mv "$CONFIG_DIR" "$TMPDIR"
 
-	# set variables, so when borg is called here, it also uss the correct dirs
+	# set variables, so when borg is called here, it also uses the correct dirs
 	export BORG_KEYS_DIR="$TMPDIR/borg/keys"
 	export BORG_SECURITY_DIR="$TMPDIR/borg/security"
 	export BORG_CACHE_DIR="$TMPDIR/borg/cache"
@@ -53,8 +52,11 @@ setUp(){
 
 	# patch example file, so it works
 	patchConfigSetVar "exampleTest.sh" 'BACKUP_NAME' "unit-test-fake-backup"
-	patchConfigSetVar "exampleTest.sh" 'BORG_REPO' "/tmp/borg_repodir/"
-	patchConfigSetVar "exampleTest.sh" 'BACKUP_DIRS' "$BASE_DIR/.git $TEST_DIR/shunit2/.git"
+	patchConfigSetVar "exampleTest.sh" 'BORG_REPO' "/tmp/borg_repodir"
+	# ATTENTION: As also mentioned in the example config, these paths **must not**
+	# have spaces. Otherwise some tests may fail.
+	patchConfigSetVar "exampleTest.sh" 'BACKUP_DIRS' "$BASE_DIR/.git $TEST_DIR/shunit2/.git" '"'
+	patchConfigSetVar "exampleTest.sh" 'SLEEP_TIME' "5m" '"'
 
 	# shellcheck disable=SC2016
 	patchConfigAdd "exampleTest.sh" "
@@ -133,8 +135,9 @@ patchConfigSetVar(){
 
 # actual unit tests
 testBorgUnencrypted(){
+	export|grep -q "BORG_CACHE_DIR"
 	# borg init to create repo
-	borg init --encryption=none '/tmp/borg_repodir/'
+	borg init --encryption=none "/tmp/borg_repodir"
 
 	patchConfigDisableVar "exampleTest.sh" 'BORG_PASSCOMMAND'
 	patchConfigDisableVar "exampleTest.sh" 'BORG_PASSPHRASE'
@@ -147,14 +150,30 @@ testBorgUnencrypted(){
 	patchConfigEnableVar "exampleTest.sh" 'PRUNE_PARAMS'
 
 	# check whether backup is sucessful
+	startTime=$( date +%s )
 	assertAndOutput	assertTrue \
 					"backup finishes without error" \
 					"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath exampleTest.sh )'"
+	endTime=$( date +%s )
 
+	# when it took more than 2 minutes, it likely retried the backup (sleep time: 5m)
+	# or did similar stupid things
+	# shellcheck disable=SC2016
+	assertTrue "borg backup was in time" \
+			   "[ $(( endTime-startTime )) -le 120 ]"
+
+	archiveName="$( uname -n )-unit-test-fake-backup-$( date +"%F" )-UNIQUESTRING-for-test918"
 	# and to really verify, look for borg output
 	# shellcheck disable=SC2016
 	assertTrue "backup shows backup name" \
-			   'echo "$output"|grep "Archive name: $HOSTNAME-unit-test-fake-backup-$( date +"%F" )-UNIQUESTRING-for-test918"'
+			  'echo "$output"|grep "Archive name: $archiveName"'
+
+	# also list backup content again to check whether archive really contains expected stuff
+	# shellcheck disable=SC2034
+	archiveContent=$( $TEST_SHELL -c "borg list '/tmp/borg_repodir::$archiveName'" )
+	# shellcheck disable=SC2016
+	assertTrue "has (correct) content" \
+			   'echo "$archiveContent"|grep ".git/"'
 
 	# also check that prune executed
 	# shellcheck disable=SC2016

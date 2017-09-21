@@ -5,6 +5,10 @@
 # LICENSE: MIT license, see LICENSE.md
 #
 
+# enable zsh compatibility: in ZSH word splitting is disabled by default,
+# but we need it
+setopt shwordsplit 2>/dev/null
+
 BORG_BIN="borg"
 LAST_BACKUP_DIR="/var/log/borg/last"
 RUN_PID_DIR="/var/run/borg"

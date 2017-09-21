@@ -3,14 +3,16 @@
 This/These directory/directories contain the tests for the project.
 
 ## How to run?
-Generally, please have a look at [the Travis-CI configuration file](../.travis.yml).
-There are some envorimental variables, you may need to set before running the tests.
+Generally, please have a look at [the Travis-CI configuration file](../.travis.yml). The tests should, however, be able to run locally fine.
+There are some envorimental variables you may need to set before running the tests..
 
 To run the shellcheck tests, you have to install [`shellcheck`](https://github.com/koalaman/shellcheck), of course.
 
-You need to [`shunit2`](https://github.com/kward/shunit2) (clone it into this `tests/` dir) and in some cases `borg`.
+You need to [`shunit2`](https://github.com/kward/shunit2) (clone it into this `tests/` dir) and when running the tests with the "real borg" binary, of course, `borg`.
 
 All tests are usual `.sh` files. They may require a specific shell or be POSIX-compatible, just look at the [shebang](https://en.wikipedia.org/wiki/Shebang_(Unix)). If the shell is installed, the shebang should take care of it.
+
+The tests can, however, usually run separately, i.e. you can still run the unit tests, even when you do not want to install shellcheck.
 
 ## Automatic execution
 
@@ -18,3 +20,7 @@ All tests are configured to be run on pull requests and commits automatically, [
 
 **Current status:** 
 [![Build Status](https://travis-ci.org/rugk/borg-cron-helper.svg?branch=master)](https://travis-ci.org/rugk/borg-cron-helper)
+
+## Coverage/What is not tested?
+
+Note that neither the system integration is tested, nor the small tools (`checklastbackup.sh` and `databasedump.sh`). Everything else is more or less covered by the tests. 
