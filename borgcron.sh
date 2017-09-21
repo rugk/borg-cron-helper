@@ -114,7 +114,7 @@ fi
 
 # log
 echo
-info_log "Backup $BACKUP_NAME started with $( borg -V ), PID: $$."
+info_log "Backup $BACKUP_NAME started with $( $BORG_BIN -V ), PID: $$."
 
 for i in $( seq "$REPEAT_NUM" ); do
 	if is_lock; then
@@ -194,9 +194,9 @@ if [ "$PRUNE_PARAMS" ]; then
 	echo "Running prune for $BACKUP_NAME…"
 	do_lock
 	# shellcheck disable=SC2086
-	$BORG_BIN prune -v --list --prefix "{hostname}-$BACKUP_NAME-" $PRUNE_PARAMS
+	$BORG_BIN prune -v --list --prefix "$PRUNE_PREFIX" $PRUNE_PARAMS
 	rm_lock
 fi
 
 # log
-info_log "Backup \"$BACKUP_NAME\" ended."
+info_log "Backup ""$BACKUP_NAME"" ended."

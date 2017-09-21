@@ -3,6 +3,7 @@
 # Executes final unit tests using the real borg binary.
 # Required envorimental variables:
 # * $TEST_SHELL
+# * $BORG
 #
 # LICENSE: MIT license, see LICENSE.md
 #
@@ -53,7 +54,7 @@ setUp(){
 	# patch example file, so it works
 	patchConfigSetVar "exampleTest.sh" 'BACKUP_NAME' "unit-test-fake-backup"
 	patchConfigSetVar "exampleTest.sh" 'BORG_REPO' "/tmp/borg_repodir"
-	# ATTENTION: As also mentioned in the example config, these paths **must not**
+	# IMPORTANT NOTE: As also mentioned in the example config, these paths **must not**
 	# have spaces. Otherwise some tests may fail.
 	patchConfigSetVar "exampleTest.sh" 'BACKUP_DIRS' "$BASE_DIR/.git $TEST_DIR/shunit2/.git" '"'
 	patchConfigSetVar "exampleTest.sh" 'SLEEP_TIME' "5m" '"'
@@ -149,6 +150,12 @@ testBorgUnencrypted(){
 	# also test prune
 	patchConfigEnableVar "exampleTest.sh" 'PRUNE_PARAMS'
 
+	HOSTNAME="$( uname -n )"
+	# workaround for borg < v1.0.4
+	if ! version_gt "$BORG" "v1.0.3"; then
+		patchConfigSetVar "exampleTest.sh" 'PRUNE_PREFIX' "$HOSTNAME-unit-test-fake-backup-"
+	fi
+
 	# check whether backup is sucessful
 	startTime=$( date +%s )
 	assertAndOutput	assertTrue \
@@ -160,9 +167,9 @@ testBorgUnencrypted(){
 	# or did similar stupid things
 	# shellcheck disable=SC2016
 	assertTrue "borg backup was in time" \
-			   "[ $(( endTime-startTime )) -le 120 ]"
+				"[ $(( endTime-startTime )) -le 120 ]"
 
-	archiveName="$( uname -n )-unit-test-fake-backup-$( date +"%F" )-UNIQUESTRING-for-test918"
+	archiveName="$HOSTNAME-unit-test-fake-backup-$( date +"%F" )-UNIQUESTRING-for-test918"
 	# and to really verify, look for borg output
 	# shellcheck disable=SC2016
 	assertTrue "backup shows backup name" \
@@ -178,7 +185,9 @@ testBorgUnencrypted(){
 	# also check that prune executed
 	# shellcheck disable=SC2016
 	assertTrue "prune executed" \
-			   'echo "$output"|grep "Keeping archive"'
+				'echo "$output"|grep "Keeping archive"'
+
+	read key
 }
 
 # shellcheck source=../shunit2/source/2.1/src/shunit2

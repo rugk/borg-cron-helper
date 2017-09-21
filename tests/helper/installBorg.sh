@@ -15,7 +15,7 @@ if [[ "$BORG" = false ]]; then exit 0; fi
 [[ "$BORG_SOURCE" = "" ]] && BORG_SOURCE="binary"
 
 # constants
-CUSTOM_BINARY_DIR="$PWD/custombin/"
+CUSTOM_BINARY_DIR="$PWD/custombin"
 
 if [[ -z "$BORG" ]]; then
 	echo "No borg version given."
@@ -42,9 +42,9 @@ case "$BORG" in
 
 		# install borg + dependencies into virtualenv
 		pip install -r requirements.d/development.txt
-		pip install -r requirements.d/docs.txt	# optional, to build the docs
-		# pip install -r requirements.d/fuse.txt	# optional, for FUSE support
-		pip install -e .	# in-place editable mode
+		pip install -r requirements.d/docs.txt # optional, to build the docs
+		# pip install -r requirements.d/fuse.txt # optional, for FUSE support
+		pip install -e . # in-place editable mode
 		;;
 	stable)
 		# from the repository, this implies $BORG_SOURCE=distro
@@ -67,7 +67,10 @@ case "$BORG" in
 				# install borg
 				mv "$BORG_VARIANT" "$CUSTOM_BINARY_DIR"
 				chmod +x "$CUSTOM_BINARY_DIR/$BORG_VARIANT"
-				ln -s "$CUSTOM_BINARY_DIR/$BORG_VARIANT" "$CUSTOM_BINARY_DIR/borg"
+				ln -f -s "$CUSTOM_BINARY_DIR/$BORG_VARIANT" "$CUSTOM_BINARY_DIR/borg"
+
+				# remove trash
+				rm "$BORG_VARIANT.asc"
 				;;
 			git)
 				echo "Not supported."
