@@ -116,6 +116,9 @@ fi
 echo
 info_log "Backup $BACKUP_NAME started with $( $BORG_BIN -V ), PID: $$."
 
+# when 0 is given, this does not mean "don't execute backup", but "do not retry".
+[ $REPEAT_NUM -le 1 ] && REPEAT_NUM=1
+
 for i in $( seq "$REPEAT_NUM" ); do
 	if is_lock; then
 		error_log "Backup $BACKUP_NAME is locked. Cancel."

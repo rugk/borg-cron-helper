@@ -20,7 +20,7 @@ oneTimeSetUp(){
 	echo "shunit2 v$SHUNIT_VERSION"
 	echo "Testing borgcron_starter.sh…"
 	echo
-	mv "$CONFIG_DIR" "$TMPDIR"
+	mv "$CONFIG_DIR" "$TMPDIR"||exit 1
 }
 oneTimeTearDown(){
 	mv "$TMPDIR/config" "$BASE_DIR"

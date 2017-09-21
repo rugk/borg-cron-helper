@@ -81,8 +81,43 @@ testWorks(){
 	# this is important for further tests below, because they would all succeed
 	# if the basic test taht it "works by default" is not satisfied
 	addConfigFile "testWorks.sh"
-	assertTrue "works without many modification" \
+	startTime="$( date +'%s' )"
+	assertTrue "works without any modification" \
 				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath testWorks.sh )' "
+
+	# checks that last backup time exists and it's size is larger than 0 and…
+	timeFile='/tmp/LAST_BACKUP_DIR/unit-test-fake-backup.time'
+	assertTrue "writes/saves backup time" \
+				"[ -s '$timeFile' ]"
+	# …that the time is realistic (i.e. after start of script)
+	assertTrue "saved backup time is realistic" \
+				"[ '$( cat "$timeFile" )' -ge '$startTime' ]"
+}
+
+testFails(){
+	# check that it "properly" fails
+	# retry only 2 times
+	addConfigFile "testFails.sh" "REPEAT_NUM=2"
+
+	doNotCountVersionRequestsInBorg
+	doNotCountLockBreakingsInBorg
+
+	# always exit with critical error
+	addFakeBorgCommand 'exit 2'
+
+	# TODO: change to "assertFalse" when exit code is implemented
+	assertTrue "(TODO) should fail with exit code" \
+				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath testFails.sh )' "
+
+	# checks that last backup time exists and it's size is larger than 0 and…
+	timeFile='/tmp/LAST_BACKUP_DIR/unit-test-fake-backup.time'
+	assertFalse "should not save last backup time as it was not successful" \
+				"[ -f '$timeFile' ]"
+
+	# must (only) retry
+	assertEquals "retry exact number of times, given" \
+				"2" \
+				"$( cat "$BASE_DIR/custombin/counter" )"
 }
 
 testMissingVariables(){
@@ -222,22 +257,39 @@ testRetry(){
 	addConfigFile "retryTest.sh"
 
 	doNotCountVersionRequestsInBorg
+	doNotCountLockBreakingsInBorg
 
-	# test exit 1 error
 	# shellcheck disable=SC2016
 	addFakeBorgCommand '[ $count -eq 1 ] && exit 2'
-	# shellcheck disable=SC2016
-	addFakeBorgCommand '[ $count -eq 2 ] && exit 2'
 	# checks case with exit code=1 here, it should *NOT* trigger a retry
 	# shellcheck disable=SC2016
 	addFakeBorgCommand '[ $count -eq 3 ] && exit 1'
-	addFakeBorgCommand 'exit 2'
 
 	assertTrue "process succeeds" \
 				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath retryTest.sh )'"
 
-	assertEquals "retry 3 times" \
-				"3" \
+	assertEquals "retry until backup suceeeds" \
+				"2" \
+				"$( cat "$BASE_DIR/custombin/counter" )"
+}
+
+testNotRetry(){
+	# must not retry
+	addConfigFile "notRetryTest.sh" "REPEAT_NUM=0"
+
+	doNotCountVersionRequestsInBorg
+	doNotCountLockBreakingsInBorg
+
+	# always exit with critical error
+	addFakeBorgCommand 'exit 2'
+
+	# TODO: change to "assertFalse" when exit code is implemented
+	assertTrue "process fails" \
+				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath notRetryTest.sh )'"
+
+	# must not retry backup, i.e. only call it once
+	assertEquals "do not retry backup" \
+				"1" \
 				"$( cat "$BASE_DIR/custombin/counter" )"
 }
 

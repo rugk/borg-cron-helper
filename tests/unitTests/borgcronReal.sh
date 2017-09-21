@@ -20,7 +20,7 @@ oneTimeSetUp(){
 	echo "shunit2 v$SHUNIT_VERSION"
 	echo "Testing with real borg…"
 	echo
-	mv "$CONFIG_DIR" "$TMPDIR"
+	mv "$CONFIG_DIR" "$TMPDIR"||exit 1
 
 	# set variables, so when borg is called here, it also uses the correct dirs
 	export BORG_KEYS_DIR="$TMPDIR/borg/keys"
@@ -93,11 +93,6 @@ doLock(){
 }
 rmLock(){
 	[ -f "/tmp/RUN_PID_DIR/BORG_unit-test-fake-backup.pid" ] && rm "/tmp/RUN_PID_DIR/BORG_unit-test-fake-backup.pid"
-}
-
-escapeStringForSed(){
-	# thanks https://stackoverflow.com/questions/407523/escape-a-string-for-a-sed-replace-pattern#answer-2705678
-	echo "$1"|sed -e 's/[]\#$*.^|[]/\\&/g'
 }
 
 patchConfigAdd(){

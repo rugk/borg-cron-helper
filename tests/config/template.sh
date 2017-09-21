@@ -24,7 +24,7 @@ ARCHIVE_NAME="{hostname}-$BACKUP_NAME-{now:%Y-%m-%dT%H:%M:%S}"
 BACKUP_DIRS="notExistentDir"
 
 # speed up tests: use smaller sleep time
-SLEEP_TIME=15s
+SLEEP_TIME=5s
 
 # overwrite built-in variables, so dirs work
 LAST_BACKUP_DIR="/tmp/LAST_BACKUP_DIR"
