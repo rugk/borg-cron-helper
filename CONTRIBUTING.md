@@ -10,3 +10,8 @@ The good news is: Just sent your PR.
 * Do make use of the [`.editorconfig`](.editorconfig) file. Either manually look what indentation, etc. to use, or [use a plugin](http://editorconfig.org/#download) for your prefered editor (recommend).
 * Before adding larger features or changing too much things, please open an issue to discuss it prior to putting work into it.
 
+
+## Tests
+
+Please use the automated tests to check that your changes are okay. You can run them locally, but they are also run automatically by Travis-CI.
+For more info see [the test readme](tests/Readme.md).

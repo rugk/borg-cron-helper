@@ -5,6 +5,10 @@
 # LICENSE: MIT license, see LICENSE.md
 #
 
+# enable zsh compatibility: in ZSH word splitting is disabled by default,
+# but we need it
+setopt shwordsplit 2>/dev/null
+
 BORG_BIN="borg"
 LAST_BACKUP_DIR="/var/log/borg/last"
 RUN_PID_DIR="/var/run/borg"
@@ -110,7 +114,10 @@ fi
 
 # log
 echo
-info_log "Backup $BACKUP_NAME started with $( borg -V ), PID: $$."
+info_log "Backup $BACKUP_NAME started with $( $BORG_BIN -V ), PID: $$."
+
+# when 0 is given, this does not mean "don't execute backup", but "do not retry".
+[ $REPEAT_NUM -le 1 ] && REPEAT_NUM=1
 
 for i in $( seq "$REPEAT_NUM" ); do
 	if is_lock; then
@@ -190,9 +197,9 @@ if [ "$PRUNE_PARAMS" ]; then
 	echo "Running prune for $BACKUP_NAME…"
 	do_lock
 	# shellcheck disable=SC2086
-	$BORG_BIN prune -v --list --prefix "{hostname}-$BACKUP_NAME-" $PRUNE_PARAMS
+	$BORG_BIN prune -v --list --prefix "$PRUNE_PREFIX" $PRUNE_PARAMS
 	rm_lock
 fi
 
 # log
-info_log "Backup \"$BACKUP_NAME\" ended."
+info_log "Backup ""$BACKUP_NAME"" ended."

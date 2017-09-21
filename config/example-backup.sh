@@ -1,5 +1,9 @@
 #!/bin/sh
+# shellcheck disable=SC2034
 # config file for the settings of this backup
+
+# (Shellcheck cannot know that this file is sourced and variables will be used later.
+#  That's why we disable this check.)
 
 # basic, required information
 BACKUP_NAME='example-backup' # name for this backup, avoid spaces
@@ -12,6 +16,7 @@ export BORG_PASSCOMMAND='cat "path/to/example-key"' # command to get passphrase 
 # export BORG_PASSPHRASE="1234" # or enter the passphrase directly
 COMPRESSION="lz4" # lz4 | zlib,6 | lzma,9
 
+PRUNE_PREFIX="{hostname}-$BACKUP_NAME-"
 PRUNE_PARAMS="--keep-daily=14 --keep-weekly=8 --keep-monthly=6 --keep-yearly=0"
 # for web servers (only disaster recovery): --keep-daily=7 --keep-weekly=5 --keep-monthly=2 --keep-yearly=0
 

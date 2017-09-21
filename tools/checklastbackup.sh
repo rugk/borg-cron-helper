@@ -32,5 +32,7 @@ fi
 
 if [ "$wait" = "1" ]; then
 	echo "Press enter to continue…"
+	# (deliberately unused and I don't care about backslashes here)
+	# shellcheck disable=SC2034,SC2162
 	read key
 fi
