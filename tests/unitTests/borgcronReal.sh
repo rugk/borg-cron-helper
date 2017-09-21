@@ -186,8 +186,6 @@ testBorgUnencrypted(){
 	# shellcheck disable=SC2016
 	assertTrue "prune executed" \
 				'echo "$output"|grep "Keeping archive"'
-
-	read key
 }
 
 # shellcheck source=../shunit2/source/2.1/src/shunit2
