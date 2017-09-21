@@ -64,21 +64,21 @@ addConfigFile(){
 testRemovedConfigDir(){
 	tearDown
 	assertTrue "stops on missing config dir" \
-			   "$TEST_SHELL '$BASE_DIR/borgcron_starter.sh'|grep 'No backup settings file(s) could be found'"
+				"$TEST_SHELL '$BASE_DIR/borgcron_starter.sh'|grep 'No backup settings file(s) could be found'"
 }
 testEmptyConfigDir(){
 	assertTrue "stops on empty config dir" \
-			   "$TEST_SHELL '$BASE_DIR/borgcron_starter.sh'|grep 'No backup settings file(s) could be found'"
+				"$TEST_SHELL '$BASE_DIR/borgcron_starter.sh'|grep 'No backup settings file(s) could be found'"
 }
 testShowsHelp(){
 	addConfigFile "doNotExecute.sh"
 
 	assertTrue "shows help" \
-			   "$TEST_SHELL '$BASE_DIR/borgcron_starter.sh' --help|grep 'Usage:'"
+				"$TEST_SHELL '$BASE_DIR/borgcron_starter.sh' --help|grep 'Usage:'"
 
 	# make sure, borgcron.sh did not execute
 	assertFalse "when showing help, do not execute anything else" \
-			   "[ -e '$CONFIG_DIR/list' ]"
+				"[ -e '$CONFIG_DIR/list' ]"
 
 }
 testExecuteSingleConfigExplicit(){
@@ -86,45 +86,45 @@ testExecuteSingleConfigExplicit(){
 	addConfigFile "singleConfig.sh"
 
 	assertTrue "no error when executing" \
-			   "$TEST_SHELL '$BASE_DIR/borgcron_starter.sh' singleConfig"
+				"$TEST_SHELL '$BASE_DIR/borgcron_starter.sh' singleConfig"
 
-   assertEquals "executes only one time" \
+	assertEquals "executes only one time" \
 				"1" \
 				"$( cat "$CONFIG_DIR/counter" )"
 
 	assertEquals "executes correct one config" \
-				 "singleConfig.sh" \
-				 "$( cat "$CONFIG_DIR/list" )"
+				"singleConfig.sh" \
+				"$( cat "$CONFIG_DIR/list" )"
 }
 testExecuteSingleConfigExplicitSH(){
 	# do specify config to run explicitly using *.sh file extension
 	addConfigFile "singleConfig.sh"
 
 	assertTrue "no error when executing" \
-			   "$TEST_SHELL '$BASE_DIR/borgcron_starter.sh' singleConfig.sh"
+				"$TEST_SHELL '$BASE_DIR/borgcron_starter.sh' singleConfig.sh"
 
 	assertEquals "executes only one time" \
-				 "1" \
-				 "$( cat "$CONFIG_DIR/counter" )"
+				"1" \
+				"$( cat "$CONFIG_DIR/counter" )"
 
 	assertEquals "executes correct one config" \
-				 "singleConfig.sh" \
-				 "$( cat "$CONFIG_DIR/list" )"
+				"singleConfig.sh" \
+				"$( cat "$CONFIG_DIR/list" )"
 }
 testExecuteSingleConfigImplicit(){
 	# does not specify file directly
 	addConfigFile "singleConfig.sh"
 
 	assertTrue "no error when executing" \
-			   "$TEST_SHELL '$BASE_DIR/borgcron_starter.sh'"
+				"$TEST_SHELL '$BASE_DIR/borgcron_starter.sh'"
 
 	assertEquals "executes only one time" \
-				 "1" \
-				 "$( cat "$CONFIG_DIR/counter" )"
+				"1" \
+				"$( cat "$CONFIG_DIR/counter" )"
 
 	assertEquals "executes correct one config" \
-				 "singleConfig.sh" \
-				 "$( cat "$CONFIG_DIR/list" )"
+				"singleConfig.sh" \
+				"$( cat "$CONFIG_DIR/list" )"
 }
 
 testExecuteMultipleConfigsAll(){
@@ -135,16 +135,16 @@ testExecuteMultipleConfigsAll(){
 	addConfigFile "ZLastExecuteUpperLetter.sh"
 
 	assertTrue "no error when executing" \
-			   "$TEST_SHELL '$BASE_DIR/borgcron_starter.sh'"
+				"$TEST_SHELL '$BASE_DIR/borgcron_starter.sh'"
 
 	assertEquals "executes 3 scripts, only shell scripts" \
-				 "4" \
-				 "$( cat "$CONFIG_DIR/counter" )"
+				"4" \
+				"$( cat "$CONFIG_DIR/counter" )"
 
 	case "$TEST_SHELL" in
 		sh ) # sh in Travis-CI does sort files differently
 			assertEquals "executes shell scripts in correct order" \
-				 		"0FirstExecuteNumber.sh
+						"0FirstExecuteNumber.sh
 ZLastExecuteUpperLetter.sh
 aFirstExecuteLetter.sh
 hSecondExecuteLetter.sh" \
@@ -152,7 +152,7 @@ hSecondExecuteLetter.sh" \
 			;;
 		* ) # zsh, bash
 			assertEquals "executes shell scripts in correct order" \
-				 		"0FirstExecuteNumber.sh
+						"0FirstExecuteNumber.sh
 aFirstExecuteLetter.sh
 hSecondExecuteLetter.sh
 ZLastExecuteUpperLetter.sh" \
@@ -170,17 +170,17 @@ testExecuteMultipleConfigsPartially(){
 
 	# note this again tests different ways of passing the file names
 	assertTrue "no error when executing" \
-			   "$TEST_SHELL '$BASE_DIR/borgcron_starter.sh' h_Backup1 Z_Backup2.sh DoNotExexuteNoShellFile.jpg 0_Backup3"
+				"$TEST_SHELL '$BASE_DIR/borgcron_starter.sh' h_Backup1 Z_Backup2.sh DoNotExexuteNoShellFile.jpg 0_Backup3"
 
 	assertEquals "executes 3 scripts, only shell scripts" \
-				 "3" \
-				 "$( cat "$CONFIG_DIR/counter" )"
+				"3" \
+				"$( cat "$CONFIG_DIR/counter" )"
 
 	assertEquals "executes shell scripts in correct order" \
-				 "h_Backup1.sh
+				"h_Backup1.sh
 Z_Backup2.sh
 0_Backup3.sh" \
-				 "$( cat "$CONFIG_DIR/list" )"
+				"$( cat "$CONFIG_DIR/list" )"
 }
 
 # shellcheck source=../shunit2/source/2.1/src/shunit2
