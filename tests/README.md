@@ -4,7 +4,7 @@ This/These directory/directories contain the tests for the project.
 
 ## How to run?
 Generally, please have a look at [the Travis-CI configuration file](../.travis.yml). The tests should, however, be able to run locally fine.
-There are some envorimental variables you may need to set before running the tests..
+But there are some envorimental variables you may need to set before running the tests.
 
 To run the shellcheck tests, you have to install [`shellcheck`](https://github.com/koalaman/shellcheck), of course.
 
