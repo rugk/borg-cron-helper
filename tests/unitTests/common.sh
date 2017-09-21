@@ -16,6 +16,7 @@ get_full_path() {
 	fi
 }
 assertAndCatchOutput(){
+	# runs a shunit2 assert, but also catches the output in "$output".
 	# syntax: assertWhat message commandToExecute
 	# output: $output
 	outputfile="$TMPDIR/runoutput"
@@ -30,6 +31,8 @@ assertAndCatchOutput(){
 	rm "$outputfile"
 }
 assertAndOutput(){
+	# runs a shunit2 assert, but also shows the output in the command line.
+	# Note that it can only show the output *after* the command has completed.
 	# syntax: assertWhat message commandToExecute
 	# output: $output, STDOUT
 	assertAndCatchOutput "$@"
