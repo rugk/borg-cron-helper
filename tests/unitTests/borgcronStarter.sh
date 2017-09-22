@@ -85,7 +85,6 @@ testExecuteSingleConfigExplicit(){
 	# do specify config to run explicitly
 	addConfigFile "singleConfig.sh"
 
-	$TEST_SHELL "$BASE_DIR/borgcron_starter.sh" singleConfig
 	assertTrue "no error when executing" \
 				"$TEST_SHELL '$BASE_DIR/borgcron_starter.sh' singleConfig"
 
