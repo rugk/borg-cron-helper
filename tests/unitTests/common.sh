@@ -6,6 +6,15 @@
 # LICENSE: MIT license, see LICENSE.md
 #
 
+# add trap, so tests are at least properly shut down
+trapterm() {
+	echo "Force shutdown…"
+	tearDown 2> /dev/null
+	oneTimeTearDown 2> /dev/null
+	exit 2
+}
+trap trapterm INT TERM
+
 escapeStringForSed(){
 	# thanks https://stackoverflow.com/questions/407523/escape-a-string-for-a-sed-replace-pattern#answer-2705678
 	echo "$1"|sed -e 's/[]\#$*.^|[]/\\&/g'
