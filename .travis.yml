@@ -1,7 +1,9 @@
 language: shell # (unofficial)
 sudo: false
-dist: trusty
 
+os:
+  - linux
+  - osx
 env:
   # outdated/legacy
   - TEST_SHELL=sh BORG=1.0.2 BORG_SOURCE=binary BORG_VARIANT=borg-linux64 # old, Ubuntu Xenial
@@ -13,6 +15,8 @@ env:
   - TEST_SHELL=sh BORG=1.1.0rc3 BORG_SOURCE=binary BORG_VARIANT=borg-linux64 # bleeding edge/RC
   # - TEST_SHELL=sh BORG=nightly # dev version,, unsupported by current TravisCi config
 before_script:
+  # install packages on OS X
+  - '[ "$TRAVIS_OS_NAME" = "osx" ] && brew install shellcheck zsh'
   # add custom binary path
   - mkdir "$PWD/custombin/"
   - export PATH="$PWD/custombin/:$PATH"
@@ -40,6 +44,12 @@ addons:
     - zsh
 
 matrix:
+  include:
+    - os: linux
+      dist: trusty
+      sudo: false
+    - os: osx
+      # osx_image: xcode7.3 (default) = OS X 10.11
   allow_failures:
   - env: BORG=nightly
 
