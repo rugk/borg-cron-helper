@@ -15,15 +15,15 @@ env:
   - TEST_SHELL=sh BORG=1.1.0rc3 BORG_SOURCE=binary # bleeding edge/RC
   # - TEST_SHELL=sh BORG=nightly # dev version, unsupported by current TravisCi config
 before_script:
+  # add custom binary path
+  - mkdir "$PWD/custombin/"
+  - export PATH="$PWD/custombin/:$PATH"
   # install packages on OS X
   # - 'if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew update; fi' # disabled, as packages may already be there
   - 'if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install shellcheck zsh; fi'
   # set correct binary variant
-  - 'if [ "$TRAVIS_OS_NAME" = "osx" ]; then BORG_VARIANT=borg-macosx64; fi'
-  - 'if [ "$TRAVIS_OS_NAME" = "linux" ]; then BORG_VARIANT=borg-linux64; fi'
-  # add custom binary path
-  - mkdir "$PWD/custombin/"
-  - export PATH="$PWD/custombin/:$PATH"
+  - 'if [ "$TRAVIS_OS_NAME" = "osx" ]; then export BORG_VARIANT=borg-macosx64; fi'
+  - 'if [ "$TRAVIS_OS_NAME" = "linux" ]; then export BORG_VARIANT=borg-linux64; fi'
   # installing borg
   - tests/helper/installBorg.sh
   # install shunit2
