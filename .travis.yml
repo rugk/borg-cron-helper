@@ -16,11 +16,11 @@ env:
   # - TEST_SHELL=sh BORG=nightly # dev version, unsupported by current TravisCi config
 before_script:
   # install packages on OS X
-  # - '[ "$TRAVIS_OS_NAME" = "osx" ] && brew update' # disabled, as packages may already be there
-  - '[ "$TRAVIS_OS_NAME" = "osx" ] && brew install shellcheck zsh'
+  # - 'if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew update; fi' # disabled, as packages may already be there
+  - 'if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install shellcheck zsh; fi'
   # set correct binary variant
-  - '[ "$TRAVIS_OS_NAME" = "osx" ] && BORG_VARIANT=borg-macosx64'
-  - '[ "$TRAVIS_OS_NAME" = "linux" ] && BORG_VARIANT=borg-linux64'
+  - 'if [ "$TRAVIS_OS_NAME" = "osx" ]; then BORG_VARIANT=borg-macosx64; fi'
+  - 'if [ "$TRAVIS_OS_NAME" = "linux" ]; then BORG_VARIANT=borg-linux64; fi'
   # add custom binary path
   - mkdir "$PWD/custombin/"
   - export PATH="$PWD/custombin/:$PATH"
