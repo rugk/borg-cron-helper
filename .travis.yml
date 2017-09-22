@@ -1,18 +1,15 @@
 language: shell # (unofficial)
 sudo: false
 
-os:
-  - linux
-  - osx
 env:
   # outdated/legacy
-  - TEST_SHELL=sh BORG=1.0.2 BORG_SOURCE=binary BORG_VARIANT=borg-linux64 # old, Ubuntu Xenial
+  - TEST_SHELL=sh BORG=1.0.2 BORG_SOURCE=binary # old, Ubuntu Xenial
   # stable
   # - TEST_SHELL=sh BORG=stable BORG_VARIANT=borg-linux64 BORG_SOURCE=binary # stable, unsupported by current TravisCi config
-  - TEST_SHELL=zsh BORG=1.0.11 BORG_SOURCE=binary BORG_VARIANT=borg-linux64 # up-to-date/stable
-  - TEST_SHELL=bash BORG=1.0.11 BORG_SOURCE=binary BORG_VARIANT=borg-linux64 # up-to-date/stable
+  - TEST_SHELL=zsh BORG=1.0.11 BORG_SOURCE=binary # up-to-date/stable
+  - TEST_SHELL=bash BORG=1.0.11 BORG_SOURCE=binary # up-to-date/stable
   # more up-to-date
-  - TEST_SHELL=sh BORG=1.1.0rc3 BORG_SOURCE=binary BORG_VARIANT=borg-linux64 # bleeding edge/RC
+  - TEST_SHELL=sh BORG=1.1.0rc3 BORG_SOURCE=binary # bleeding edge/RC
   # - TEST_SHELL=sh BORG=nightly # dev version,, unsupported by current TravisCi config
 before_script:
   # install packages on OS X
@@ -48,8 +45,10 @@ matrix:
     - os: linux
       dist: trusty
       sudo: false
+      env: BORG_VARIANT=borg-linux64
     - os: osx
       # osx_image: xcode7.3 (default) = OS X 10.11
+      env: BORG_VARIANT=borg-macosx64
   allow_failures:
   - env: BORG=nightly
 
