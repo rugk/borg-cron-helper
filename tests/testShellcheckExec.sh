@@ -14,7 +14,7 @@ baseName="$( basename "$1" )"
 # test file
 echo "Testing $displayName…"
 if shellcheck -x "$baseName"; then
-	echo "Could not find errors in ""$displayName""…"
+	echo "Could not find errors in \"$displayName\"…"
 else
 	exit $?
 fi

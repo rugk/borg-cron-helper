@@ -77,9 +77,9 @@ rm_lock() {
 
 # add trap to catch backup interruptions
 trapterm() {
-    rm_lock 2> /dev/null
-    error_log "Backup $BACKUP_NAME (PID: $$) interrupted by $1."
-    exit 2
+	rm_lock 2> /dev/null
+	error_log "Backup $BACKUP_NAME (PID: $$) interrupted by $1."
+	exit 2
 }
 trap 'trapterm INT' INT
 trap 'trapterm TERM' TERM
@@ -202,4 +202,4 @@ if [ "$PRUNE_PARAMS" ]; then
 fi
 
 # log
-info_log "Backup ""$BACKUP_NAME"" ended."
+info_log "Backup \"$BACKUP_NAME\" ended."
