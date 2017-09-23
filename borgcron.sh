@@ -75,10 +75,42 @@ rm_lock() {
 	rm "$RUN_PID_DIR/BORG_$BACKUP_NAME.pid"
 }
 
+# GUI functions (can be overwritten in config file)
+guiShowNotification() {
+	icon="info"
+	[ "$2" != "" ] && icon="$2"
+	[ "$GUI_OVERWRITE_ICON" != "" ] && icon="$GUI_OVERWRITE_ICON"
+
+	if command -v zenity >/dev/null; then
+		zenity --notification --window-icon "$icon" --text "BorgBackup \"$BACKUP_NAME\"
+$1"
+	fi
+}
+guiShowBackupBegin() {
+	: # = do nothing, so do not show any notification
+	# alternatively: guiShowNotification "Backup just started."
+}
+guiShowBackupSuccess() {
+	guiShowNotification "Backup has been successful." "info"
+}
+guiShowBackupWarning() {
+	guiShowNotification "Backup was successful, but showed some warnings." "warning"
+}
+guiShowBackupError() {
+	guiShowNotification "The backup process failed. See the log for more details." "error"
+}
+guiShowBackupAbort() {
+	guiShowNotification "Backup has been aborted." "error"
+}
+guiTryAgain() {
+	: # disabled by default
+}
+
 # add trap to catch backup interruptions
 trapterm() {
 	rm_lock 2> /dev/null
 	error_log "Backup $BACKUP_NAME (PID: $$) interrupted by $1."
+	guiShowBackupAbort
 	exit 2
 }
 trap 'trapterm INT' INT
@@ -115,6 +147,7 @@ fi
 # log
 echo
 info_log "Backup $BACKUP_NAME started with $( $BORG_BIN -V ), PID: $$."
+guiShowBackupBegin
 
 # when 0 is given, this does not mean "don't execute backup", but "do not retry".
 [ $REPEAT_NUM -le 1 ] && REPEAT_NUM=1
@@ -178,6 +211,9 @@ for i in $( seq "$REPEAT_NUM" ); do
 			;;
 	esac
 
+	# optional user question
+	guiTryAgain || break;
+
 	# exit on non-critical errors (ignore 1 = warnings)
 	if [ ${errorcode} -le 1 ]; then
 		# save/update last backup time
@@ -203,3 +239,9 @@ fi
 
 # log
 info_log "Backup \"$BACKUP_NAME\" ended."
+# final notification
+case ${errorcode} in
+	0) guiShowBackupSuccess ;;
+	1) guiShowBackupWarning ;;
+	*) guiShowBackupError "${errorcode}" ;; # error code 2 or more
+esac
