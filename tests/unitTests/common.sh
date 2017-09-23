@@ -34,27 +34,38 @@ get_full_path() {
 }
 assertAndCatchOutput(){
 	# runs a shunit2 assert, but also catches the output in "$output".
-	# syntax: assertWhat message commandToExecute
+	# syntax: assertWhat message commandToExecute additionalCommand
 	# output: $output
-	outputfile="$TMPDIR/runoutput"
-	output=''
 
-	touch "$outputfile"
-	$1 "$2" "$3 $STDERR_TO_STDOUT|tee '$outputfile'"
+	output=$( eval "$3 $STDERR_TO_STDOUT" )
+	exitcode="$?"
 
-	# show output
-	output=$( cat "$outputfile" )
+	eval "$4"
 
-	rm "$outputfile"
+	$1 "$2" "$exitcode"
 }
 assertAndOutput(){
 	# runs a shunit2 assert, but also shows the output in the command line.
 	# Note that it can only show the output *after* the command has completed.
 	# syntax: assertWhat message commandToExecute
 	# output: $output, STDOUT
-	assertAndCatchOutput "$@"
 
-	echo "$output"
+	# shellcheck disable=SC2016
+	assertAndCatchOutput "$@" 'echo "$output"'
+}
+assertAndDisplay(){
+	# runs a shunit2 assert, but also shows the output in the command line.
+	# Note that in contrast to assertAndOutput() it does *NOT* save the output
+	# in a variable, so you cannot use it afterwards.
+	# The advantage, however, is, that it's output is live.
+	#
+	# syntax: assertWhat message commandToExecute
+	# output: $output, STDOUT
+
+	eval "$3 $STDERR_TO_STDOUT"
+	exitcode="$?"
+
+	$1 "$2" "$exitcode"
 }
 
 addConfigFileToDir(){
