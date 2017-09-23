@@ -14,7 +14,7 @@ BACKUP_DIRS="/home /etc /srv /var/log /var/mail /var/lib /var/spool /opt /root /
 # additional backup options
 export BORG_PASSCOMMAND='cat "path/to/example-key"' # command to get passphrase (requires borg v1.1.0 or higher)
 # export BORG_PASSPHRASE="1234" # or enter the passphrase directly
-COMPRESSION="lz4" # lz4 | zlib,6 | lzma,9
+COMPRESSION="lz4" # lz4 | zlib,6 | lzma,6
 
 # The prefix makes sure only backups from this backup config are pruned. It is
 # recommend to leave it as it is. Otherwise comment it out to disable pruning
@@ -41,9 +41,9 @@ REPEAT_NUM="3" # = three retries after accepting a failed backup
 # create list of installed packages
 #
 # RPM-based:
-# dnf list installed > "$BASE_DIR/backup/dnf.list" 2>/dev/null
-# rpm -qa > "$BASE_DIR/backup/rpm.list" 2>/dev/null
+# dnf list installed > "/path/to/backup/dnf.list" 2>/dev/null
+# rpm -qa > "/path/to/backup/rpm.list" 2>/dev/null
 #
 # DEB-based:
-# apt list --installed > "$BASE_DIR/backup/apt.list" 2>/dev/null
-# dpkg --get-selections > "$BASE_DIR/backup/dpkg.list" 2>/dev/null
+# apt list --installed > "/path/to/backup/apt.list" 2>/dev/null
+# dpkg --get-selections > "/path/to/backup/dpkg.list" 2>/dev/null
