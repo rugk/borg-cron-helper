@@ -12,6 +12,7 @@ They add some convienent features around borg, regarding environments with only 
 * **[Automated retries](#less-maintenance-more-safety):** When backups [stop mid-way](https://borgbackup.readthedocs.io/en/stable/faq.html#if-a-backup-stops-mid-way-does-the-already-backed-up-data-stay-there) they are automatically restarted.
 * **[Simple configuration](config/example-backup.sh):** Using shell-scripts you can configure each backup and then execute it the order/way you want.
 * **[Status information](#less-maintenance-more-safety):** You can use a login script to get a notice when backups failed.
+* **[For servers & desktops](#desktop-integration):** The script is also uable on desktops. But rest assured: We'll never forget servers.
 * **[Optional & adjustable](#modular-approach):** You do not have to use all features and you can adjust them in a simply way.
 
 ### Local lock (borg < v1.1.0)
@@ -32,13 +33,21 @@ Additionally the script has the ability to write stats of the last executed back
 
 **Rest assured your backups are safe and recover themselve if possible.** (If they don't, you'll get to know that.)
 
+### Desktop integration
+
+The whole script can, of course, run on servers, but some features making it also suitable for desktops.
+It can display notifications about started and finished backups, including its result and it can even ask the user, whether to retry the backup in case it failed. Or you ask the user about **the password for your backup** interactively, in a GUI window.
+
+It has been tested with GNOME, but should work on any system, where `zenity` is installed. And: You can always easily adjust it to work with a different program.
+
 ### Modular approach
 
 The main "work" is done by [`borgcron.sh`](borgcron.sh). This script can be used to execute a single backup.
 The configuration files per repository/backup are saved in the  [`config`](config/) directory.
 The file [`borgcron_starter.sh`](borgcron_starter.sh) is the file you should call from cron or when debugging manually. Using it, you can execute multiple backups by passing the config names to it.
 
-Also, you can of course not use some features outlined here. That's why the whole functionality is broken into multiple scripts.
+Also, you can of course not use some features outlined here. That's why the whole functionality is broken into multiple scripts and configurable in a single
+config file per backup.
 
 ### More features…
 * easy to understand, easy to modify
