@@ -183,5 +183,5 @@ testBorgUnencrypted(){
 				'echo "$output"|grep "Keeping archive"'
 }
 
-# shellcheck source=../shunit2/source/2.1/src/shunit2
-. "$TEST_DIR/shunit2/source/2.1/src/shunit2"
+# shellcheck source=../shunit2/2.1/src/shunit2
+. "$TEST_DIR/shunit2/2.1/src/shunit2"
