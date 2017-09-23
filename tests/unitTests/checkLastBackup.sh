@@ -74,6 +74,7 @@ testShowBackupInfo(){
 	date --date="-3 days" +'%s' > "$LAST_BACKUP_DIR/backup-bad-3d.time"
 
 	# run it!
+	# shellcheck disable=SC2034
 	output="$( $TEST_SHELL "$LASTSCRIPT" )"
 
 	# shellcheck disable=2034
