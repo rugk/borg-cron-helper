@@ -131,7 +131,6 @@ patchConfigSetVar(){
 
 # actual unit tests
 testBorgUnencrypted(){
-	export|grep -q "BORG_CACHE_DIR"
 	# borg init to create repo
 	borg init --encryption=none "/tmp/borg_repodir"
 

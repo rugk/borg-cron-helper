@@ -16,6 +16,9 @@ export BORG_PASSCOMMAND='cat "path/to/example-key"' # command to get passphrase 
 # export BORG_PASSPHRASE="1234" # or enter the passphrase directly
 COMPRESSION="lz4" # lz4 | zlib,6 | lzma,9
 
+# The prefix makes sure only backups from this backup config are pruned. It is
+# recommend to leave it as it is. Otherwise comment it out to disable pruning
+# or – if you really want to remove the prefix – set it to an empty string.
 PRUNE_PREFIX="{hostname}-$BACKUP_NAME-"
 PRUNE_PARAMS="--keep-daily=14 --keep-weekly=8 --keep-monthly=6 --keep-yearly=0"
 # for web servers (only disaster recovery): --keep-daily=7 --keep-weekly=5 --keep-monthly=2 --keep-yearly=0
