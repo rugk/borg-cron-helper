@@ -20,6 +20,9 @@ ADD_BACKUP_PARAMS=""
 SLEEP_TIME="5m"
 REPEAT_NUM="3"
 
+# set placeholder value
+PRUNE_PREFIX="null"
+
 # log system
 log_line() {
 	echo "[$( date +'%F %T' )]"
@@ -189,11 +192,11 @@ for i in $( seq "$REPEAT_NUM" ); do
 	fi
 done
 
-# The '{hostname}-$BACKUP_NAME-' prefix makes sure only backups from
-# this machine with this backup-type are touched.
-# (some variables intentionally not quoted)
+# The (optional) prefix makes sure only backups from this machine with this
+# backup-type are touched.
+# ($PRUNE_PARAMS intentionally not quoted)
 
-if [ "$PRUNE_PARAMS" ]; then
+if [ "$PRUNE_PARAMS" ] && [ "$PRUNE_PREFIX" != "null" ]; then
 	echo "Running prune for $BACKUP_NAME…"
 	do_lock
 	# shellcheck disable=SC2086

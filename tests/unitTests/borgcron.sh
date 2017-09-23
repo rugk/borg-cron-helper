@@ -205,7 +205,9 @@ testLockPid(){
 }
 testLocksWhenBorgRuns(){
 	# adding prune params to also test prune borg call
-	addConfigFile "runningPidTest.sh" 'PRUNE_PARAMS="--test-fake"'
+	# shellcheck disable=SC2016
+	addConfigFile "runningPidTest.sh" 'PRUNE_PARAMS="--test-fake"
+PRUNE_PREFIX="{hostname}-$BACKUP_NAME-"'
 
 	lockCountFile="/tmp/RUN_PID_DIR/lockCounter"
 	echo "0" > "$lockCountFile"
