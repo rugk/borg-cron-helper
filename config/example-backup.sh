@@ -25,8 +25,6 @@ ADD_BACKUP_PARAMS="" # --one-file-system for backing up root file dir
 SLEEP_TIME="5m" # time, the script should wait until re-attempting the backup after a failed try
 REPEAT_NUM="3" # = three retries after accepting a failed backup
 
-RUN_PID_DIR="/tmp/runpid"
-
 # GUI settings
 GUI_OVERWRITE_ICON="$PWD/tools/icon.png" # custom icon for notifications (needs absolute path)
 # You can also overwrite the guiShow…() functions here to modify their behaviour.
