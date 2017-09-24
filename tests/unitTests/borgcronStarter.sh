@@ -183,5 +183,5 @@ Z_Backup2.sh
 				"$( cat "$CONFIG_DIR/list" )"
 }
 
-# shellcheck source=../shunit2/2.1/src/shunit2
-. "$TEST_DIR/shunit2/2.1/src/shunit2"
+# shellcheck source=../shunit2/shunit2
+. "$TEST_DIR/shunit2/shunit2"
