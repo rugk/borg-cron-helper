@@ -40,6 +40,8 @@ It can display notifications about started and finished backups, including its r
 
 It has been tested with GNOME, but should work on any system, where `zenity` is installed. And: You can always easily adjust it to work with a different program.
 
+It is even possible to configure it to show the notification as a "standard" user while the backup is actually running as root.
+
 ### Modular approach
 
 The main "work" is done by [`borgcron.sh`](borgcron.sh). This script can be used to execute a single backup.
