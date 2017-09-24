@@ -65,6 +65,9 @@ setUp(){
 LAST_BACKUP_DIR='/tmp/LAST_BACKUP_DIR'
 RUN_PID_DIR='/tmp/RUN_PID_DIR'
 
+# disable notifications, which just annoy in unit tests
+guiShowNotification() { :; }
+
 # use temp variables, so no trash remains on the system
 export BORG_KEYS_DIR='$TMPDIR/borg/keys'
 export BORG_SECURITY_DIR='$TMPDIR/borg/security'
