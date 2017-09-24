@@ -26,6 +26,9 @@ BACKUP_DIRS="notExistentDir"
 # speed up tests: use smaller sleep time
 SLEEP_TIME=10s
 
+# disable notifications, which just annoy in unit tests
+guiShowNotification() { :; }
+
 # overwrite built-in variables, so dirs work
 LAST_BACKUP_DIR="/tmp/LAST_BACKUP_DIR"
 RUN_PID_DIR="/tmp/RUN_PID_DIR"
