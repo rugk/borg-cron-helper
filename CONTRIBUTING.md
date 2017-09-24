@@ -2,7 +2,7 @@
 
 Thanks for your interest in contributing to this project! :+1: :tada:
 
-The good news is: Just sent your PR.
+The good news is: Just send your PR.
 
 ## Some things
 
