@@ -26,7 +26,7 @@ SLEEP_TIME="5m" # time, the script should wait until re-attempting the backup af
 REPEAT_NUM="3" # = three retries after accepting a failed backup
 
 # GUI settings
-GUI_OVERWRITE_ICON="$PWD/tools/icon.png" # custom icon for notifications (needs absolute path)
+GUI_OVERWRITE_ICON="$PWD/icon.png" # custom icon for notifications (needs absolute path)
 # You can also overwrite the guiShow…() functions here to modify their behaviour.
 # E.g. show a scary prompt if the backup fails:
 
