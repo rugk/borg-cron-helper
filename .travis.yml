@@ -20,7 +20,8 @@ before_script:
   - tests/helper/installBorg.sh
   # install shunit2
   - cd tests&&git clone https://github.com/kward/shunit2
-  - git checkout 697249da081473c1904d84e9aa2dd4633a3115fb&&cd ..
+  - cd shunit2&&git checkout 697249da081473c1904d84e9aa2dd4633a3115fb
+  - cd ../..
 
 script:
   - tests/helper/verifySignature.sh
