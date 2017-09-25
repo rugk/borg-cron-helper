@@ -264,7 +264,7 @@ fi
 
 # log
 if [ "$exitcode" -ne 0 ]; then
-	error_log "Watch out! Backup \"$BACKUP_NAME\" ended, but something seems to went wrong."
+	error_log "Backup \"$BACKUP_NAME\" ended, but something seems to went wrong."
 else
 	info_log "Backup \"$BACKUP_NAME\" ended successfully."
 fi
