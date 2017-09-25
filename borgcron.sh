@@ -228,7 +228,7 @@ for i in $( seq "$REPEAT_NUM" ); do
 			info_log "Borg has been successful."
 			;;
 		* )
-			error_log "Unknown error with code ${errorcode} happened."
+			error_log "Unknown error with code "$EXITCODE" happened."
 			;;
 	esac
 
