@@ -105,7 +105,7 @@ testFails(){
 	# always exit with critical error
 	addFakeBorgCommand 'exit 2'
 
-	assertTrue "should fail with exit code" \
+	assertFalse "should fail with exit code" \
 				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath testFails.sh )' "
 
 	# checks that last backup time exists and it's size is larger than 0 and…
