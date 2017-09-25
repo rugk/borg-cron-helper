@@ -250,12 +250,13 @@ done
 # backup-type are touched.
 # ($PRUNE_PARAMS intentionally not quoted)
 
-if [ "$PRUNE_PARAMS" ] && [ "$PRUNE_PREFIX" != "null" ] && [ "$EXITCODE" -lt 2 ]; then
+if [ "$PRUNE_PARAMS" ] && [ "$PRUNE_PREFIX" != "null" ] && [ "$EXITCODE" -lt 1 ]; then
 	echo "Running prune for $BACKUP_NAME…"
 	do_lock
 	# shellcheck disable=SC2086
 	$BORG_BIN prune -v --list --prefix "$PRUNE_PREFIX" $PRUNE_PARAMS
-	track_exitcode $?
+	EXITCODE_PRUNING="$?"
+	track_exitcode "$EXITCODE_PRUNING"
 	rm_lock
 	track_exitcode $?
 fi
