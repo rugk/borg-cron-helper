@@ -105,8 +105,7 @@ testFails(){
 	# always exit with critical error
 	addFakeBorgCommand 'exit 2'
 
-	# TODO: change to "assertFalse" when exit code is implemented
-	assertTrue "(TODO) should fail with exit code" \
+	assertTrue "should fail with exit code" \
 				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath testFails.sh )' "
 
 	# checks that last backup time exists and it's size is larger than 0 and…
@@ -285,7 +284,6 @@ testNotRetry(){
 	# always exit with critical error
 	addFakeBorgCommand 'exit 2'
 
-	# TODO: change to "assertFalse" when exit code is implemented
 	assertFalse "process fails" \
 				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath notRetryTest.sh )'"
 
