@@ -79,9 +79,8 @@ rm_lock() {
 }
 
 track_exitcode() {
-	exitcode_temp="$1"
-	if [ "$exitcode_temp" -gt "$exitcode" ]; then
-		exitcode="$exitcode_temp"
+	if [ "$1" -gt "$exitcode" ]; then
+		exitcode="$1"
 	fi
 }
 
