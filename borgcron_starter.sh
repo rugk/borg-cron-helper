@@ -71,6 +71,4 @@ case "$1" in
 		;;
 esac
 
-if [ "$exitcode" -gt 0 ]; then
-	exit "$exitcode"
-fi
+exit "$exitcode"
