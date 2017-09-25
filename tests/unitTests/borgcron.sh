@@ -265,7 +265,7 @@ testRetry(){
 	addFakeBorgCommand '[ $count -eq 1 ] && exit 2'
 	# checks case with exit code=1 here, it should *NOT* trigger a retry
 	# shellcheck disable=SC2016
-	addFakeBorgCommand '[ $count -eq 3 ] && exit 1'
+	addFakeBorgCommand '[ $count -eq 2 ] && exit 1'
 
 	assertTrue "process succeeds" \
 				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath retryTest.sh )'"
