@@ -57,6 +57,7 @@ case "$1" in
 				"$CURRENT_DIR/borgcron.sh" "$( get_full_path "$CONFIG_DIR/$configfile.sh" )"
 			else
 				echo "The backup settings file \"$configfile.sh\" could not be found." >&2
+				exit 1
 			fi
 		done
 		;;
