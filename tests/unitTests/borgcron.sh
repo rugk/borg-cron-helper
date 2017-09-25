@@ -286,7 +286,7 @@ testNotRetry(){
 	addFakeBorgCommand 'exit 2'
 
 	# TODO: change to "assertFalse" when exit code is implemented
-	assertTrue "process fails" \
+	assertFalse "process fails" \
 				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath notRetryTest.sh )'"
 
 	# must not retry backup, i.e. only call it once
