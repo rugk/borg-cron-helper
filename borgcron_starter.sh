@@ -29,6 +29,14 @@ get_full_path() {
 	fi
 }
 
+track_exitcode() {
+	if [ "$1" -gt "$exitcode" ]; then
+		exitcode="$1"
+	fi
+}
+
+exitcode=0 #exitcode on zero :)
+
 # check for error if config dir is empty
 if [ ! -d "$CONFIG_DIR" ] || [ ! "$( dir_contains_files "$CONFIG_DIR" )" ]; then
 	echo "No backup settings file(s) could be found in the config folder \"$CONFIG_DIR\"."
@@ -57,8 +65,10 @@ case "$1" in
 				"$CURRENT_DIR/borgcron.sh" "$( get_full_path "$CONFIG_DIR/$configfile.sh" )"
 			else
 				echo "The backup settings file \"$configfile.sh\" could not be found." >&2
-				exit 1
+				track_exitcode "$?"
 			fi
 		done
 		;;
 esac
+
+exit "$exitcode"
