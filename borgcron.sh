@@ -228,9 +228,9 @@ for i in $( seq "$REPEAT_NUM" ); do
 			error_log "Unknown error with code $exitcode happened."
 			;;
 	esac
-if [ "$exitcode_borgbackup" -gt "$exitcode" ]; then
-	exitcode="$exitcode_borgbackup"
-fi
+	if [ "$exitcode_borgbackup" -gt "$exitcode" ]; then
+		exitcode="$exitcode_borgbackup"
+	fi
 	# optional user question
 	guiTryAgain || break;
 
