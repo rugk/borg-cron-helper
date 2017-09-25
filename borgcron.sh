@@ -197,7 +197,6 @@ for i in $( seq "$REPEAT_NUM" ); do
 
 	# remove local lock
 	rm_lock
-	track_exitcode "$?"
 
 	# show output
 	# see https://borgbackup.readthedocs.io/en/stable/usage.html?highlight=return%20code#return-codes
