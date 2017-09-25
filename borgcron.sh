@@ -230,7 +230,9 @@ for i in $( seq "$REPEAT_NUM" ); do
 			error_log "Unknown error with code $exitcode happened."
 			;;
 	esac
-
+if [ "$exitcode_borgbackup" -gt "$exitcode" ]; then
+	exitcode="$exitcode_borgbackup"
+fi
 	# optional user question
 	guiTryAgain || break;
 
@@ -257,7 +259,7 @@ if [ "$PRUNE_PARAMS" ] && [ "$PRUNE_PREFIX" != "null" ] && [ "$exitcode" -lt 2 ]
 	exitcode_pruning="$?"
 	track_exitcode "$exitcode_pruning"
 	rm_lock
-	track_exitcode $?
+
 fi
 
 # log
