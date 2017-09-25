@@ -23,6 +23,9 @@ export BORG_REPO='ssh://user@somewhere.example:22/./dir'
 ARCHIVE_NAME="{hostname}-$BACKUP_NAME-{now:%Y-%m-%dT%H:%M:%S}"
 BACKUP_DIRS="notExistentDir"
 
+# do not run prune
+PRUNE_PARAMS=""
+
 # speed up tests: use smaller sleep time
 SLEEP_TIME=10s
 
