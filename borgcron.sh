@@ -79,9 +79,9 @@ rm_lock() {
 }
 
 track_exitcode() {
-	EXITCODE_TEMP="$1"
-	if [ "$EXITCODE_TEMP" -gt "$EXITCODE" ]; then
-		EXITCODE="$EXITCODE_TEMP"
+	exitcode_temp="$1"
+	if [ "$exitcode_temp" -gt "$exitcode" ]; then
+		exitcode="$exitcode_temp"
 	fi
 }
 
@@ -165,7 +165,7 @@ echo
 info_log "Backup $BACKUP_NAME started with $( $BORG_BIN -V ), PID: $$."
 guiShowBackupBegin
 
-EXITCODE=0 #exitcode on zero :)
+exitcode=0 #exitcode on zero :)
 
 # when 0 is given, this does not mean "don't execute backup", but "do not retry".
 [ $REPEAT_NUM -le 1 ] && REPEAT_NUM=1
@@ -193,8 +193,8 @@ for i in $( seq "$REPEAT_NUM" ); do
 		$BACKUP_DIRS
 
 	# check return code
-	EXITCODE_BORGBACKUP="$?"
-	track_exitcode "$EXITCODE_BORGBACKUP"
+	exitcode_borgbackup="$?"
+	track_exitcode "$exitcode_borgbackup"
 
 	# remove local lock
 	rm_lock
@@ -202,7 +202,7 @@ for i in $( seq "$REPEAT_NUM" ); do
 
 	# show output
 	# see https://borgbackup.readthedocs.io/en/stable/usage.html?highlight=return%20code#return-codes
-	case "$EXITCODE_BORGBACKUP" in
+	case "$exitcode_borgbackup" in
 		2 )
 			error_log "Borg exited with fatal error." #(2)
 
@@ -228,7 +228,7 @@ for i in $( seq "$REPEAT_NUM" ); do
 			info_log "Borg has been successful."
 			;;
 		* )
-			error_log "Unknown error with code "$EXITCODE" happened."
+			error_log "Unknown error with code "$exitcode" happened."
 			;;
 	esac
 
@@ -236,7 +236,7 @@ for i in $( seq "$REPEAT_NUM" ); do
 	guiTryAgain || break;
 
 	# exit on non-critical errors (ignore 1 = warnings)
-	if [ "$EXITCODE_BORGBACKUP" -le 1 ]; then
+	if [ "$exitcode_borgbackup" -le 1 ]; then
 		# save/update last backup time
 		if [ -d $LAST_BACKUP_DIR ]; then
 			date +'%s' > "$LAST_BACKUP_DIR/$BACKUP_NAME.time"
@@ -250,28 +250,28 @@ done
 # backup-type are touched.
 # ($PRUNE_PARAMS intentionally not quoted)
 
-if [ "$PRUNE_PARAMS" ] && [ "$PRUNE_PREFIX" != "null" ] && [ "$EXITCODE" -lt 1 ]; then
+if [ "$PRUNE_PARAMS" ] && [ "$PRUNE_PREFIX" != "null" ] && [ "$exitcode" -lt 1 ]; then
 	echo "Running prune for $BACKUP_NAME…"
 	do_lock
 	# shellcheck disable=SC2086
 	$BORG_BIN prune -v --list --prefix "$PRUNE_PREFIX" $PRUNE_PARAMS
-	EXITCODE_PRUNING="$?"
-	track_exitcode "$EXITCODE_PRUNING"
+	exitcode_pruning="$?"
+	track_exitcode "$exitcode_pruning"
 	rm_lock
 	track_exitcode $?
 fi
 
 # log
-if [ "$EXITCODE" -ne 0 ]; then
+if [ "$exitcode" -ne 0 ]; then
 	error_log "Watch out! Backup \"$BACKUP_NAME\" ended, but something seems to went wrong."
 else
 	info_log "Backup \"$BACKUP_NAME\" ended successfully."
-	fi
+fi
 # final notification
-case "$EXITCODE" in
+case "$exitcode" in
 	0) guiShowBackupSuccess ;;
 	1) guiShowBackupWarning ;;
-	*) guiShowBackupError "$EXITCODE" ;; # error code 2 or more
+	*) guiShowBackupError "$exitcode" ;; # error code 2 or more
 esac
 
-exit "$EXITCODE"
+exit "$exitcode"
