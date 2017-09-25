@@ -35,6 +35,8 @@ Additionally the script has the ability to write stats of the last executed back
 
 ### Desktop integration
 
+![GNOME desktop notification: BorgBackup "example-backup" – BorgBackup has been successful](https://raw.githubusercontent.com/wiki/rugk/borg-cron-helper/notification.png)
+
 The whole script can, of course, run on servers, but some features making it also suitable for desktops.
 It can display notifications about started and finished backups, including its result and it can even ask the user, whether to retry the backup in case it failed. Or you ask the user about **the password for your backup** interactively, in a GUI window.
 
