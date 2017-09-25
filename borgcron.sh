@@ -181,7 +181,7 @@ for i in $( seq "$REPEAT_NUM" ); do
 
 	# add local lock
 	do_lock
-	
+
 	# backup dir (some variables intentionally not quoted)
 	# shellcheck disable=SC2086
 	$BORG_BIN create -v --stats \
@@ -192,7 +192,6 @@ for i in $( seq "$REPEAT_NUM" ); do
 
 	# check return code
 	exitcode_borgbackup="$?"
-	track_exitcode "$exitcode_borgbackup"
 
 	# remove local lock
 	rm_lock
@@ -228,9 +227,7 @@ for i in $( seq "$REPEAT_NUM" ); do
 			error_log "Unknown error with code $exitcode happened."
 			;;
 	esac
-	if [ "$exitcode_borgbackup" -gt "$exitcode" ]; then
-		exitcode="$exitcode_borgbackup"
-	fi
+
 	# optional user question
 	guiTryAgain || break;
 
@@ -244,6 +241,7 @@ for i in $( seq "$REPEAT_NUM" ); do
 		break;
 	fi
 done
+track_exitcode "$exitcode_borgbackup"
 
 # The (optional) prefix makes sure only backups from this machine with this
 # backup-type are touched.
