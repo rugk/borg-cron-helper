@@ -182,7 +182,6 @@ for i in $( seq "$REPEAT_NUM" ); do
 
 	# add local lock
 	do_lock
-	track_exitcode "$?"
 	
 	# backup dir (some variables intentionally not quoted)
 	# shellcheck disable=SC2086
@@ -250,9 +249,9 @@ done
 # backup-type are touched.
 # ($PRUNE_PARAMS intentionally not quoted)
 
-if [ "$PRUNE_PARAMS" ] && [ "$PRUNE_PREFIX" != "null" ] && [ "$exitcode" -lt 1 ]; then
+if [ "$PRUNE_PARAMS" ] && [ "$PRUNE_PREFIX" != "null" ] && [ "$exitcode" -lt 2 ]; then
 	echo "Running prune for $BACKUP_NAME…"
-	do_lock
+
 	# shellcheck disable=SC2086
 	$BORG_BIN prune -v --list --prefix "$PRUNE_PREFIX" $PRUNE_PARAMS
 	exitcode_pruning="$?"
