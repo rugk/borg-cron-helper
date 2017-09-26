@@ -169,8 +169,12 @@ testExecuteMultipleConfigsPartially(){
 	addConfigFile "Z_Backup2.sh"
 
 	# note this again tests different ways of passing the file names
-	assertTrue "no error when executing" \
-				"$TEST_SHELL '$BASE_DIR/borgcron_starter.sh' h_Backup1 Z_Backup2.sh DoNotExexuteNoShellFile.jpg 0_Backup3"
+	$TEST_SHELL "$BASE_DIR/borgcron_starter.sh" h_Backup1 Z_Backup2.sh DoNotExexuteNoShellFile.jpg 0_Backup3 > /dev/null 2>&1
+	exitcode=$?
+
+	assertEquals "should exit with 1 indicating a wrong filename has been passed" \
+				"1" \
+				"$exitcode"
 
 	assertEquals "executes 3 scripts, only shell scripts" \
 				"3" \
@@ -181,6 +185,42 @@ testExecuteMultipleConfigsPartially(){
 Z_Backup2.sh
 0_Backup3.sh" \
 				"$( cat "$CONFIG_DIR/list" )"
+}
+
+testExitcodePropagation(){
+	# test that the highest error code from borgcron.sh runs is exited
+
+	addConfigFile "2.sh" "exit 2"
+	addConfigFile "1.sh" "exit 1"
+	addConfigFile "0.sh" "exit 0"
+	# test run
+	$TEST_SHELL "$BASE_DIR/borgcron_starter.sh" 1 2 0 > /dev/null 2>&1
+	exitcode=$?
+	# check exit code
+	assertEquals "correct exit code 2" \
+				"2" \
+				"$exitcode"
+
+
+	addConfigFile "100.sh" "exit 100"
+	# test run
+	$TEST_SHELL "$BASE_DIR/borgcron_starter.sh" 100 1 2 > /dev/null 2>&1
+	exitcode=$?
+	# check exit code
+	assertEquals "correct exit code 100" \
+				"100" \
+				"$exitcode"
+
+	addConfigFile "202.sh" "exit 202"
+	addConfigFile "203.sh" "exit 203"
+	addConfigFile "9.sh" "exit 9"
+	# test run
+	$TEST_SHELL "$BASE_DIR/borgcron_starter.sh" > /dev/null 2>&1
+	exitcode=$?
+	# check exit code
+	assertEquals "correct exit code 203" \
+				"203" \
+				"$exitcode"
 }
 
 # shellcheck source=../shunit2/shunit2
