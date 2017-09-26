@@ -204,7 +204,7 @@ testLockPid(){
 	rmLock
 }
 testLocksWhenBorgRuns(){
-	# adding prune params to also test prune borg call
+	# adding prune params to also test prune borg call (& lock there)
 	# shellcheck disable=SC2016
 	addConfigFile "runningPidTest.sh" 'PRUNE_PARAMS="--test-fake"
 PRUNE_PREFIX="{hostname}-$BACKUP_NAME-"'
