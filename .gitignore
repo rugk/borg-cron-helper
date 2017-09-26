@@ -2,5 +2,5 @@
 !/config/example-backup.sh
 
 # ignore test stuff
-/custombin/
+/custombin
 /tests/shunit2
