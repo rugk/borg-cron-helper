@@ -105,16 +105,19 @@ testFails(){
 	# always exit with critical error
 	addFakeBorgCommand 'exit 2'
 
-	# TODO: change to "assertFalse" when exit code is implemented
-	assertTrue "(TODO) should fail with exit code" \
-				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath testFails.sh )' "
+	# run
+	$TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath testFails.sh )" > /dev/null 2>&1
+	exitcode=$?
 
-	# checks that last backup time exists and it's size is larger than 0 and…
+	assertEquals "should fail with correct exit code" \
+				"2" \
+				"$exitcode"
+
+	# checks that backup time was *not* saved
 	timeFile='/tmp/LAST_BACKUP_DIR/unit-test-fake-backup.time'
 	assertFalse "should not save last backup time as it was not successful" \
 				"[ -f '$timeFile' ]"
 
-	# must (only) retry
 	assertEquals "retry exact number of times, given" \
 				"2" \
 				"$( cat "$BASE_DIR/custombin/counter" )"
@@ -213,12 +216,14 @@ PRUNE_PREFIX="{hostname}-$BACKUP_NAME-"'
 	echo "0" > "$lockCountFile"
 
 	doNotCountVersionRequestsInBorg
+	doNotCountLockBreakingsInBorg
+
 	# test whether the lock is there
 	addFakeBorgCommand "lockCountFile='$lockCountFile'"
 	# shellcheck disable=SC2016
 	addFakeBorgCommand 'lockCount=$( cat "$lockCountFile" )'
 	# shellcheck disable=SC2016
-	addFakeBorgCommand 'lockCount=$(( lockCount+1 ))'
+	addFakeBorgCommand '[ -f "/tmp/RUN_PID_DIR/BORG_unit-test-fake-backup.pid" ] && lockCount=$(( lockCount+1 ))'
 	# shellcheck disable=SC2016
 	addFakeBorgCommand 'echo $lockCount > "$lockCountFile"'
 
@@ -238,14 +243,15 @@ testLockRemoved(){
 	# add PID, which is not running
 	doLock "123456789"
 
-	# after
+	# unless the second run of borg (i.e. after calling -V, the first "real" backup) is done, exit with 0 (ok)
 	# shellcheck disable=SC2016
 	addFakeBorgCommand 'if [ "$count" -le 1 ] || [ "$count" -ge 3 ]; then exit 0; fi'
-	# test whether the lock is removed after borg ended
+	# add lock during backup/sleep process in order to test whether the lock is removed after borg ended
 	addFakeBorgCommand "$TEST_SHELL -c 'sleep 5s;[ -f /tmp/RUN_PID_DIR/BORG_unit-test-fake-backup.pid ]&&echo 1 > /tmp/RUN_PID_DIR/testFail' &"
 	# let the backup fail to trigger retry
 	addFakeBorgCommand 'exit 2'
 
+	# altghough retry is triggered, as borg suceeds afterwards, it should return 0
 	assertTrue "process succeeds" \
 				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath rmPidTest.sh )'"
 
@@ -261,15 +267,22 @@ testRetry(){
 	doNotCountVersionRequestsInBorg
 	doNotCountLockBreakingsInBorg
 
+	# This emulates a signal, which terminates the borg process
 	# shellcheck disable=SC2016
 	addFakeBorgCommand '[ $count -eq 1 ] && exit 2'
 	# checks case with exit code=1 here, it should *NOT* trigger a retry
 	# shellcheck disable=SC2016
 	addFakeBorgCommand '[ $count -eq 2 ] && exit 1'
 
-	assertTrue "process succeeds" \
-				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath retryTest.sh )'"
+	# run command
+	$TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath retryTest.sh )" > /dev/null 2>&1
+	exitcode=$?
 
+	assertEquals "process returns correct exit code" \
+				"1" \
+				"$exitcode"
+
+	# 2x borg create
 	assertEquals "retry until backup suceeeds" \
 				"2" \
 				"$( cat "$BASE_DIR/custombin/counter" )"
@@ -285,14 +298,18 @@ testNotRetry(){
 	# always exit with critical error
 	addFakeBorgCommand 'exit 2'
 
-	# TODO: change to "assertFalse" when exit code is implemented
-	assertTrue "process fails" \
-				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath notRetryTest.sh )'"
+	$TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath notRetryTest.sh )" > /dev/null 2>&1
+	exitcode=$?
+
+	assertEquals "process fails" \
+				"2" \
+				"$exitcode"
 
 	# must not retry backup, i.e. only call it once
+	count=$( cat "$BASE_DIR/custombin/counter" )
 	assertEquals "do not retry backup" \
 				"1" \
-				"$( cat "$BASE_DIR/custombin/counter" )"
+				"$count"
 }
 
 # shellcheck source=../shunit2/shunit2

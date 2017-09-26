@@ -231,9 +231,8 @@ testBorgEncrypted(){
 	echo "$output"
 
 	# check whether backup is fails due to missing passphrase
-	# TODO: check for correct exit code (borg returns 2 for missing passphrase) instead
 	assertEquals "backup finishes without error" \
-				"0" \
+				"2" \
 				"$exitcode"
 
 	# as it fails it can "wait" one time (20s), but not more (2*20=40s)
