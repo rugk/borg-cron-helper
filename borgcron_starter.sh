@@ -8,13 +8,11 @@ CURRENT_DIR="$( dirname "$0" )"
 # dir where config files are stored
 CONFIG_DIR="$CURRENT_DIR/config"
 
-cli_help() {
-	echo "Usage:"
-	echo "$( basename "$0" ) [<files>]"
-	echo
-	echo "files	If <files> is given, it will cycle through each given config file and"
-	echo "		execute the backups exactly as given on the command line."
-	echo "		If it is not given, it will just run all backups one by one."
+# basic functions
+track_exitcode() {
+	if [ "$1" -gt "$exitcode" ]; then
+		exitcode="$1"
+	fi
 }
 dir_contains_files() {
 	ls -A "$1"
@@ -29,6 +27,17 @@ get_full_path() {
 	fi
 }
 
+cli_help() {
+	echo "Usage:"
+	echo "$( basename "$0" ) [<files>]"
+	echo
+	echo "files	If <files> is given, it will cycle through each given config file and"
+	echo "		execute the backups exactly as given on the command line."
+	echo "		If it is not given, it will just run all backups one by one."
+}
+
+exitcode=0 #exitcode on zero :)
+
 # check for error if config dir is empty
 if [ ! -d "$CONFIG_DIR" ] || [ ! "$( dir_contains_files "$CONFIG_DIR" )" ]; then
 	echo "No backup settings file(s) could be found in the config folder \"$CONFIG_DIR\"."
@@ -42,6 +51,7 @@ case "$1" in
 		for configfile in $CONFIG_DIR/*.sh;
 		do
 			"$CURRENT_DIR/borgcron.sh" "$( get_full_path "$configfile" )"
+			track_exitcode "$?"
 		done
 		;;
 	--help|-h|-? ) # show help message
@@ -55,9 +65,13 @@ case "$1" in
 
 			if [ -e "$CONFIG_DIR/$configfile.sh" ]; then
 				"$CURRENT_DIR/borgcron.sh" "$( get_full_path "$CONFIG_DIR/$configfile.sh" )"
+				track_exitcode "$?"
 			else
 				echo "The backup settings file \"$configfile.sh\" could not be found." >&2
+				track_exitcode 1 # custom exit code for "file not found" warning
 			fi
 		done
 		;;
 esac
+
+exit "$exitcode"
