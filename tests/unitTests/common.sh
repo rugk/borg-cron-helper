@@ -32,41 +32,6 @@ get_full_path() {
 		readlink -f "$1"
 	fi
 }
-assertAndCatchOutput(){
-	# runs a shunit2 assert, but also catches the output in "$output".
-	# syntax: assertWhat message commandToExecute additionalCommand
-	# output: $output
-
-	output=$( eval "$3 $STDERR_TO_STDOUT" )
-	exitcode="$?"
-
-	eval "$4"
-
-	$1 "$2" "$exitcode"
-}
-assertAndOutput(){
-	# runs a shunit2 assert, but also shows the output in the command line.
-	# Note that it can only show the output *after* the command has completed.
-	# syntax: assertWhat message commandToExecute
-	# output: $output, STDOUT
-
-	# shellcheck disable=SC2016
-	assertAndCatchOutput "$@" 'echo "$output"'
-}
-assertAndDisplay(){
-	# runs a shunit2 assert, but also shows the output in the command line.
-	# Note that in contrast to assertAndOutput() it does *NOT* save the output
-	# in a variable, so you cannot use it afterwards.
-	# The advantage, however, is, that it's output is live.
-	#
-	# syntax: assertWhat message commandToExecute
-	# output: $output, STDOUT
-
-	eval "$3 $STDERR_TO_STDOUT"
-	exitcode="$?"
-
-	$1 "$2" "$exitcode"
-}
 
 addConfigFileToDir(){
 	# syntax: dir filename.sh "[shell commands to inject, overwrite previous ones]"
