@@ -22,7 +22,7 @@ before_script:
   - cd tests&&git clone https://github.com/kward/shunit2
   - cd shunit2&&git checkout 697249da081473c1904d84e9aa2dd4633a3115fb
   - cd ../..
-  - SHUNIT_COLOR='always'
+  - export SHUNIT_COLOR='always'
 
 script:
   - tests/helper/verifySignature.sh
