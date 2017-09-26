@@ -1,0 +1,10 @@
+[cache]
+version = 1
+repository = 399970f3d495e89bb2805b1d4ab95ac8fcc7982a006ec6b6105d3af0b128ad0c
+manifest = fe87af49c29cdb9f304681850f99850808a194f713cbeca6ea8f796992792793
+timestamp = 2017-09-26T16:28:18.538868
+key_type = 2
+previous_location = /tmp/borg_repodir
+ignored_features = 
+mandatory_features = 
+
