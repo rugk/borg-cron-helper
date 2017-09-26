@@ -15,5 +15,5 @@ The good news is: Just send your PR.
 ## Tests
 
 Please use the automated tests to check that your changes are okay. You can run them locally, but they are also run automatically by Travis-CI.
-For more info see [the test readme](tests/Readme.md).
+For more info see [the test readme](tests/README.md).
 Fell free to adjust or add tests, if needed/useful.
