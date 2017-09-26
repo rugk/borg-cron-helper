@@ -248,7 +248,7 @@ testBorgEncrypted(){
 	patchConfigSetVar "exampleTest.sh" 'ARCHIVE_NAME' '$BACKUP_NAME-{now:%Y-%m-%d}-working' '"'
 
 	# for >= v1.1.0 use BORG_PASSCOMMAND with a file instead, otherwise fallback to BORG_PASSPHRASE
-	if ! version_gt "$BORG" "1.0.99"; then
+	if version_gt "$BORG" "1.0.99"; then
 		echo "123456789" > "$TMPDIR/borg/passphrase.key"
 		patchConfigSetVar "exampleTest.sh" 'BORG_PASSCOMMAND' "cat '$TMPDIR/borg/passphrase.key'"
 		patchConfigDisableVar "exampleTest.sh" 'BORG_PASSPHRASE'
