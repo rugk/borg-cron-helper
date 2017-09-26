@@ -296,6 +296,9 @@ testBorgPrune(){
 	# should delete all prefix2 backups
 	patchConfigSetVar "exampleTest.sh" 'PRUNE_PREFIX' "prefix2_"
 
+	# borg 1.1. shows this warning when accessing the old repo, ignore it
+	export BORG_UNKNOWN_UNENCRYPTED_REPO_ACCESS_IS_OK=yes
+
 	startTime=$( date +%s )
 	# shellcheck disable=SC2034
 	output=$( $TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath exampleTest.sh )" 2>&1 )
