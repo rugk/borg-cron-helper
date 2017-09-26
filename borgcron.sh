@@ -20,8 +20,17 @@ ADD_BACKUP_PARAMS=""
 SLEEP_TIME="5m"
 REPEAT_NUM="3"
 
-# set placeholder value
+# set placeholder/default value
 PRUNE_PREFIX="null"
+exitcode=0
+exitcode_borgbackup=0
+
+# basic functions
+track_exitcode() {
+	if [ "$1" -gt "$exitcode" ]; then
+		exitcode="$1"
+	fi
+}
 
 # log system
 log_line() {
@@ -131,7 +140,7 @@ if [ "$1" != '' ]; then
 	. "$1"
 else
 	echo "Please pass a path of a config file to $(basename "$0")."
-	exit 1
+	exit 2
 fi
 
 # check lock
@@ -146,11 +155,11 @@ if [ "$BACKUP_NAME" = "" ] ||
    [ "$ARCHIVE_NAME" = "" ] ||
    [ "$BACKUP_DIRS" = "" ]; then
 	echo 'Some required variables may not be set in the config file. Cancel backup.'
-	exit 1
+	exit 2
 fi
 if ! export|grep -q "BORG_REPO"; then
 	echo 'The BORG_REPO variable is not exported in the config file. Cancel backup.'
-	exit 1
+	exit 2
 fi
 
 # log
@@ -183,14 +192,14 @@ for i in $( seq "$REPEAT_NUM" ); do
 		$BACKUP_DIRS
 
 	# check return code
-	errorcode="$?"
+	exitcode_borgbackup=$?
 
 	# remove local lock
 	rm_lock
 
 	# show output
 	# see https://borgbackup.readthedocs.io/en/stable/usage.html?highlight=return%20code#return-codes
-	case ${errorcode} in
+	case $exitcode_borgbackup in
 		2 )
 			error_log "Borg exited with fatal error." #(2)
 
@@ -216,7 +225,7 @@ for i in $( seq "$REPEAT_NUM" ); do
 			info_log "Borg has been successful."
 			;;
 		* )
-			error_log "Unknown error with code ${errorcode} happened."
+			error_log "Unknown error with code $exitcode_borgbackup happened."
 			;;
 	esac
 
@@ -224,7 +233,7 @@ for i in $( seq "$REPEAT_NUM" ); do
 	guiTryAgain || break;
 
 	# exit on non-critical errors (ignore 1 = warnings)
-	if [ ${errorcode} -le 1 ]; then
+	if [ $exitcode_borgbackup -le 1 ]; then
 		# save/update last backup time
 		if [ -d $LAST_BACKUP_DIR ]; then
 			date +'%s' > "$LAST_BACKUP_DIR/$BACKUP_NAME.time"
@@ -234,23 +243,37 @@ for i in $( seq "$REPEAT_NUM" ); do
 	fi
 done
 
+# only track latest exit code of execution, i.e. when backups fail but can be
+# recovered through retrying, the last code is still 0
+track_exitcode $exitcode_borgbackup
+
 # The (optional) prefix makes sure only backups from this machine with this
 # backup-type are touched.
 # ($PRUNE_PARAMS intentionally not quoted)
 
-if [ "$PRUNE_PARAMS" ] && [ "$PRUNE_PREFIX" != "null" ]; then
-	echo "Running prune for $BACKUP_NAME…"
+if [ "$PRUNE_PARAMS" ] && [ "$PRUNE_PREFIX" != "null" ] && [ "$exitcode" -lt 2 ]; then
+	echo "Running prune for \"$BACKUP_NAME\"…"
 	do_lock
+
 	# shellcheck disable=SC2086
 	$BORG_BIN prune -v --list --prefix "$PRUNE_PREFIX" $PRUNE_PARAMS
+	track_exitcode "$?"
+
 	rm_lock
 fi
 
 # log
-info_log "Backup \"$BACKUP_NAME\" ended."
+if [ "$exitcode" -ne 0 ]; then
+	error_log "Backup \"$BACKUP_NAME\" ended, but something seems to went wrong."
+else
+	info_log "Backup \"$BACKUP_NAME\" ended successfully."
+fi
+
 # final notification
-case ${errorcode} in
+case $exitcode in
 	0) guiShowBackupSuccess ;;
 	1) guiShowBackupWarning ;;
-	*) guiShowBackupError "${errorcode}" ;; # error code 2 or more
+	*) guiShowBackupError "$exitcode" ;; # error code 2 or more
 esac
+
+exit "$exitcode"
