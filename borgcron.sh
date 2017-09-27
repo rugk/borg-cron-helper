@@ -96,10 +96,10 @@ guiShowNotification() {
 	if command -v zenity >/dev/null; then
 		# if proxy is set, use it, otherwise call zenity directly
 		if zenityProxy 2>/dev/null; then
-			zenityProxy "--notification --window-icon \"$icon\" --text 'BorgBackup \"$BACKUP_NAME\"
+			zenityProxy "--notification --window-icon \"$icon\" --text 'BorgBackup: $BACKUP_NAME
 $1'"
 		else
-			zenity --notification --window-icon "$icon" --text "BorgBackup \"$BACKUP_NAME\"
+			zenity --notification --window-icon "$icon" --text "BorgBackup: $BACKUP_NAME
 $1"
 		fi
 	fi
