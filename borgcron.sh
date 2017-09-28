@@ -185,11 +185,11 @@ for i in $( seq "$REPEAT_NUM" ); do
 
 	# backup dir (some variables intentionally not quoted)
 	# shellcheck disable=SC2086
-	$BORG_BIN create -v --stats \
+	infoOutput=$( $BORG_BIN create -v --stats \
 		--compression "$COMPRESSION" \
 		$ADD_BACKUP_PARAMS \
 		"::$ARCHIVE_NAME" \
-		$BACKUP_DIRS
+		$BACKUP_DIRS | tee /dev/tty )
 
 	# check return code
 	exitcode_borgbackup=$?
