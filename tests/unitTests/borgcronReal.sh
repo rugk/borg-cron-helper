@@ -235,11 +235,10 @@ testBorgEncrypted(){
 				"2" \
 				"$exitcode"
 
-	# as it fails it can "wait" one time (20s), but not more (2*20=40s)
-	# TODO: do not wait in this case, see https://github.com/rugk/borg-cron-helper/issues/29
+	# it fails, but must not retry as REPEAT_NUM is set to 0
 	# shellcheck disable=SC2016
 	assertTrue "borg backup did not retry" \
-				"[ $(( endTime-startTime )) -le 35 ]"
+				"[ $(( endTime-startTime )) -le 15 ]"
 
 	# 2nd try: set passphrase/password
 
