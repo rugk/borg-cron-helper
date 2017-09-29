@@ -93,6 +93,13 @@ doNotCountLockBreakingsInBorg(){
 	# shellcheck disable=SC2016
 	addFakeBorgCommandOnBeginning '[ "$1" = "break-lock" ] && exit 0'
 }
+doNotCountInfoAndListsRequestsInBorg(){
+	# ignore break-lock commands for all counts
+	# shellcheck disable=SC2016
+	addFakeBorgCommandOnBeginning '[ "$1" = "list" ] && exit 0'
+	# shellcheck disable=SC2016
+	addFakeBorgCommandOnBeginning '[ "$1" = "info" ] && exit 0'
+}
 
 CURRDIR="$( get_full_path "$CURRDIR" )"
 BASE_DIR="$( get_full_path "$CURRDIR/../.." )"

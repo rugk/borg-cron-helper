@@ -101,6 +101,7 @@ testFails(){
 
 	doNotCountVersionRequestsInBorg
 	doNotCountLockBreakingsInBorg
+	doNotCountInfoAndListsRequestsInBorg
 
 	# always exit with critical error
 	addFakeBorgCommand 'exit 2'
@@ -217,6 +218,7 @@ PRUNE_PREFIX="{hostname}-$BACKUP_NAME-"'
 
 	doNotCountVersionRequestsInBorg
 	doNotCountLockBreakingsInBorg
+	doNotCountInfoAndListsRequestsInBorg
 
 	# test whether the lock is there
 	addFakeBorgCommand "lockCountFile='$lockCountFile'"
@@ -266,6 +268,7 @@ testRetry(){
 
 	doNotCountVersionRequestsInBorg
 	doNotCountLockBreakingsInBorg
+	doNotCountInfoAndListsRequestsInBorg
 
 	# This emulates a signal, which terminates the borg process
 	# shellcheck disable=SC2016
@@ -294,6 +297,7 @@ testNotRetry(){
 
 	doNotCountVersionRequestsInBorg
 	doNotCountLockBreakingsInBorg
+	doNotCountInfoAndListsRequestsInBorg
 
 	# always exit with critical error
 	addFakeBorgCommand 'exit 2'
