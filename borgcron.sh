@@ -18,7 +18,7 @@ RUN_PID_DIR="/var/run/borg"
 COMPRESSION="lz4"
 ADD_BACKUP_PARAMS=""
 SLEEP_TIME="5m"
-REPEAT_NUM="3"
+RETRY_NUM="3"
 
 # set placeholder/default value
 PRUNE_PREFIX="null"
@@ -167,10 +167,7 @@ echo
 info_log "Backup $BACKUP_NAME started with $( $BORG_BIN -V ), PID: $$."
 guiShowBackupBegin
 
-# when 0 is given, this does not mean "don't execute backup", but "do not retry".
-[ $REPEAT_NUM -le 1 ] && REPEAT_NUM=1
-
-for i in $( seq "$REPEAT_NUM" ); do
+for i in $( seq "$(( RETRY_NUM+1 ))" ); do
 	if is_lock; then
 		error_log "Backup $BACKUP_NAME is locked. Cancel."
 		exit 1
@@ -204,7 +201,7 @@ for i in $( seq "$REPEAT_NUM" ); do
 			error_log "Borg exited with fatal error." #(2)
 
 			# ignore last try
-			if [ "$i" -lt "$REPEAT_NUM" ]; then
+			if [ "$i" -lt "$RETRY_NUM" ]; then
 				# wait some time to recover from the error
 				info_log "Wait $SLEEP_TIME…"
 				sleep "$SLEEP_TIME"
