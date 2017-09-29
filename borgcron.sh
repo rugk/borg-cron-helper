@@ -203,19 +203,22 @@ for i in $( seq "$REPEAT_NUM" ); do
 		2 )
 			error_log "Borg exited with fatal error." #(2)
 
-			# wait some time to recover from the error
-			info_log "Wait $SLEEP_TIME…"
-			sleep "$SLEEP_TIME"
+			# ignore last try
+			if [ "$i" -lt "$REPEAT_NUM" ]; then
+				# wait some time to recover from the error
+				info_log "Wait $SLEEP_TIME…"
+				sleep "$SLEEP_TIME"
 
-			# break-lock if backup has not locked by another process in the meantime
-			if is_lock; then
-				error_log "Backup $BACKUP_NAME is locked locally by other process. Cancel."
-				exit 1
-			fi
+				# break-lock if backup has not locked by another process in the meantime
+				if is_lock; then
+					error_log "Backup \"$BACKUP_NAME\" is locked locally by other process. Cancel."
+					exit 1
+				fi
 
-			if [ "$RUN_PID_DIR" != "" ]; then
-				info_log "Breaking lock…"
-				$BORG_BIN break-lock "$REPOSITORY"
+				if [ "$RUN_PID_DIR" != "" ]; then
+					info_log "Breaking lock…"
+					$BORG_BIN break-lock "$REPOSITORY"
+				fi
 			fi
 			;;
 		1 )
