@@ -82,6 +82,6 @@ config file per backup.
 
 Setup instructions can be found [in the wiki](https://github.com/rugk/borg-cron-helper/wiki/How-to-setup%3F).
 
-## Vulnerability disclosure
+## Vulnerability reporting
 
-If you find any vulnerability drop me a mail at [my mail address listed in my GitHub profile](https://github.com/rugk). You can find my [public key here](https://keys.mailvelope.com/pks/lookup?op=get&search=0x8F162AE44088F1BE). My fingerprint is `7046 C1B2 8644 9EAF 9F3F F5C1 8F16 2AE4 4088 F1BE`.
+If you find a vulnerability drop me a mail at [my mail address listed in my GitHub profile](https://github.com/rugk). You can find my [public key here](https://keys.mailvelope.com/pks/lookup?op=get&search=0x8F162AE44088F1BE). My fingerprint is `7046 C1B2 8644 9EAF 9F3F F5C1 8F16 2AE4 4088 F1BE`.
