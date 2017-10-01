@@ -115,9 +115,9 @@ getBackupInfo() {
 	# Attention: Always assumes the last backup is the current one/most recent!
 
 	# get last archive name of new backup
-	lastArchive=$( borg list --short ::|tail -n 1 )
+	lastArchive=$( $BORG_BIN list --short ::|tail -n 1 )
 	# and get info about it
-	borginfo=$( borg info "::$lastArchive" )
+	borginfo=$( $BORG_BIN info "::$lastArchive" )
 
 	timeStart=$( echo "$borginfo"|grep 'Time (start):'|sed -E 's/Time \(start\): (.*)/\1/g' )
 	timeEnd=$( echo "$borginfo"|grep 'Time (end):'|sed -E 's/Time \(end\): (.*)/\1/g' )
