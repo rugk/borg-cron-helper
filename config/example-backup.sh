@@ -31,33 +31,7 @@ RETRY_NUM="3" # = retry after a failed backup for n number of times
 # GUI settings
 GUI_OVERWRITE_ICON="$PWD/icon.png" # custom icon for notifications (needs absolute path)
 # You can also overwrite the guiShow…() functions here to modify their behaviour.
-# E.g. show a scary prompt if the backup fails:
-
-# guiShowBackupError() {
-# 	zenity --error --text "<b>The backup process failed.</b> See the log for more details.
-#
-# <small><tt>$( cat path/to/log.log )</tt></small>" \
-# 		--title "BorgBackup \"$BACKUP_NAME\"" --window-icon "$GUI_OVERWRITE_ICON" \
-# 		--name borg-cron-helper --class borg-cron-helper 2> /dev/null
-# }
-
-# Or interactively ask for retrying the backup. (REPEAT_NUM is a maxium number fo retries, then)
-
-# guiTryAgain() {
-# 	zenity --question --text "<b>The backup failed.</b> ($i. try) Do you want to try it again?" \
-# 		--height=10 --title "BorgBackup \"$BACKUP_NAME\"" --window-icon "$GUI_OVERWRITE_ICON" \
-# 		--name borg-cron-helper --class borg-cron-helper 2> /dev/null
-# }
-
-# of course, also a CLI version is possible:
-
-# guiTryAgain() {
-# 	read -rp "The backup failed. ($i. try) Do you want to try it again? [yN]: " retry
-# 	if [ "$retry" = "Y" ] || [ "$retry" = "y" ]; then
-# 		return 0 # (true)
-# 	fi
-# 	return 1 # (false)
-# }
+# For more information, see the wiki: https://github.com/rugk/borg-cron-helper/wiki/More-GUI-integration
 
 # borg-internal settings
 # (see https://borgbackup.readthedocs.io/en/stable/usage.html#environment-variables)
