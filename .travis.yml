@@ -10,7 +10,7 @@ env:
   - TEST_SHELL=zsh BORG=1.0.11 BORG_SOURCE=binary BORG_VARIANT=borg-linux64 # up-to-date/stable
   - TEST_SHELL=bash BORG=1.0.11 BORG_SOURCE=binary BORG_VARIANT=borg-linux64 # up-to-date/stable
   # more up-to-date
-  - TEST_SHELL=sh BORG=1.1.0rc3 BORG_SOURCE=binary BORG_VARIANT=borg-linux64 # bleeding edge/RC
+  - TEST_SHELL=sh BORG=1.1.0rc4 BORG_SOURCE=binary BORG_VARIANT=borg-linux64 # bleeding edge/RC
   # - TEST_SHELL=sh BORG=nightly # dev version, unsupported by current TravisCi config
 before_script:
   # add custom binary path
