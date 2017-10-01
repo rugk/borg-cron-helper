@@ -21,9 +21,6 @@ oneTimeSetUp(){
 	echo "Testing borgcron.sh…"
 	echo
 }
-# oneTimeTearDown(){
-#
-# }
 
 # cleanup tests to always have an empty temp dirs
 setUp(){
@@ -123,7 +120,6 @@ testFails(){
 				"2" \
 				"$( cat "$BASE_DIR/custombin/counter" )"
 }
-
 
 testUsesBorgBin(){
 	# ensures the borg binary specified in $BORG_BIN is used and not "borg" literally

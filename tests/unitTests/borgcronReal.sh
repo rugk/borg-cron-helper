@@ -67,7 +67,7 @@ LAST_BACKUP_DIR='/tmp/LAST_BACKUP_DIR'
 RUN_PID_DIR='/tmp/RUN_PID_DIR'
 
 # disable notifications, which just annoy in unit tests
-guiShowNotification() { :; }
+guiCanShowNotifications() { false; }
 
 # make tests faster, use small sleep time
 SLEEP_TIME='20s'
