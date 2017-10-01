@@ -26,7 +26,7 @@ PRUNE_PARAMS="--keep-daily=14 --keep-weekly=8 --keep-monthly=6 --keep-yearly=0"
 # additional settings
 ADD_BACKUP_PARAMS="" # --one-file-system for backing up root file dir
 SLEEP_TIME="5m" # time, the script should wait until re-attempting the backup after a failed try
-REPEAT_NUM="3" # = three retries after accepting a failed backup
+RETRY_NUM="3" # = retry after a failed backup for n number of times
 
 # GUI settings
 GUI_OVERWRITE_ICON="$PWD/icon.png" # custom icon for notifications (needs absolute path)
