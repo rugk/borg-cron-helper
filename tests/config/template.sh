@@ -30,7 +30,7 @@ PRUNE_PARAMS=""
 SLEEP_TIME=10s
 
 # disable notifications, which just annoy in unit tests
-guiShowNotification() { :; }
+guiCanShowNotifications() { false; }
 
 # overwrite built-in variables, so dirs work
 LAST_BACKUP_DIR="/tmp/LAST_BACKUP_DIR"
