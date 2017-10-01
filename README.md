@@ -44,6 +44,8 @@ It has been tested with GNOME, but should work on any system, where `zenity` is 
 
 It is even possible to configure it to show the notification as a "standard" user while the backup is actually running as root.
 
+For examples, see [the wiki page about more ways for GUI integration](https://github.com/rugk/borg-cron-helper/wiki/Additional-GUI-integration).
+
 ### Modular approach
 
 The main "work" is done by [`borgcron.sh`](borgcron.sh). This script can be used to execute a single backup.
