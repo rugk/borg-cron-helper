@@ -128,8 +128,8 @@ getBackupInfo() {
 	durationSec=$(( timeEndSec-timeStartSec ))
 	duration=$( prettifyTimeDisplay "$durationSec" )
 
-	size=$( echo "$borginfo" |grep 'This archive:'|sed -E 's/\s{2,}/|/g'|cut -d '|' -f 3 )
-	sizeTotal=$( echo "$borginfo"|grep 'All archives:'|sed -E 's/\s{2,}/|/g'|cut -d '|' -f 3 )
+	size=$( echo "$borginfo" |grep 'This archive:'|sed -E 's/\s{2,}/|/g'|cut -d '|' -f 4 )
+	sizeTotal=$( echo "$borginfo"|grep 'All archives:'|sed -E 's/\s{2,}/|/g'|cut -d '|' -f 4 )
 }
 
 # GUI functions (can be overwritten in config file)
