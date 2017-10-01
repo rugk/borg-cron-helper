@@ -96,8 +96,8 @@ testWorks(){
 
 testFails(){
 	# check that it "properly" fails
-	# retry only 2 times
-	addConfigFile "testFails.sh" "REPEAT_NUM=2"
+	# retry only 1 time
+	addConfigFile "testFails.sh" "RETRY_NUM=1"
 
 	doNotCountVersionRequestsInBorg
 	doNotCountLockBreakingsInBorg
@@ -290,7 +290,7 @@ testRetry(){
 
 testNotRetry(){
 	# must not retry
-	addConfigFile "notRetryTest.sh" "REPEAT_NUM=0"
+	addConfigFile "notRetryTest.sh" "RETRY_NUM=0"
 
 	doNotCountVersionRequestsInBorg
 	doNotCountLockBreakingsInBorg

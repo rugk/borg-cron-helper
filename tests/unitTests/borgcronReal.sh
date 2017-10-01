@@ -219,7 +219,7 @@ testBorgEncrypted(){
 	patchConfigDisableVar "exampleTest.sh" 'PRUNE_PARAMS'
 
 	# no retry
-	patchConfigSetVar "exampleTest.sh" 'REPEAT_NUM' '0'
+	patchConfigSetVar "exampleTest.sh" 'RETRY_NUM' '0'
 
 	startTime=$( date +%s )
 	# shellcheck disable=SC2034
@@ -235,7 +235,7 @@ testBorgEncrypted(){
 				"2" \
 				"$exitcode"
 
-	# it fails, but must not retry as REPEAT_NUM is set to 0
+	# it fails, but must not retry as RETRY_NUM is set to 0
 	# shellcheck disable=SC2016
 	assertTrue "borg backup did not retry" \
 				"[ $(( endTime-startTime )) -le 15 ]"
