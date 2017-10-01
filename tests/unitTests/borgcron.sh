@@ -21,9 +21,6 @@ oneTimeSetUp(){
 	echo "Testing borgcron.sh…"
 	echo
 }
-# oneTimeTearDown(){
-#
-# }
 
 # cleanup tests to always have an empty temp dirs
 setUp(){
@@ -79,7 +76,7 @@ testWrongFilename(){
 
 testWorks(){
 	# this is important for further tests below, because they would all succeed
-	# if the basic test taht it "works by default" is not satisfied
+	# if the basic test that it "works by default" is not satisfied
 	addConfigFile "testWorks.sh"
 	startTime="$( date +'%s' )"
 	assertTrue "works without any modification" \
@@ -101,6 +98,7 @@ testFails(){
 
 	doNotCountVersionRequestsInBorg
 	doNotCountLockBreakingsInBorg
+	doNotCountInfoAndListsRequestsInBorg
 
 	# always exit with critical error
 	addFakeBorgCommand 'exit 2'
@@ -121,6 +119,26 @@ testFails(){
 	assertEquals "retry exact number of times, given" \
 				"2" \
 				"$( cat "$BASE_DIR/custombin/counter" )"
+}
+
+testUsesBorgBin(){
+	# ensures the borg binary specified in $BORG_BIN is used and not "borg" literally
+	addConfigFile "testBorgBin.sh" "BORG_BIN=borg-ok"
+
+	# add borg-ok binary doing nothing
+	echo '#!/bin/sh' > "$BASE_DIR/custombin/borg-ok"
+	chmod +x "$BASE_DIR/custombin/borg-ok"
+
+	# run backup
+	assertTrue "execution works" \
+				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath testBorgBin.sh )' "
+
+	# must not call the "real fake borg binary", but borg-ok.
+	assertFalse "does not run the borg binary when \$BORG_BIN is set" \
+				"[ -f '$BASE_DIR/custombin/counter' ]"
+
+	# remove borg-ok
+	rm "$BASE_DIR/custombin/borg-ok"
 }
 
 testMissingVariables(){
@@ -217,6 +235,7 @@ PRUNE_PREFIX="{hostname}-$BACKUP_NAME-"'
 
 	doNotCountVersionRequestsInBorg
 	doNotCountLockBreakingsInBorg
+	doNotCountInfoAndListsRequestsInBorg
 
 	# test whether the lock is there
 	addFakeBorgCommand "lockCountFile='$lockCountFile'"
@@ -266,6 +285,7 @@ testRetry(){
 
 	doNotCountVersionRequestsInBorg
 	doNotCountLockBreakingsInBorg
+	doNotCountInfoAndListsRequestsInBorg
 
 	# This emulates a signal, which terminates the borg process
 	# shellcheck disable=SC2016
@@ -294,6 +314,7 @@ testNotRetry(){
 
 	doNotCountVersionRequestsInBorg
 	doNotCountLockBreakingsInBorg
+	doNotCountInfoAndListsRequestsInBorg
 
 	# always exit with critical error
 	addFakeBorgCommand 'exit 2'

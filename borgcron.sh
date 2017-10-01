@@ -87,38 +87,116 @@ rm_lock() {
 	rm "$RUN_PID_DIR/BORG_$BACKUP_NAME.pid"
 }
 
+# thanks https://unix.stackexchange.com/questions/27013/displaying-seconds-as-days-hours-mins-seconds/170299#170299
+# edited to work for POSIX
+prettifyTimeDisplay()
+{
+    t=$1
+
+    d=$((t/60/60/24))
+    h=$((t/60/60%24))
+    m=$((t/60%60))
+    s=$((t%60))
+
+    if [ $d -gt 0 ]; then
+            [ $d = 1 ] && printf "%d day " $d || printf "%d days " $d
+    fi
+    if [ $h -gt 0 ]; then
+            [ $h = 1 ] && printf "%d hour " $h || printf "%d hours " $h
+    fi
+    if [ $m -gt 0 ]; then
+            [ $m = 1 ] && printf "%d minute " $m || printf "%d minutes " $m
+    fi
+    if [ $d = 0 ] && [ $h = 0 ] && [ $m = 0 ]; then
+            [ $s = 1 ] && printf "%d second" $s || printf "%d seconds" $s
+    fi
+}
+getBackupInfo() {
+	# syntax: archivename
+
+	# get output of borg info
+	borginfo=$( $BORG_BIN info "::$lastArchive" )
+
+	# get start/end time from output
+	timeStart=$( echo "$borginfo"|grep 'Time (start):'|sed -E 's/Time \(start\): (.*)/\1/g' )
+	timeEnd=$( echo "$borginfo"|grep 'Time (end):'|sed -E 's/Time \(end\): (.*)/\1/g' )
+
+	timeStartSec=$( date --date="$timeStart" +"%s" )
+	timeEndSec=$( date --date="$timeEnd" +"%s" )
+
+	# calculate the difference, i.e. the duration of backup
+	durationSec=$(( timeEndSec-timeStartSec ))
+	duration=$( prettifyTimeDisplay "$durationSec" )
+
+	# extract the "deduplicated/compressed" value for each size
+	size=$( echo "$borginfo"|grep 'This archive:'|sed -E 's/\s{2,}/|/g'|cut -d '|' -f 4 )
+	sizeTotal=$( echo "$borginfo"|grep 'All archives:'|sed -E 's/\s{2,}/|/g'|cut -d '|' -f 4 )
+}
+getInfoAboutLastBackup() {
+	# get last archive name of new backup
+	lastArchive=$( $BORG_BIN list --short ::|tail -n 1 )
+	# and get info about it
+	getBackupInfo "$lastArchive"
+}
+
 # GUI functions (can be overwritten in config file)
+guiCanShowNotifications() {
+	# uses a command to get out, whether we can show notifications
+	# You can manually set this to return "false" (or 1, whcih is shell-speak for false)
+	# to disable all notifications.
+	command -v zenity >/dev/null
+}
 guiShowNotification() {
+	# syntax: title text icon
+	title="BorgBackup: $BACKUP_NAME"
 	icon="info"
-	[ "$2" != "" ] && icon="$2"
+	[ "$1" != "" ] && title="$1"
+	[ "$3" != "" ] && icon="$3"
 	[ "$GUI_OVERWRITE_ICON" != "" ] && icon="$GUI_OVERWRITE_ICON"
 
-	if command -v zenity >/dev/null; then
-		# if proxy is set, use it, otherwise call zenity directly
-		if zenityProxy 2>/dev/null; then
-			zenityProxy "--notification --window-icon \"$icon\" --text 'BorgBackup: $BACKUP_NAME
-$1'"
-		else
-			zenity --notification --window-icon "$icon" --text "BorgBackup: $BACKUP_NAME
-$1"
-		fi
+	# if proxy is set, use it, otherwise call zenity directly
+	if zenityProxy 2>/dev/null; then
+		zenityProxy "--notification --window-icon \"$icon\" --text '$title
+$2'"
+	else
+		zenity --notification --window-icon "$icon" --text "$title
+$2"
 	fi
 }
 guiShowBackupBegin() {
 	: # = do nothing, so do not show any notification
-	# alternatively: guiShowNotification "Backup just started."
 }
 guiShowBackupSuccess() {
-	guiShowNotification "Backup has been successful." "info"
+	# prevent quering borg when we cannot show notifications anyway
+	guiCanShowNotifications || return 1 # (false)
+
+	getInfoAboutLastBackup
+	guiShowNotification "BorgBackup: $BACKUP_NAME – Successful" \
+		"It took ${duration} to backup ${size}. (total: ${sizeTotal})" \
+		"info"
 }
 guiShowBackupWarning() {
-	guiShowNotification "Backup was successful, but showed some warnings." "warning"
+	# prevent quering borg when we cannot show notifications anyway
+	guiCanShowNotifications || return 1 # (false)
+
+	getInfoAboutLastBackup
+	guiShowNotification "BorgBackup: $BACKUP_NAME – Warning" \
+		"Backup was successful, but showed some warnings. It took ${duration} to backup ${size}. (total: ${sizeTotal})" \
+		"warning"
 }
 guiShowBackupError() {
-	guiShowNotification "The backup process failed. See the log for more details." "error"
+	guiCanShowNotifications || return 1 # (false)
+
+	guiShowNotification "BorgBackup: $BACKUP_NAME – Error" \
+		"The backup process failed. See the log for more details." \
+		"error"
 }
 guiShowBackupAbort() {
-	guiShowNotification "Backup has been aborted." "error"
+	guiCanShowNotifications || return 1 # (false)
+
+	guiShowNotification "BorgBackup: $BACKUP_NAME – Aborted" \
+		"Backup has been aborted." \
+		"error"
 }
 guiTryAgain() {
 	: # disabled by default
