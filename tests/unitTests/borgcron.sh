@@ -79,7 +79,7 @@ testWrongFilename(){
 
 testWorks(){
 	# this is important for further tests below, because they would all succeed
-	# if the basic test taht it "works by default" is not satisfied
+	# if the basic test that it "works by default" is not satisfied
 	addConfigFile "testWorks.sh"
 	startTime="$( date +'%s' )"
 	assertTrue "works without any modification" \
@@ -122,6 +122,27 @@ testFails(){
 	assertEquals "retry exact number of times, given" \
 				"2" \
 				"$( cat "$BASE_DIR/custombin/counter" )"
+}
+
+
+testUsesBorgBin(){
+	# ensures the borg binary specified in $BORG_BIN is used and not "borg" literally
+	addConfigFile "testBorgBin.sh" "BORG_BIN=borg-ok"
+
+	# add borg-ok binary doing nothing
+	echo '#!/bin/sh' > "$BASE_DIR/custombin/borg-ok"
+	chmod +x "$BASE_DIR/custombin/borg-ok"
+
+	# run backup
+	assertTrue "execution works" \
+				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath testBorgBin.sh )' "
+
+	# must not call the "real fake borg binary", but borg-ok.
+	assertFalse "does not run the borg binary when \$BORG_BIN is set" \
+				"[ -f '$BASE_DIR/custombin/counter' ]"
+
+	# remove borg-ok
+	rm "$BASE_DIR/custombin/borg-ok"
 }
 
 testMissingVariables(){
