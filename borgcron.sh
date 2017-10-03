@@ -126,7 +126,7 @@ getBackupInfo() {
 
 	# calculate the difference, i.e. the duration of backup
 	durationSec=$(( timeEndSec-timeStartSec ))
-	duration=$( prettifyTimeDisplay "$durationSec" )
+	duration=$( prettifyTimeDisplay "$durationSec" | xargs ) # trim sourounding spaces
 
 	# extract the "deduplicated/compressed" value for each size
 	size=$( echo "$borginfo"|grep 'This archive:'|sed -E 's/\s{2,}/|/g'|cut -d '|' -f 4 )
@@ -242,7 +242,7 @@ fi
 
 # log
 echo
-info_log "Backup $BACKUP_NAME started with $( $BORG_BIN -V ), PID: $$."
+info_log "Backup $BACKUP_NAME started with $( $BORG_BIN -V ), helper PID: $$."
 guiShowBackupBegin
 
 for i in $( seq "$(( RETRY_NUM+1 ))" ); do
