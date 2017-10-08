@@ -23,4 +23,4 @@ All tests are configured to be run on pull requests and commits automatically, [
 
 ## Coverage/What is not tested?
 
-Note that neither the system integration is tested, nor the small tools (`checklastbackup.sh` and `databasedump.sh`). Everything else is more or less covered by the tests. 
+Note that neither the system integration is tested, nor the small tools (like `databasedump.sh`). Everything else is more or less covered by the tests. 
