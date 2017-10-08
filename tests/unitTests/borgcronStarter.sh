@@ -63,21 +63,42 @@ addConfigFile(){
 # actual unit tests
 testRemovedConfigDir(){
 	tearDown
-	assertTrue "stops on missing config dir" \
-				"$TEST_SHELL '$BASE_DIR/borgcron_starter.sh'|grep 'No backup settings file(s) could be found'"
+
+	output=$( $TEST_SHELL "$BASE_DIR/borgcron_starter.sh" 2>&1 )
+	exitcode=$?
+
+	# shellcheck disable=SC2016
+	assertFalse "does not stop on missing config dir; exited with ${exitcode}, output: ${output}" \
+				"$exitcode"
+
+	# shellcheck disable=SC2016
+	assertTrue "does not show correct error message; exited with ${exitcode}, output: ${output}" \
+				'echo "$output"|grep "No backup settings file(s) could be found"'
 }
 testEmptyConfigDir(){
-	assertTrue "stops on empty config dir" \
-				"$TEST_SHELL '$BASE_DIR/borgcron_starter.sh'|grep 'No backup settings file(s) could be found'"
+	output=$( $TEST_SHELL "$BASE_DIR/borgcron_starter.sh" 2>&1 )
+	exitcode=$?
+
+	# shellcheck disable=SC2016
+	assertFalse "does not stop on empty config dir; exited with ${exitcode}, output: ${output}" \
+				"$exitcode"
+
+	# shellcheck disable=SC2016
+	assertTrue "stops on empty config dir; exited with ${exitcode}, output: ${output}" \
+				'echo "$output"|grep "No backup settings file(s) could be found"'
 }
 testShowsHelp(){
 	addConfigFile "doNotExecute.sh"
 
-	assertTrue "shows help" \
-				"$TEST_SHELL '$BASE_DIR/borgcron_starter.sh' --help|grep 'Usage:'"
+	output=$( $TEST_SHELL "$BASE_DIR/borgcron_starter.sh" --help 2>&1 )
+	exitcode=$?
+
+	# shellcheck disable=SC2016
+	assertTrue "does not show help; exited with ${exitcode}, output: ${output}" \
+				'echo "$output"|grep "Usage:"'
 
 	# make sure, borgcron.sh did not execute
-	assertFalse "when showing help, do not execute anything else" \
+	assertFalse "it did execute backup something else than just showing the help; exited with ${exitcode}, output: ${output}" \
 				"[ -e '$CONFIG_DIR/list' ]"
 
 }
@@ -85,14 +106,17 @@ testExecuteSingleConfigExplicit(){
 	# do specify config to run explicitly
 	addConfigFile "singleConfig.sh"
 
-	assertTrue "no error when executing" \
-				"$TEST_SHELL '$BASE_DIR/borgcron_starter.sh' singleConfig"
+	output=$( $TEST_SHELL "$BASE_DIR/borgcron_starter.sh" singleConfig 2>&1 )
+	exitcode=$?
 
-	assertEquals "executes only one time" \
+	assertTrue "failed when executing; exited with ${exitcode}, output: ${output}" \
+				"$exitcode"
+
+	assertEquals "did execute backup more or less than one time; exited with ${exitcode}, output: ${output}" \
 				"1" \
 				"$( cat "$CONFIG_DIR/counter" )"
 
-	assertEquals "executes correct one config" \
+	assertEquals "did execute incorrect config(s); exited with ${exitcode}, output: ${output}" \
 				"singleConfig.sh" \
 				"$( cat "$CONFIG_DIR/list" )"
 }
@@ -100,14 +124,17 @@ testExecuteSingleConfigExplicitSH(){
 	# do specify config to run explicitly using *.sh file extension
 	addConfigFile "singleConfig.sh"
 
-	assertTrue "no error when executing" \
-				"$TEST_SHELL '$BASE_DIR/borgcron_starter.sh' singleConfig.sh"
+	output=$( $TEST_SHELL "$BASE_DIR/borgcron_starter.sh" singleConfig.sh 2>&1 )
+	exitcode=$?
 
-	assertEquals "executes only one time" \
+	assertTrue "failed when executing; exited with ${exitcode}, output: ${output}" \
+				"$exitcode"
+
+	assertEquals "did execute backup more or less than one time; exited with ${exitcode}, output: ${output}" \
 				"1" \
 				"$( cat "$CONFIG_DIR/counter" )"
 
-	assertEquals "executes correct one config" \
+	assertEquals "did execute incorrect config(s); exited with ${exitcode}, output: ${output}" \
 				"singleConfig.sh" \
 				"$( cat "$CONFIG_DIR/list" )"
 }
@@ -115,14 +142,17 @@ testExecuteSingleConfigImplicit(){
 	# does not specify file directly
 	addConfigFile "singleConfig.sh"
 
-	assertTrue "no error when executing" \
-				"$TEST_SHELL '$BASE_DIR/borgcron_starter.sh'"
+	output=$( $TEST_SHELL "$BASE_DIR/borgcron_starter.sh" 2>&1 )
+	exitcode=$?
 
-	assertEquals "executes only one time" \
+	assertTrue "failed when executing; exited with ${exitcode}, output: ${output}" \
+				"$exitcode"
+
+	assertEquals "did execute more or less than one time; exited with ${exitcode}, output: ${output}" \
 				"1" \
 				"$( cat "$CONFIG_DIR/counter" )"
 
-	assertEquals "executes correct one config" \
+	assertEquals "did execute incorrect config(s); exited with ${exitcode}, output: ${output}" \
 				"singleConfig.sh" \
 				"$( cat "$CONFIG_DIR/list" )"
 }
@@ -134,16 +164,19 @@ testExecuteMultipleConfigsAll(){
 	addConfigFile "hSecondExecuteLetter.sh"
 	addConfigFile "ZLastExecuteUpperLetter.sh"
 
-	assertTrue "no error when executing" \
-				"$TEST_SHELL '$BASE_DIR/borgcron_starter.sh'"
+	output=$( $TEST_SHELL "$BASE_DIR/borgcron_starter.sh" 2>&1 )
+	exitcode=$?
 
-	assertEquals "executes 3 scripts, only shell scripts" \
+	assertTrue "failed when executing; exited with ${exitcode}, output: ${output}" \
+				"$exitcode"
+
+	assertEquals "did not only execute the 4 shell scripts, but also the JPG file(?); exited with ${exitcode}, output: ${output}" \
 				"4" \
 				"$( cat "$CONFIG_DIR/counter" )"
 
 	case "$TEST_SHELL" in
 		sh ) # sh in Travis-CI does sort files differently
-			assertEquals "executes shell scripts in correct order" \
+			assertEquals "executed shell scripts in incorrect order; exited with ${exitcode}, output: ${output}" \
 						"0FirstExecuteNumber.sh
 ZLastExecuteUpperLetter.sh
 aFirstExecuteLetter.sh
@@ -151,7 +184,7 @@ hSecondExecuteLetter.sh" \
 			"$( cat "$CONFIG_DIR/list" )"
 			;;
 		* ) # zsh, bash
-			assertEquals "executes shell scripts in correct order" \
+			assertEquals "executed shell scripts in incorrect order; exited with ${exitcode}, output: ${output}" \
 						"0FirstExecuteNumber.sh
 aFirstExecuteLetter.sh
 hSecondExecuteLetter.sh
@@ -169,18 +202,18 @@ testExecuteMultipleConfigsPartially(){
 	addConfigFile "Z_Backup2.sh"
 
 	# note this again tests different ways of passing the file names
-	$TEST_SHELL "$BASE_DIR/borgcron_starter.sh" h_Backup1 Z_Backup2.sh DoNotExexuteNoShellFile.jpg 0_Backup3 > /dev/null 2>&1
+	output="$( $TEST_SHELL "$BASE_DIR/borgcron_starter.sh" h_Backup1 Z_Backup2.sh DoNotExexuteNoShellFile.jpg 0_Backup3 2>&1 )"
 	exitcode=$?
 
-	assertEquals "should exit with 1 indicating a wrong filename has been passed" \
+	assertEquals "did not exit with 1, as it should to indicate that a wrong filename has been passed; exited with ${exitcode}, output: ${output}" \
 				"1" \
 				"$exitcode"
 
-	assertEquals "executes 3 scripts, only shell scripts" \
+	assertEquals "did not only execute the 3 shell scripts, which where explicitly passed; exited with ${exitcode}, output: ${output}" \
 				"3" \
 				"$( cat "$CONFIG_DIR/counter" )"
 
-	assertEquals "executes shell scripts in correct order" \
+	assertEquals "executed shell scripts in incorrect order; exited with ${exitcode}, output: ${output}" \
 				"h_Backup1.sh
 Z_Backup2.sh
 0_Backup3.sh" \
@@ -194,20 +227,20 @@ testExitcodePropagation(){
 	addConfigFile "1.sh" "exit 1"
 	addConfigFile "0.sh" "exit 0"
 	# test run
-	$TEST_SHELL "$BASE_DIR/borgcron_starter.sh" 1 2 0 > /dev/null 2>&1
+	output="$( $TEST_SHELL "$BASE_DIR/borgcron_starter.sh" 1 2 0 2>&1 )"
 	exitcode=$?
 	# check exit code
-	assertEquals "correct exit code 2" \
+	assertEquals "did not exit with correct exit code 2; exited with ${exitcode}, output: ${output}" \
 				"2" \
 				"$exitcode"
 
 
 	addConfigFile "100.sh" "exit 100"
 	# test run
-	$TEST_SHELL "$BASE_DIR/borgcron_starter.sh" 100 1 2 > /dev/null 2>&1
+	output="$( $TEST_SHELL "$BASE_DIR/borgcron_starter.sh" 100 1 2 2>&1 )"
 	exitcode=$?
 	# check exit code
-	assertEquals "correct exit code 100" \
+	assertEquals "did not exit with correct exit code 100; exited with ${exitcode}, output: ${output}" \
 				"100" \
 				"$exitcode"
 
@@ -215,10 +248,10 @@ testExitcodePropagation(){
 	addConfigFile "203.sh" "exit 203"
 	addConfigFile "9.sh" "exit 9"
 	# test run
-	$TEST_SHELL "$BASE_DIR/borgcron_starter.sh" > /dev/null 2>&1
+	output="$( $TEST_SHELL "$BASE_DIR/borgcron_starter.sh" 2>&1 )"
 	exitcode=$?
 	# check exit code
-	assertEquals "correct exit code 203" \
+	assertEquals "did not exit with correct exit code 203; exited with ${exitcode}, output: ${output}" \
 				"203" \
 				"$exitcode"
 }

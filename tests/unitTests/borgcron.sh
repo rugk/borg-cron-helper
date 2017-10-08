@@ -63,15 +63,25 @@ rmLock(){
 
 # actual unit tests
 testMissingParameter(){
-	assertEquals "stops on missing config dir" \
+	output="$( $TEST_SHELL "$BASE_DIR/borgcron.sh" 2>&1 )"
+	exitcode=$?
+
+	assertFalse "does not exit with correct error code when parameter is missing; exited with ${exitcode}, output: ${output}" \
+				"$exitcode"
+
+	assertEquals "does not exit with correct error message when parameter is missing; exited with ${exitcode}, output: ${output}" \
 				"Please pass a path of a config file to borgcron.sh." \
-				"$( $TEST_SHELL "$BASE_DIR/borgcron.sh" )"
+				"$output"
 }
 
 testWrongFilename(){
 	addConfigFile "testWrongName.sh"
-	assertFalse "fails with wrong filename" \
-				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath testWrongName_WRONG.sh )' "
+
+	output="$( $TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath testWrongName_WRONG.sh )" 2>&1 )"
+	exitcode=$?
+
+	assertFalse "does nopt exit with failing error code when specified config file is missing; exited with ${exitcode}, output: ${output}" \
+				"$output"
 }
 
 testWorks(){
@@ -79,15 +89,19 @@ testWorks(){
 	# if the basic test that it "works by default" is not satisfied
 	addConfigFile "testWorks.sh"
 	startTime="$( date +'%s' )"
-	assertTrue "works without any modification" \
-				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath testWorks.sh )' "
+
+	output="$( $TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath testWorks.sh )" 2>&1 )"
+	exitcode=$?
+
+	assertTrue "fails with basic errorfree template config; exited with ${exitcode}, output: ${output}" \
+				"$exitcode"
 
 	# checks that last backup time exists and it's size is larger than 0 and…
 	timeFile='/tmp/LAST_BACKUP_DIR/unit-test-fake-backup.time'
-	assertTrue "writes/saves backup time" \
+	assertTrue "does not write/save backup time; exited with ${exitcode}, output: ${output}" \
 				"[ -s '$timeFile' ]"
 	# …that the time is realistic (i.e. after start of script)
-	assertTrue "saved backup time is realistic" \
+	assertTrue "saved backup time is unrealistic; exited with ${exitcode}, output: ${output}" \
 				"[ '$( cat "$timeFile" )' -ge '$startTime' ]"
 }
 
@@ -104,19 +118,19 @@ testFails(){
 	addFakeBorgCommand 'exit 2'
 
 	# run
-	$TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath testFails.sh )" > /dev/null 2>&1
+	output="$( $TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath testFails.sh )" 2>&1 )"
 	exitcode=$?
 
-	assertEquals "should fail with correct exit code" \
+	assertEquals "returns wrong exit code; exited with ${exitcode}, output: ${output}" \
 				"2" \
 				"$exitcode"
 
 	# checks that backup time was *not* saved
 	timeFile='/tmp/LAST_BACKUP_DIR/unit-test-fake-backup.time'
-	assertFalse "should not save last backup time as it was not successful" \
+	assertFalse "saves last backup time altghough backup was not successful; exited with ${exitcode}, output: ${output}" \
 				"[ -f '$timeFile' ]"
 
-	assertEquals "retry exact number of times, given" \
+	assertEquals "retries an incorrect number of times, given; exited with ${exitcode}, output: ${output}" \
 				"2" \
 				"$( cat "$BASE_DIR/custombin/counter" )"
 }
@@ -129,12 +143,15 @@ testUsesBorgBin(){
 	echo '#!/bin/sh' > "$BASE_DIR/custombin/borg-ok"
 	chmod +x "$BASE_DIR/custombin/borg-ok"
 
+	output="$( $TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath testBorgBin.sh )" 2>&1 )"
+	exitcode=$?
+
 	# run backup
-	assertTrue "execution works" \
-				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath testBorgBin.sh )' "
+	assertTrue "execution fails; exited with ${exitcode}, output: ${output}" \
+				"$exitcode"
 
 	# must not call the "real fake borg binary", but borg-ok.
-	assertFalse "does not run the borg binary when \$BORG_BIN is set" \
+	assertFalse "still runs the borg binary when \$BORG_BIN is set, i.e. ignores \$BORG_BIN setting; exited with ${exitcode}, output: ${output}" \
 				"[ -f '$BASE_DIR/custombin/counter' ]"
 
 	# remove borg-ok
@@ -143,30 +160,40 @@ testUsesBorgBin(){
 
 testMissingVariables(){
 	addConfigFile "missingVars1.sh" 'BACKUP_NAME=""'
-	assertFalse "stops on missing BACKUP_NAME" \
-				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath missingVars.sh )' "
+	output="$( $TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath missingVars1.sh )" 2>&1 )"
+	exitcode=$?
+	assertFalse "does not stop on missing BACKUP_NAME; exited with ${exitcode}, output: ${output}" \
+				"$exitcode"
 
 	addConfigFile "missingVars2.sh" 'ARCHIVE_NAME=""'
-	assertFalse "stops on missing ARCHIVE_NAME" \
-				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath missingVars.sh )'"
+	output="$( $TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath missingVars2.sh )" 2>&1 )"
+	exitcode=$?
+	assertFalse "does not stop on missing ARCHIVE_NAME; exited with ${exitcode}, output: ${output}" \
+				"$exitcode"
 
 	addConfigFile "missingVars3.sh" 'BACKUP_DIRS=""'
-	assertFalse "stops on missing BACKUP_DIRS" \
-				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath missingVars.sh )'"
+	output="$( $TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath missingVars3.sh )" 2>&1 )"
+	exitcode=$?
+	assertFalse "does not stop on missing BACKUP_DIRS; exited with ${exitcode}, output: ${output}" \
+				"$exitcode"
 }
 
 testMissingExportedVariables(){
 	addConfigFile "missingExportedVars1.sh" 'export BORG_REPO=""'
-	assertFalse "stops on missing exported BORG_REPO" \
-				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath missingExportedVars.sh )'"
+	output="$( $TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath missingExportedVars1.sh )" 2>&1 )"
+	exitcode=$?
+	assertFalse "does not stop on missing exported BORG_REPO; exited with ${exitcode}, output: ${output}" \
+				"$exitcode"
 
 	unexportCmd='export -n BORG_REPO'
 	# The Travis-CI version of zsh, may not support the -n switch for "export", so we use a different way
 	[ "$TEST_SHELL" = "zsh" ] && unexportCmd='unset BORG_REPO&&BORG_REPO=1234'
 
 	addConfigFile "missingExportedVars2.sh" "$unexportCmd"
-	assertFalse "stops on only locally set variable (not exported)" \
-				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath missingExportedVars.sh )'"
+	output="$( $TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath missingExportedVars2.sh )" 2>&1 )"
+	exitcode=$?
+	assertFalse "does not stop on only locally set variable (not exported); exited with ${exitcode}, output: ${output}" \
+				"$exitcode"
 }
 
 testSecurityDataLeak(){
@@ -175,20 +202,30 @@ testSecurityDataLeak(){
 	addConfigFile "secDataLeak.sh" 'export BORG_PASSPHRASE="1234_uniquestring_BORG_REPO"
 export BORG_REPO="ssh://9876_uniquestring_BORG_REPO__user@somewhere.example:22/./dir"
 '
-	assertFalse "do not output passphrase" \
-				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath secDataLeak.sh )'|grep '1234_uniquestring_BORG_REPO'"
-	assertFalse "do not output repo address" \
-				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath secDataLeak.sh )'|grep '9876_uniquestring_BORG_REPO'"
+
+	output="$( $TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath secDataLeak.sh )" 2>&1 )"
+	exitcode=$?
+
+	# shellcheck disable=SC2016
+	assertFalse "does output passphrase; exited with ${exitcode}, output: ${output}" \
+				'echo "$output"|grep "1234_uniquestring_BORG_REPO"'
+
+	# shellcheck disable=SC2016
+	assertFalse "does output repo address; exited with ${exitcode}, output: ${output}" \
+				'echo "$output"|grep "9876_uniquestring_BORG_REPO"'
 }
 
 testLockDisable(){
-	addConfigFile "lockTest.sh" 'RUN_PID_DIR=""'
+	addConfigFile "lockTestDisabled.sh" 'RUN_PID_DIR=""'
 
 	# PID 1 is always running
 	doLock "1"
 
-	assertTrue "does not error when locking is disabled" \
-				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath lockTest.sh )'"
+	output="$( $TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath lockTestDisabled.sh )" 2>&1 )"
+	exitcode=$?
+
+	assertTrue "fails even if locking is disabled; exited with ${exitcode}, output: ${output}" \
+				"$exitcode"
 
 	rmLock
 }
@@ -198,8 +235,14 @@ testLockStopsWhenLocked(){
 	# PID 1 is always running
 	doLock "1"
 
-	assertTrue "stops when locked at start" \
-				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath lockTest.sh )' $STDERR_OUTPUT_ONLY|grep 'is locked'"
+	output="$( $TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath lockTest.sh )" 2>&1 )"
+	exitcode=$?
+
+	assertFalse "does not end with error exit code when locked at start; exited with ${exitcode}, output: ${output}" \
+				"$exitcode"
+	# shellcheck disable=SC2016
+	assertTrue "does not stop with error message when locked at start" \
+				'echo "$output"|grep "is locked"'
 
 	rmLock
 
@@ -208,8 +251,14 @@ testLockStopsWhenLocked(){
 	# let the backup fail to trigger retry
 	addFakeBorgCommand 'exit 2'
 
-	assertTrue "stops when locked during sleep period" \
-				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath lockTest.sh )' $STDERR_OUTPUT_ONLY|grep 'is locked'"
+	output="$( $TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath lockTest.sh )" 2>&1 )"
+	exitcode=$?
+
+	assertFalse "does not end with error exit code when locked during sleep period; exited with ${exitcode}, output: ${output}" \
+				"$exitcode"
+	# shellcheck disable=SC2016
+	assertTrue "does not stop with error message when locked during sleep period" \
+				'echo "$output"|grep "is locked"'
 
 	rmLock
 }
@@ -219,8 +268,11 @@ testLockPid(){
 	# add PID, which is not running
 	doLock "123456789"
 
-	assertTrue "ignores not running processes" \
-				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath lockPidTest.sh )'"
+	output="$( $TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath lockPidTest.sh )" 2>&1 )"
+	exitcode=$?
+
+	assertTrue "does not ignore not running processes, i.e. fails; exited with ${exitcode}, output: ${output}" \
+				"$exitcode"
 
 	rmLock
 }
@@ -246,13 +298,16 @@ PRUNE_PREFIX="{hostname}-$BACKUP_NAME-"'
 	# shellcheck disable=SC2016
 	addFakeBorgCommand 'echo $lockCount > "$lockCountFile"'
 
-	assertTrue "process succeeds" \
-				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath runningPidTest.sh )'"
+	output="$( $TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath runningPidTest.sh )" 2>&1 )"
+	exitcode=$?
+
+	assertTrue "backup process fails; exited with ${exitcode}, output: ${output}" \
+				"$exitcode"
 
 	count=$( cat "$BASE_DIR/custombin/counter" )
 	lockCount=$( cat "$lockCountFile" )
 
-	assertEquals "does lock in each case borg runs" \
+	assertEquals "does not lock in each case borg runs; exited with ${exitcode}, output: ${output}" \
 				"$count" \
 				"$lockCount"
 }
@@ -270,9 +325,12 @@ testLockRemoved(){
 	# let the backup fail to trigger retry
 	addFakeBorgCommand 'exit 2'
 
+	output="$( $TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath rmPidTest.sh )" 2>&1 )"
+	exitcode=$?
+
 	# altghough retry is triggered, as borg suceeds afterwards, it should return 0
-	assertTrue "process succeeds" \
-				"$TEST_SHELL '$BASE_DIR/borgcron.sh' '$( getConfigFilePath rmPidTest.sh )'"
+	assertTrue "process fails altghough one backup execution suceeded; exited with ${exitcode}, output: ${output}" \
+				"$exitcode"
 
 	assertFalse "does remove lock when borg finished" \
 				"[ -e /tmp/RUN_PID_DIR/testFail ]"
@@ -295,15 +353,15 @@ testRetry(){
 	addFakeBorgCommand '[ $count -eq 2 ] && exit 1'
 
 	# run command
-	$TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath retryTest.sh )" > /dev/null 2>&1
+	output="$( $TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath retryTest.sh )" 2>&1 )"
 	exitcode=$?
 
-	assertEquals "process returns correct exit code" \
+	assertEquals "process returns wrong exit code; exited with ${exitcode}, output: ${output}" \
 				"1" \
 				"$exitcode"
 
 	# 2x borg create
-	assertEquals "retry until backup suceeeds" \
+	assertEquals "does not retry until backup suceeeds; exited with ${exitcode}, output: ${output}" \
 				"2" \
 				"$( cat "$BASE_DIR/custombin/counter" )"
 }
@@ -319,16 +377,16 @@ testNotRetry(){
 	# always exit with critical error
 	addFakeBorgCommand 'exit 2'
 
-	$TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath notRetryTest.sh )" > /dev/null 2>&1
+	output="$( $TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath notRetryTest.sh )" 2>&1 )"
 	exitcode=$?
 
-	assertEquals "process fails" \
+	assertEquals "process does not fail with correct exit code; exited with ${exitcode}, output: ${output}" \
 				"2" \
 				"$exitcode"
 
 	# must not retry backup, i.e. only call it once
 	count=$( cat "$BASE_DIR/custombin/counter" )
-	assertEquals "do not retry backup" \
+	assertEquals "retries backup; exited with ${exitcode}, output: ${output}" \
 				"1" \
 				"$count"
 }
