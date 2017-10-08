@@ -46,14 +46,21 @@ tearDown(){
 # actual unit tests
 testRemovedLastDir(){
 	rm -rf "$LAST_BACKUP_DIR"
-	assertEquals "stops on missing last dir" \
+
+	output="$( $TEST_SHELL "$LASTSCRIPT" 2>&1 )"
+	exitcode=$?
+
+	assertEquals "does not stop on missing last dir; exited with ${exitcode}, output: ${output}" \
 				"ERROR: No borg backup 'last' dir…" \
-				"$( $TEST_SHELL "$LASTSCRIPT" )"
+				"$output"
 }
 testEmptyLastDir(){
-	assertEquals "stops on empty last dir" \
+	output="$( $TEST_SHELL "$LASTSCRIPT" 2>&1 )"
+	exitcode=$?
+
+	assertEquals "does not stop on empty last dir; exited with ${exitcode}, output: ${output}" \
 				"ERROR: No borg backup 'last' dir…" \
-				"$( $TEST_SHELL "$LASTSCRIPT" )"
+				"$output"
 }
 testIgnoresUpToDateBackups(){
 	date --date="-23 hours" +'%s' > "$LAST_BACKUP_DIR/backup-ok-23h.time"
@@ -62,9 +69,12 @@ testIgnoresUpToDateBackups(){
 	# also check future time stamps, which might happen with wrong clocks, etc.
 	date --date="+1 hour" +'%s' > "$LAST_BACKUP_DIR/backup-ok-+1h.time"
 
-	assertEquals "silently ignores up-to-date backups" \
+	output="$( $TEST_SHELL "$LASTSCRIPT" 2>&1 )"
+	exitcode=$?
+
+	assertEquals "does not silently ignores up-to-date backups; exited with ${exitcode}, output: ${output}" \
 				"" \
-				"$( $TEST_SHELL "$LASTSCRIPT" )"
+				"$output"
 }
 testShowBackupInfo(){
 	date --date="-26 hours" +'%s' > "$LAST_BACKUP_DIR/backup-bad-26h.time"
@@ -74,31 +84,31 @@ testShowBackupInfo(){
 	date --date="-3 days" +'%s' > "$LAST_BACKUP_DIR/backup-bad-3d.time"
 
 	# run it!
-	# shellcheck disable=SC2034
-	output="$( $TEST_SHELL "$LASTSCRIPT" )"
+	output="$( $TEST_SHELL "$LASTSCRIPT" 2>&1 )"
+	exitcode=$?
 
 	# shellcheck disable=2034
 	message='The borg backup named "backup-bad-26h" is outdated.'
 	# shellcheck disable=SC2016
-	assertTrue "shows correct backup info" \
+	assertTrue "does not show correct backup info; exited with ${exitcode}, output: ${output}" \
 				'echo "$output"|grep "$message"'
 
 	# shellcheck disable=2034
 	message='The borg backup named "backup-bad-32h" is outdated.'
 	# shellcheck disable=SC2016
-	assertTrue "shows correct backup info" \
+	assertTrue "does not show correct backup info; exited with ${exitcode}, output: ${output}" \
 				'echo "$output"|grep "$message"'
 
 	# shellcheck disable=2034
 	message='The borg backup named "backup-bad-2h" is outdated.'
 	# shellcheck disable=SC2016
-	assertFalse "shows correct backup info" \
+	assertFalse "does not show correct backup info; exited with ${exitcode}, output: ${output}" \
 				'echo "$output"|grep "$message"'
 
 	# shellcheck disable=2034
 	message='The borg backup named "backup-bad-3d" is outdated.'
 	# shellcheck disable=SC2016
-	assertTrue "shows correct backup info" \
+	assertTrue "does not show correct backup info; exited with ${exitcode}, output: ${output}" \
 				'echo "$output"|grep "$message"'
 }
 
