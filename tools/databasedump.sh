@@ -17,8 +17,8 @@ for db in $databases; do
 	specialParams="--skip-lock-tables --single-transaction"
 
 	# also dump special internal databases
-	if [ "$db" != "information_schema" ] && [ "$db" != "performance_schema" ] && [ "$db" != "mysql" ] ; then
-		specialParams="--lock-tables --flush-privileges"
+	if [ "$db" = "information_schema" ] || [ "$db" = "performance_schema" ] || [ "$db" = "mysql" ] ; then
+		specialParams="$specialParams --flush-privileges"
 	fi
 
 	echo "Dumping database: $db"
