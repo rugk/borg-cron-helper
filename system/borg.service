@@ -3,7 +3,8 @@
 
 [Unit]
 Description=BorgBackup
-After=local-fs.target time-sync.target network.target
+Wants=network-online.target
+After=local-fs.target time-sync.target network.target network-online.target
 
 [Service]
 Type=oneshot
