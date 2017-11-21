@@ -88,7 +88,7 @@ rm_lock() {
 }
 
 # thanks https://unix.stackexchange.com/questions/27013/displaying-seconds-as-days-hours-mins-seconds/170299#170299
-# edited to work for POSIX
+# edited
 prettifyTimeDisplay()
 {
     t=$1
@@ -98,17 +98,27 @@ prettifyTimeDisplay()
     m=$((t/60%60))
     s=$((t%60))
 
+	# only show seconds if < 1 minute
+    if [ $d = 0 ] && [ $h = 0 ] && [ $m = 0 ]; then
+    	[ $s = 1 ] && printf "%d second" $s || printf "%d seconds" $s
+
+		# can skip other if clauses
+		return
+    fi
+
+	# round up minutes if needed
+	if [ $s -ge 30 ]; then
+		m=$(( m+1 ))
+	fi
+
     if [ $d -gt 0 ]; then
-            [ $d = 1 ] && printf "%d day " $d || printf "%d days " $d
+        [ $d = 1 ] && printf "%d day " $d || printf "%d days " $d
     fi
     if [ $h -gt 0 ]; then
-            [ $h = 1 ] && printf "%d hour " $h || printf "%d hours " $h
+        [ $h = 1 ] && printf "%d hour " $h || printf "%d hours " $h
     fi
     if [ $m -gt 0 ]; then
-            [ $m = 1 ] && printf "%d minute " $m || printf "%d minutes " $m
-    fi
-    if [ $d = 0 ] && [ $h = 0 ] && [ $m = 0 ]; then
-            [ $s = 1 ] && printf "%d second" $s || printf "%d seconds" $s
+        [ $m = 1 ] && printf "%d minute " $m || printf "%d minutes " $m
     fi
 }
 getBackupInfo() {
