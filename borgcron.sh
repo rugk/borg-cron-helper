@@ -20,6 +20,8 @@ ADD_BACKUP_PARAMS=""
 SLEEP_TIME="5m"
 RETRY_NUM="3"
 
+BATTERY_PATH="/sys/class/power_supply/BAT1"
+
 # set placeholder/default value
 PRUNE_PREFIX="null"
 exitcode=0
@@ -85,6 +87,16 @@ rm_lock() {
 	fi
 
 	rm "$RUN_PID_DIR/BORG_$BACKUP_NAME.pid"
+}
+
+stopOnBattery() {
+	# test whether battery is there
+	[ -e "$BATTERY_PATH/type" ] && [ "$( cat "$BATTERY_PATH/type" )" = "Battery" ] && return 1 # false
+
+	# stop when running on battery
+	[ "$( cat "$BATTERY_PATH/status" )" = "Discharging" ] && return 0 # true
+	# stop when running low on battery
+	# [ "$( cat "$BATTERY_PATH/status" )" = "Discharging" ] && [ "$( cat "$BATTERY_PATH/capacity" )" -lt 20 ] && return 0 # true
 }
 
 # thanks https://unix.stackexchange.com/questions/27013/displaying-seconds-as-days-hours-mins-seconds/170299#170299
@@ -227,7 +239,7 @@ if [ "$1" != '' ]; then
 	# shellcheck source=config/example-backup.sh
 	. "$1"
 else
-	echo "Please pass a path of a config file to $(basename "$0")."
+	error_log "Please pass a path of a config file to $(basename "$0")."
 	exit 2
 fi
 
@@ -242,12 +254,18 @@ if [ "$BACKUP_NAME" = "" ] ||
    [ "$BORG_REPO" = "" ] ||
    [ "$ARCHIVE_NAME" = "" ] ||
    [ "$BACKUP_DIRS" = "" ]; then
-	echo 'Some required variables may not be set in the config file. Cancel backup.'
+	error_log 'Some required variables may not be set in the config file. Cancel backup.'
 	exit 2
 fi
 if ! export|grep -q "BORG_REPO"; then
-	echo 'The BORG_REPO variable is not exported in the config file. Cancel backup.'
+	error_log 'The BORG_REPO variable is not exported in the config file. Cancel backup.'
 	exit 2
+fi
+
+# check requirements
+if stopOnBattery; then
+	error_log "Canceled backup, because device runs (low) on battery."
+	exit 1
 fi
 
 # log
