@@ -35,10 +35,7 @@ script:
 
 addons:
   apt:
-    sources:
-    - debian-sid
     packages:
-    - debian-archive-keyring
     - shellcheck
     # shells to check
     - zsh
