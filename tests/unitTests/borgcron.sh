@@ -69,9 +69,8 @@ testMissingParameter(){
 	assertFalse "does not exit with correct error code when parameter is missing; exited with ${exitcode}, output: ${output}" \
 				"$exitcode"
 
-	assertEquals "does not exit with correct error message when parameter is missing; exited with ${exitcode}, output: ${output}" \
-				"Please pass a path of a config file to borgcron.sh." \
-				"$output"
+	assertTrue "does not exit with correct error message when parameter is missing; exited with ${exitcode}, output: ${output}" \
+				'echo "$output"|grep "Please pass a path of a config file to borgcron.sh."'
 }
 
 testWrongFilename(){
@@ -80,7 +79,7 @@ testWrongFilename(){
 	output="$( $TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath testWrongName_WRONG.sh )" 2>&1 )"
 	exitcode=$?
 
-	assertFalse "does nopt exit with failing error code when specified config file is missing; exited with ${exitcode}, output: ${output}" \
+	assertFalse "does not exit with failing error code when specified config file is missing; exited with ${exitcode}, output: ${output}" \
 				"$output"
 }
 
