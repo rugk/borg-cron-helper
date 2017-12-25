@@ -69,6 +69,7 @@ testMissingParameter(){
 	assertFalse "does not exit with correct error code when parameter is missing; exited with ${exitcode}, output: ${output}" \
 				"$exitcode"
 
+	# shellcheck disable=SC2016
 	assertTrue "does not exit with correct error message when parameter is missing; exited with ${exitcode}, output: ${output}" \
 				'echo "$output"|grep "Please pass a path of a config file to borgcron.sh."'
 }
