@@ -20,7 +20,7 @@ before_script:
   - tests/helper/installBorg.sh
   # install shunit2
   - cd tests&&git clone https://github.com/kward/shunit2
-  - cd shunit2&&git checkout 697249da081473c1904d84e9aa2dd4633a3115fb
+  - cd shunit2&&git checkout v2.1.7
   - cd ../..
   - export SHUNIT_COLOR='always'
 
