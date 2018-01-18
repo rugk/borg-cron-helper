@@ -19,9 +19,7 @@ before_script:
   # installing borg
   - tests/helper/installBorg.sh
   # install shunit2
-  - cd tests&&git clone https://github.com/kward/shunit2
-  - cd shunit2&&git checkout v2.1.7
-  - cd ../..
+  - tests/helper/installShUnit2.sh
   - export SHUNIT_COLOR='always'
 
 script:
