@@ -197,7 +197,7 @@ testMissingExportedVariables(){
 }
 
 testSecurityDataLeak(){
-	# This test should prevent:
+	# This (regression) test should prevent:
 	# https://github.com/rugk/borg-cron-helper/wiki/Medium-vulnerability:-Data-exposure-with-borg-cron-helper-1.0
 	addConfigFile "secDataLeak.sh" 'export BORG_PASSPHRASE="1234_uniquestring_BORG_REPO"
 export BORG_REPO="ssh://9876_uniquestring_BORG_REPO__user@somewhere.example:22/./dir"
