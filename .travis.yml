@@ -19,7 +19,7 @@ before_script:
   # installing borg
   - tests/helper/installBorg.sh
   # install shunit2
-  - tests/helper/installShUnit2.sh
+  - tests/helper/installShUnit.sh
   - export SHUNIT_COLOR='always'
 
 script:
