@@ -305,7 +305,7 @@ testBorgPrune(){
 	# when it took more than 15 seconds, it likely retried the backup (sleep time: 20s)
 	# or did similar stupid things
 	# shellcheck disable=SC2016
-	assertTrue "borg was not in time ad likely retried the backup; exited with ${exitcode}, output: ${output}" \
+	assertTrue "borg was not in time and likely retried the backup; exited with ${exitcode}, output: ${output}" \
 				"[ $(( endTime-startTime )) -le 15 ]"
 
 	# check that prune deleted prefix2_ and showed that in output
