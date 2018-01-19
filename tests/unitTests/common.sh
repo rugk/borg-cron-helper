@@ -136,7 +136,7 @@ patchConfigSetVar(){
 	[ "$5" != "notRecursive" ] && patchConfigSetVar "$1" "export $2" "$3" "$4" "notRecursive"
 }
 
-CURRDIR="$( get_full_path "." )"
+CURRDIR="$( get_full_path "$CURRDIR" )"
 BASE_DIR="$( get_full_path "$CURRDIR/../.." )"
 CUSTOMBIN_DIR="$BASE_DIR/custombin"
 TEST_DIR="$BASE_DIR/tests"
