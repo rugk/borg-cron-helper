@@ -398,6 +398,7 @@ testRetryPrune(){
 	ignoreInfoAndListsRequestsInBorg
 
 	# the first execution/all executions should not cause problems
+	# shellcheck disable=SC2016
 	addFakeBorgCommand '[ $1 = "create" ] && exit 0' # ($count -eq 1) here
 	# This emulates a signal, which terminates the borg process
 	# shellcheck disable=SC2016
@@ -521,8 +522,10 @@ testNotRetryPrune(){
 	ignoreInfoAndListsRequestsInBorg
 
 	# when creating backups, do not cause problems in order to execute prune
+	# shellcheck disable=SC2016
 	addFakeBorgCommand '[ $1 = "create" ] && exit 0'
 	# otherwise, always exit with critical error
+	# shellcheck disable=SC2016
 	addFakeBorgCommand 'exit 2'
 
 	output="$( $TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath notRetryPruneTest.sh )" 2>&1 )"
