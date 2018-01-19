@@ -1,19 +1,23 @@
 #!/bin/sh
 
-echo "fakeborg-executed"
-echo "command line: $*"
-
 CURRDIR=$( dirname "$0" )
+FAKEBORG_WRITE_DIR="$CURRDIR/run"
 
 # count execution
-if [ -f "$CURRDIR/counter" ]; then
-	count=$( cat "$CURRDIR/counter" )
+if [ -f "$FAKEBORG_WRITE_DIR/counter" ]; then
+	count=$( cat "$FAKEBORG_WRITE_DIR/counter" )
 	count=$(( count+1 ))
 else
 	count=1
 fi
 
-echo $count > "$CURRDIR/counter"
+echo "fakeborg-executed ($count time)"
+echo "command line: $*"
+
+echo $count > "$FAKEBORG_WRITE_DIR/counter"
 
 # log execution command line
-echo "$*" >> "$CURRDIR/list"
+echo "$*" >> "$FAKEBORG_WRITE_DIR/list"
+
+# log execution of main commands
+echo "$1" >> "$FAKEBORG_WRITE_DIR/maincommand"

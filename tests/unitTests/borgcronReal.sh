@@ -1,6 +1,7 @@
 #!/usr/bin/env sh
 #
-# Executes final unit tests using the real borg binary.
+# Executes final unit tests using the real borg binary. It does test that borg
+# is running correcvtly with the script.
 # Required envorimental variables:
 # * $TEST_SHELL
 # * $BORG
@@ -102,39 +103,6 @@ rmLock(){
 	[ -f "/tmp/RUN_PID_DIR/BORG_unit-test-fake-backup.pid" ] && rm "/tmp/RUN_PID_DIR/BORG_unit-test-fake-backup.pid"
 }
 
-patchConfigAdd(){
-	# syntax: filename.sh string to add
-	echo "$2" >> "$CONFIG_DIR/$1"
-}
-patchConfigDisableVar(){
-	# syntax: filename.sh variable internalvar
-	sed -i "s/^[[:space:]]*$2=/# $2=/g" "$CONFIG_DIR/$1"
-
-	# run (once) recursive with export
-	[ "$3" != "notRecursive" ] && patchConfigDisableVar "$1" "export $2" "notRecursive"
-}
-patchConfigEnableVar(){
-	# syntax: filename.sh variable internalvar
-	sed -i "s/^#[[:space:]]*$2=/$2=/g" "$CONFIG_DIR/$1"
-
-	# run (once) recursive with export
-	[ "$3" != "notRecursive" ] && patchConfigEnableVar "$1" "export $2" "notRecursive"
-}
-patchConfigSetVar(){
-	# syntax: filename.sh variable value [quoteChar] internalvar
-	quoteChar="'" # default quote char
-	[ -n "$4" ] && quoteChar="$4"
-
-	varEscaped="$( escapeStringForSed "$3" )"
-
-	# automatically enable variable
-	patchConfigEnableVar "$1" "$2" "notRecursive"
-
-	sed -i "s#^[[:space:]]*$2=['\"].*['|\"]#$2=${quoteChar}${varEscaped}${quoteChar}#g" "$CONFIG_DIR/$1"
-
-	# run (once) recursive with export
-	[ "$5" != "notRecursive" ] && patchConfigSetVar "$1" "export $2" "$3" "$4" "notRecursive"
-}
 createBackup(){
 	# syntax: repo prefix name suffix
 	borg create "$1::$2$3-$4" "$BASE_DIR/icon.png" # > /dev/null 2>&1

@@ -13,6 +13,7 @@ CURRDIR=$( dirname "$0" )
 . "$CURRDIR/common.sh"
 
 # constants
+# Here the temp dir saves the original config files as backup.
 TMPDIR="$( mktemp -d )"
 
 # make sure, original files are backed up…
@@ -35,6 +36,8 @@ setUp(){
 	mkdir "$CONFIG_DIR" 2> /dev/null
 
 	addFakeBorg
+	# simplify fakeborg to always exit with 0
+	addFakeBorgCommandOnBeginning 'exit 0'
 
 	# create fake dirs, needed for execution of borgcron.sh
 	# (they are later "injected" by the fake config file)

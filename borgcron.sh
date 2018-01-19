@@ -25,13 +25,56 @@ BATTERY_PATH="/sys/class/power_supply/BAT1"
 # set placeholder/default value
 PRUNE_PREFIX="null"
 exitcode=0
-exitcode_borgbackup=0
+exitcode_create=0
 
-# basic functions
+# Keep track oh highest exit code.
+#
+# args:
+# $1 – number of new exit code
 track_exitcode() {
 	if [ "$1" -gt "$exitcode" ]; then
 		exitcode="$1"
 	fi
+}
+
+# Evaluate exit code of a borg run.
+#
+# args: none
+# may exit
+evaluateExitCodes() {
+	# see https://borgbackup.readthedocs.io/en/stable/usage.html?highlight=return%20code#return-codes
+	case $1 in
+		2 )
+			error_log "Borg exited with fatal error." #(2)
+
+			# ignore last try
+			if [ "$i" -lt "$RETRY_NUM" ]; then
+				# wait some time to recover from the error
+				info_log "Wait $SLEEP_TIME…"
+				sleep "$SLEEP_TIME"
+
+				# break-lock if backup has not locked by another process in the meantime
+				if is_lock; then
+					error_log "Backup \"$BACKUP_NAME\" is locked locally by other process. Cancel."
+					exit 1
+				fi
+
+				if [ "$RUN_PID_DIR" != "" ]; then
+					info_log "Breaking lock…"
+					$BORG_BIN break-lock "$REPOSITORY"
+				fi
+			fi
+			;;
+		1 )
+			error_log "Borg had some WARNINGS, but everything else was okay."
+			;;
+		0 )
+			info_log "Borg has been successful."
+			;;
+		* )
+			error_log "Unknown error with code $1 happened."
+			;;
+	esac
 }
 
 # log system
@@ -45,6 +88,10 @@ error_log() {
 	echo "$( log_line ) $*" >&2
 }
 
+# Evaluate whether the backup is locked.
+#
+# args: none
+# returns: bool
 is_lock() {
 	# check if locking system is disabled
 	if [ "$RUN_PID_DIR" = "" ]; then
@@ -62,6 +109,10 @@ is_lock() {
 
 	return 0 # true, locked
 }
+
+# Locks the current backup.
+#
+# args: none
 do_lock() {
 	# check if locking system is disabled
 	if [ "$RUN_PID_DIR" = "" ]; then
@@ -80,6 +131,10 @@ do_lock() {
 		exit 2
 	fi
 }
+
+# Removes the lock of the current backup.
+#
+# args: none
 rm_lock() {
 	# check if locking system is disabled
 	if [ "$RUN_PID_DIR" = "" ]; then
@@ -89,18 +144,47 @@ rm_lock() {
 	rm "$RUN_PID_DIR/BORG_$BACKUP_NAME.pid"
 }
 
-stopOnBattery() {
-	# test whether battery is there
-	[ -e "$BATTERY_PATH/type" ] && [ "$( cat "$BATTERY_PATH/type" )" = "Battery" ] && return 1 # false
+# Checks in a loop whether we need to stop the loop or not and log messages.
+#
+# args:
+# $1 – The number of the executed try.
+# may exit
+backupIterationLockCheck() {
+	# if locked, stop backup
+	if is_lock; then
+		error_log "Backup $BACKUP_NAME is locked. Cancel."
+		exit 1
+	fi
 
-	# stop when running on battery
-	[ "$( cat "$BATTERY_PATH/status" )" = "Discharging" ] && return 0 # true
-	# stop when running low on battery
-	# [ "$( cat "$BATTERY_PATH/status" )" = "Discharging" ] && [ "$( cat "$BATTERY_PATH/capacity" )" -lt 20 ] && return 0 # true
+	# otherwise log try (if useful)
+	if [ "$1" -gt 1 ]; then
+		info_log "$1. try…"
+	fi
 }
 
-# thanks https://unix.stackexchange.com/questions/27013/displaying-seconds-as-days-hours-mins-seconds/170299#170299
-# edited
+# returns whether we are in a (low-)battery situation and need to stop the backup.
+#
+# args: none
+# returns: bool
+isRunningOnBattery() {
+	# test whether battery is there
+	[ ! -e "$BATTERY_PATH/type" ] && return 1 # false
+	[ "$( cat "$BATTERY_PATH/type" )" != "Battery" ] && return 1 # false
+
+	# stop when running on battery
+	# [ "$( cat "$BATTERY_PATH/status" )" = "Discharging" ] && return 0 # true
+	# stop when running low on battery
+	[ "$( cat "$BATTERY_PATH/status" )" = "Discharging" ] && [ "$( cat "$BATTERY_PATH/capacity" )" -lt 20 ] && return 0 # true
+}
+
+# Prettifies the time display so it looks good for user.
+#
+# Adopted from https://unix.stackexchange.com/questions/27013/displaying-seconds-as-days-hours-mins-seconds/170299#170299
+# Edited.
+#
+# args:
+# $1 – Time in seconds.
+# returns: string
 prettifyTimeDisplay()
 {
     t=$1
@@ -133,11 +217,15 @@ prettifyTimeDisplay()
         [ $m = 1 ] && printf "%d minute " $m || printf "%d minutes " $m
     fi
 }
+# Return backup info from borg.
+#
+# The output is returned in several variables.
+#
+# args:
+# $1 – Archive name
 getBackupInfo() {
-	# syntax: archivename
-
 	# get output of borg info
-	borginfo=$( $BORG_BIN info "::$lastArchive" )
+	borginfo=$( $BORG_BIN info "::$1" )
 
 	# get start/end time from output
 	timeStart=$( echo "$borginfo"|grep 'Time (start):'|sed -E 's/Time \(start\): (.*)/\1/g' )
@@ -154,6 +242,11 @@ getBackupInfo() {
 	size=$( echo "$borginfo"|grep 'This archive:'|sed -E 's/\s{2,}/|/g'|cut -d '|' -f 4 )
 	sizeTotal=$( echo "$borginfo"|grep 'All archives:'|sed -E 's/\s{2,}/|/g'|cut -d '|' -f 4 )
 }
+# Return backup info from the last backup..
+#
+# The output is returned in several variables. (see getBackupInfo())
+#
+# args: None
 getInfoAboutLastBackup() {
 	# get last archive name of new backup
 	lastArchive=$( $BORG_BIN list --short ::|tail -n 1 )
@@ -164,7 +257,7 @@ getInfoAboutLastBackup() {
 # GUI functions (can be overwritten in config file)
 guiCanShowNotifications() {
 	# uses a command to get out, whether we can show notifications
-	# You can manually set this to return "false" (or 1, whcih is shell-speak for false)
+	# You can manually set this to return "false" (or 1, which is shell-speak for false)
 	# to disable all notifications.
 	command -v zenity >/dev/null
 }
@@ -263,7 +356,7 @@ if ! export|grep -q "BORG_REPO"; then
 fi
 
 # check requirements
-if stopOnBattery; then
+if isRunningOnBattery; then
 	error_log "Canceled backup, because device runs (low) on battery."
 	exit 1
 fi
@@ -274,14 +367,7 @@ info_log "Backup $BACKUP_NAME started with $( $BORG_BIN -V ), helper PID: $$."
 guiShowBackupBegin
 
 for i in $( seq "$(( RETRY_NUM+1 ))" ); do
-	if is_lock; then
-		error_log "Backup $BACKUP_NAME is locked. Cancel."
-		exit 1
-	fi
-
-	if [ "$i" -gt 1 ]; then
-		info_log "$i. try…"
-	fi
+	backupIterationLockCheck $i
 
 	# add local lock
 	do_lock
@@ -295,51 +381,19 @@ for i in $( seq "$(( RETRY_NUM+1 ))" ); do
 		$BACKUP_DIRS
 
 	# check return code
-	exitcode_borgbackup=$?
+	exitcode_create=$?
 
 	# remove local lock
 	rm_lock
 
 	# show output
-	# see https://borgbackup.readthedocs.io/en/stable/usage.html?highlight=return%20code#return-codes
-	case $exitcode_borgbackup in
-		2 )
-			error_log "Borg exited with fatal error." #(2)
-
-			# ignore last try
-			if [ "$i" -lt "$RETRY_NUM" ]; then
-				# wait some time to recover from the error
-				info_log "Wait $SLEEP_TIME…"
-				sleep "$SLEEP_TIME"
-
-				# break-lock if backup has not locked by another process in the meantime
-				if is_lock; then
-					error_log "Backup \"$BACKUP_NAME\" is locked locally by other process. Cancel."
-					exit 1
-				fi
-
-				if [ "$RUN_PID_DIR" != "" ]; then
-					info_log "Breaking lock…"
-					$BORG_BIN break-lock "$REPOSITORY"
-				fi
-			fi
-			;;
-		1 )
-			error_log "Borg had some WARNINGS, but everything else was okay."
-			;;
-		0 )
-			info_log "Borg has been successful."
-			;;
-		* )
-			error_log "Unknown error with code $exitcode_borgbackup happened."
-			;;
-	esac
+	evaluateExitCodes "$exitcode_create" "create"
 
 	# optional user question
-	guiTryAgain || break;
+	guiTryAgain "create" || break;
 
-	# exit on non-critical errors (ignore 1 = warnings)
-	if [ $exitcode_borgbackup -le 1 ]; then
+	# exit loop on non-critical errors (ignore 1 = warnings)
+	if [ $exitcode_create -le 1 ]; then
 		# save/update last backup time
 		if [ -d $LAST_BACKUP_DIR ]; then
 			date +'%s' > "$LAST_BACKUP_DIR/$BACKUP_NAME.time"
@@ -351,7 +405,7 @@ done
 
 # only track latest exit code of execution, i.e. when backups fail but can be
 # recovered through retrying, the last code is still 0
-track_exitcode $exitcode_borgbackup
+track_exitcode $exitcode_create
 
 # The (optional) prefix makes sure only backups from this machine with this
 # backup-type are touched.
@@ -359,13 +413,40 @@ track_exitcode $exitcode_borgbackup
 
 if [ "$PRUNE_PARAMS" ] && [ "$PRUNE_PREFIX" != "null" ] && [ "$exitcode" -lt 2 ]; then
 	echo "Running prune for \"$BACKUP_NAME\"…"
-	do_lock
 
-	# shellcheck disable=SC2086
-	$BORG_BIN prune -v --list --prefix "$PRUNE_PREFIX" $PRUNE_PARAMS
-	track_exitcode "$?"
+	# if RETRY_NUM_PRUNE is not set, fall back to RETRY_NUM
+	[ "$RETRY_NUM_PRUNE" = "" ] && RETRY_NUM_PRUNE=$RETRY_NUM
 
-	rm_lock
+	for i in $( seq "$(( RETRY_NUM_PRUNE+1 ))" ); do
+		backupIterationLockCheck $i
+
+		# add local lock
+		do_lock
+
+		# run prune
+		# shellcheck disable=SC2086
+		$BORG_BIN prune -v --list --prefix "$PRUNE_PREFIX" $PRUNE_PARAMS
+
+		# check return code
+		exitcode_prune=$?
+
+		# remove local lock
+		rm_lock
+
+		# show output
+		evaluateExitCodes "$exitcode_prune" "prune"
+
+		# optional user question
+		guiTryAgain "prune" || break;
+
+		# exit loop on non-critical errors (ignore 1 = warnings)
+		if [ $exitcode_prune -le 1 ]; then
+			# get out of loop
+			break;
+		fi
+	done
+
+	track_exitcode "$exitcode_prune"
 fi
 
 # log

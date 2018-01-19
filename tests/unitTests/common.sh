@@ -38,7 +38,7 @@ addConfigFileToDir(){
 	# add static head
 	{
 		echo "#!/bin/sh"
-		echo "CURRDIR='$1'"
+		echo "RUNDIR='$1'"
 		echo "FILENAME='$2'"
 	} > "$1/$2"
 
@@ -54,46 +54,46 @@ addConfigFileToDir(){
 	fi
 }
 
-
+# used for fake borg
 addFakeBorg(){
 	# adds a fake "borg" binary, which is a simple shell script
-	mv "$BASE_DIR/custombin/borg" "$BASE_DIR/custombin/borg-disabled"||exit 1
-	cp "$TEST_DIR/fakeBorg.sh" "$BASE_DIR/custombin/borg"||exit 1
+	mv "$CUSTOMBIN_DIR/borg" "$CUSTOMBIN_DIR/borg-disabled"||exit 1
+	cp "$TEST_DIR/fakeBorg.sh" "$CUSTOMBIN_DIR/borg"||exit 1
 }
 removeFakeBorg(){
 	# restores the original borg
-	if [ -e "$BASE_DIR/custombin/borg-disabled" ]; then
-		rm "$BASE_DIR/custombin/borg"
-		mv "$BASE_DIR/custombin/borg-disabled" "$BASE_DIR/custombin/borg"
+	if [ -e "$CUSTOMBIN_DIR/borg-disabled" ]; then
+		rm "$CUSTOMBIN_DIR/borg"
+		mv "$CUSTOMBIN_DIR/borg-disabled" "$CUSTOMBIN_DIR/borg"
 
 		# remove loggers
-		[ -e "$BASE_DIR/custombin/counter" ] && rm "$BASE_DIR/custombin/counter"
-		[ -e "$BASE_DIR/custombin/list" ] && rm "$BASE_DIR/custombin/list"
+		[ -e "$CUSTOMBIN_DIR/counter" ] && rm "$CUSTOMBIN_DIR/counter"
+		[ -e "$CUSTOMBIN_DIR/list" ] && rm "$CUSTOMBIN_DIR/list"
 	fi
 }
 addFakeBorgCommand(){
-	echo "$*" >> "$BASE_DIR/custombin/borg"
+	echo "$*" >> "$CUSTOMBIN_DIR/borg"
 }
 addFakeBorgCommandOnBeginning(){
 	echo "#!/bin/sh
 $1
-$( cat "$BASE_DIR/custombin/borg" )" > "$BASE_DIR/custombin/borg"
+$( cat "$CUSTOMBIN_DIR/borg" )" > "$CUSTOMBIN_DIR/borg"
 }
 resetFakeBorg(){
 	# (overwrites by default)
-	cp "$TEST_DIR/fakeBorg.sh" "$BASE_DIR/custombin/borg"
+	cp "$TEST_DIR/fakeBorg.sh" "$CUSTOMBIN_DIR/borg"
 }
-doNotCountVersionRequestsInBorg(){
+ignoreVersionRequestsInBorg(){
 	# ignore easy -V commands for all counts
 	# shellcheck disable=SC2016
 	addFakeBorgCommandOnBeginning '[ "$1" = "-V" ] && exit 0'
 }
-doNotCountLockBreakingsInBorg(){
+ignoreLockBreakingsInBorg(){
 	# ignore break-lock commands for all counts
 	# shellcheck disable=SC2016
 	addFakeBorgCommandOnBeginning '[ "$1" = "break-lock" ] && exit 0'
 }
-doNotCountInfoAndListsRequestsInBorg(){
+ignoreInfoAndListsRequestsInBorg(){
 	# ignore break-lock commands for all counts
 	# shellcheck disable=SC2016
 	addFakeBorgCommandOnBeginning '[ "$1" = "list" ] && exit 0'
@@ -101,8 +101,44 @@ doNotCountInfoAndListsRequestsInBorg(){
 	addFakeBorgCommandOnBeginning '[ "$1" = "info" ] && exit 0'
 }
 
-CURRDIR="$( get_full_path "$CURRDIR" )"
+# used for real borg
+patchConfigAdd(){
+	# syntax: filename.sh string to add
+	echo "$2" >> "$CONFIG_DIR/$1"
+}
+patchConfigDisableVar(){
+	# syntax: filename.sh variable internalvar
+	sed -i "s/^[[:space:]]*$2=/# $2=/g" "$CONFIG_DIR/$1"
+
+	# run (once) recursive with export
+	[ "$3" != "notRecursive" ] && patchConfigDisableVar "$1" "export $2" "notRecursive"
+}
+patchConfigEnableVar(){
+	# syntax: filename.sh variable internalvar
+	sed -i "s/^#[[:space:]]*$2=/$2=/g" "$CONFIG_DIR/$1"
+
+	# run (once) recursive with export
+	[ "$3" != "notRecursive" ] && patchConfigEnableVar "$1" "export $2" "notRecursive"
+}
+patchConfigSetVar(){
+	# syntax: filename.sh variable value [quoteChar] internalvar
+	quoteChar="'" # default quote char
+	[ -n "$4" ] && quoteChar="$4"
+
+	varEscaped="$( escapeStringForSed "$3" )"
+
+	# automatically enable variable
+	patchConfigEnableVar "$1" "$2" "notRecursive"
+
+	sed -i "s#^[[:space:]]*$2=['\"].*['|\"]#$2=${quoteChar}${varEscaped}${quoteChar}#g" "$CONFIG_DIR/$1"
+
+	# run (once) recursive with export
+	[ "$5" != "notRecursive" ] && patchConfigSetVar "$1" "export $2" "$3" "$4" "notRecursive"
+}
+
+CURRDIR="$( get_full_path "." )"
 BASE_DIR="$( get_full_path "$CURRDIR/../.." )"
+CUSTOMBIN_DIR="$BASE_DIR/custombin"
 TEST_DIR="$BASE_DIR/tests"
 CONFIG_DIR="$BASE_DIR/config"
 TEST_CONFIG_FILE="$TEST_DIR/config/template.sh"

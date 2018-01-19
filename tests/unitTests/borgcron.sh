@@ -1,6 +1,8 @@
 #!/usr/bin/env sh
 #
-# Simply unit tests for borgcron starter, using no borg or fake borg binaries.
+# Simply unit tests for borgcron. It fakes all borg calls in order to use the
+# executions of borg to test the functionality of the script. It does thus
+# not test that borg itself works with the script.
 # Required envorimental variables:
 # * $PATH set to include custom binary path
 # * $TEST_SHELL
@@ -13,6 +15,7 @@ CURRDIR=$( dirname "$0" )
 . "$CURRDIR/common.sh"
 
 # constants
+# Here, tempdir is used as a runtime dir to save stuff created by (fake) binaries.
 TMPDIR=""
 
 # make sure, original files are backed up…
@@ -32,6 +35,12 @@ setUp(){
 	mkdir "/tmp/RUN_PID_DIR"
 
 	TMPDIR="$( mktemp -d )"
+
+	mkdir "$TMPDIR/borg"
+	mkdir "$TMPDIR/config"
+
+	# use tempdir as write dir for fakeborg
+	ln -s "$TMPDIR/borg" "$CUSTOMBIN_DIR/run"
 }
 tearDown(){
 	removeFakeBorg
@@ -41,6 +50,8 @@ tearDown(){
 	rm -rf "/tmp/RUN_PID_DIR"
 
 	rm -rf "$TMPDIR"
+	# remove old symbolic link
+	rm -f "$CUSTOMBIN_DIR/run"
 }
 
 # helper functions
@@ -48,11 +59,11 @@ addConfigFile(){
 	# syntax: filename.sh "[shell commands to inject, overwrite previous ones]"
 
 	# pass to common function
-	addConfigFileToDir "$TMPDIR" "$@"
+	addConfigFileToDir "$TMPDIR/config" "$@"
 }
 getConfigFilePath(){
 	# syntax: filename.sh
-	echo "$TMPDIR/$1"
+	echo "$TMPDIR/config/$1"
 }
 doLock(){
 	echo "$1" > "/tmp/RUN_PID_DIR/BORG_unit-test-fake-backup.pid"
@@ -110,9 +121,9 @@ testFails(){
 	# retry only 1 time
 	addConfigFile "testFails.sh" "RETRY_NUM=1"
 
-	doNotCountVersionRequestsInBorg
-	doNotCountLockBreakingsInBorg
-	doNotCountInfoAndListsRequestsInBorg
+	ignoreVersionRequestsInBorg
+	ignoreLockBreakingsInBorg
+	ignoreInfoAndListsRequestsInBorg
 
 	# always exit with critical error
 	addFakeBorgCommand 'exit 2'
@@ -132,7 +143,7 @@ testFails(){
 
 	assertEquals "retries an incorrect number of times, given; exited with ${exitcode}, output: ${output}" \
 				"2" \
-				"$( cat "$BASE_DIR/custombin/counter" )"
+				"$( cat "$TMPDIR/borg/counter" )"
 }
 
 testUsesBorgBin(){
@@ -140,8 +151,8 @@ testUsesBorgBin(){
 	addConfigFile "testBorgBin.sh" "BORG_BIN=borg-ok"
 
 	# add borg-ok binary doing nothing
-	echo '#!/bin/sh' > "$BASE_DIR/custombin/borg-ok"
-	chmod +x "$BASE_DIR/custombin/borg-ok"
+	echo '#!/bin/sh' > "$CUSTOMBIN_DIR/borg-ok"
+	chmod +x "$CUSTOMBIN_DIR/borg-ok"
 
 	output="$( $TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath testBorgBin.sh )" 2>&1 )"
 	exitcode=$?
@@ -152,10 +163,10 @@ testUsesBorgBin(){
 
 	# must not call the "real fake borg binary", but borg-ok.
 	assertFalse "still runs the borg binary when \$BORG_BIN is set, i.e. ignores \$BORG_BIN setting; exited with ${exitcode}, output: ${output}" \
-				"[ -f '$BASE_DIR/custombin/counter' ]"
+				"[ -f '$TMPDIR/borg/counter' ]"
 
 	# remove borg-ok
-	rm "$BASE_DIR/custombin/borg-ok"
+	rm "$CUSTOMBIN_DIR/borg-ok"
 }
 
 testMissingVariables(){
@@ -285,9 +296,9 @@ PRUNE_PREFIX="{hostname}-$BACKUP_NAME-"'
 	lockCountFile="/tmp/RUN_PID_DIR/lockCounter"
 	echo "0" > "$lockCountFile"
 
-	doNotCountVersionRequestsInBorg
-	doNotCountLockBreakingsInBorg
-	doNotCountInfoAndListsRequestsInBorg
+	ignoreVersionRequestsInBorg
+	ignoreLockBreakingsInBorg
+	ignoreInfoAndListsRequestsInBorg
 
 	# test whether the lock is there
 	addFakeBorgCommand "lockCountFile='$lockCountFile'"
@@ -304,7 +315,7 @@ PRUNE_PREFIX="{hostname}-$BACKUP_NAME-"'
 	assertTrue "backup process fails; exited with ${exitcode}, output: ${output}" \
 				"$exitcode"
 
-	count=$( cat "$BASE_DIR/custombin/counter" )
+	count=$( cat "$TMPDIR/borg/counter" )
 	lockCount=$( cat "$lockCountFile" )
 
 	assertEquals "does not lock in each case borg runs; exited with ${exitcode}, output: ${output}" \
@@ -339,18 +350,20 @@ testLockRemoved(){
 }
 
 testRetry(){
+	# uses default retry settings (RETRY_NUM=3)
 	addConfigFile "retryTest.sh"
 
-	doNotCountVersionRequestsInBorg
-	doNotCountLockBreakingsInBorg
-	doNotCountInfoAndListsRequestsInBorg
+	ignoreVersionRequestsInBorg
+	ignoreLockBreakingsInBorg
+	ignoreInfoAndListsRequestsInBorg
 
 	# This emulates a signal, which terminates the borg process
 	# shellcheck disable=SC2016
-	addFakeBorgCommand '[ $count -eq 1 ] && exit 2'
+	addFakeBorgCommand '[ $1 = "create" ] && [ $count -eq 1 ] && exit 2'
 	# checks case with exit code=1 here, it should *NOT* trigger a retry
 	# shellcheck disable=SC2016
-	addFakeBorgCommand '[ $count -eq 2 ] && exit 1'
+	addFakeBorgCommand '[ $1 = "create" ] && [ $count -eq 2 ] && exit 1'
+	# borg prune comands should not cause problems
 
 	# run command
 	output="$( $TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath retryTest.sh )" 2>&1 )"
@@ -363,16 +376,120 @@ testRetry(){
 	# 2x borg create
 	assertEquals "does not retry until backup suceeeds; exited with ${exitcode}, output: ${output}" \
 				"2" \
-				"$( cat "$BASE_DIR/custombin/counter" )"
+				"$( cat "$TMPDIR/borg/counter" )"
+
+	# 2x retry -> execute 3 times
+	assertEquals "does not call borg create correctly; exited with ${exitcode}, output: ${output}" \
+				"create
+create" \
+				"$( cat "$TMPDIR/borg/maincommand" )"
+}
+
+testRetryPrune(){
+	# only retry prune 3 times and enable prune
+	addConfigFile "retryPruneTest.sh" 'RETRY_NUM=0
+	RETRY_NUM_PRUNE=3
+	PRUNE_PARAMS="--something-fake"
+	PRUNE_PREFIX=""
+	'
+
+	ignoreVersionRequestsInBorg
+	ignoreLockBreakingsInBorg
+	ignoreInfoAndListsRequestsInBorg
+
+	# the first execution/all executions should not cause problems
+	addFakeBorgCommand '[ $1 = "create" ] && exit 0' # ($count -eq 1) here
+	# This emulates a signal, which terminates the borg process
+	# shellcheck disable=SC2016
+	addFakeBorgCommand '[ $1 = "prune" ] && [ $count -eq 2 ] && exit 2'
+	# checks case with exit code=1 here, it should *NOT* trigger a retry
+	# shellcheck disable=SC2016
+	addFakeBorgCommand '[ $1 = "prune" ] && [ $count -eq 3 ] && exit 1'
+
+	# run command
+	output="$( $TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath retryPruneTest.sh )" 2>&1 )"
+	exitcode=$?
+
+	assertEquals "process returns wrong exit code; exited with ${exitcode}, output: ${output}" \
+				"1" \
+				"$exitcode"
+
+	# 1x create+2x borg prune = 3x
+	assertEquals "does not retry until prune suceeeds; exited with ${exitcode}, output: ${output}" \
+				"3" \
+				"$( cat "$TMPDIR/borg/counter" )"
+
+	# 1x create+2x retry
+	assertEquals "does not call borg prune correctly; exited with ${exitcode}, output: ${output}" \
+				"create
+prune
+prune" \
+				"$( cat "$TMPDIR/borg/maincommand" )"
+}
+
+testRetryBoth(){
+	# enable prune and retry all things 4 times and speed up test by minimizing sleep time
+	addConfigFile "retryPruneTest.sh" 'RETRY_NUM=4
+	PRUNE_PARAMS="--something-fake"
+	PRUNE_PREFIX=""
+	SLEEP_TIME="1s"
+	'
+
+	ignoreVersionRequestsInBorg
+	ignoreLockBreakingsInBorg
+	ignoreInfoAndListsRequestsInBorg
+
+	# Let retry fail for 2 times when creating backup
+	# shellcheck disable=SC2016
+	addFakeBorgCommand '[ $1 = "create" ] && [ $count -eq 1 ] && exit 2'
+	# shellcheck disable=SC2016
+	addFakeBorgCommand '[ $1 = "create" ] && [ $count -eq 2 ] && exit 2'
+	# let it work, afterwards
+	# shellcheck disable=SC2016
+	addFakeBorgCommand '[ $1 = "create" ] && [ $count -eq 3 ] && exit 0'
+
+	# Let prune fail for 2 times when pruning backups
+	# shellcheck disable=SC2016
+	addFakeBorgCommand '[ $1 = "prune" ] && [ $count -eq 4 ] && exit 2'
+	# shellcheck disable=SC2016
+	addFakeBorgCommand '[ $1 = "prune" ] && [ $count -eq 5 ] && exit 2'
+	# let it work, afterwards
+	# shellcheck disable=SC2016
+	addFakeBorgCommand '[ $1 = "prune" ] && [ $count -eq 6 ] && exit 0'
+
+	# run command
+	output="$( $TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath retryPruneTest.sh )" 2>&1 )"
+	exitcode=$?
+
+	# as we exited with 0 at the end here, it should exit with 0 globally, too
+	assertEquals "process returns wrong exit code; exited with ${exitcode}, output: ${output}" \
+				"0" \
+				"$exitcode"
+
+	# all in all, calls borg 6 times
+	count=$( cat "$TMPDIR/borg/counter" )
+	assertEquals "does not retry until backup and prune suceeed; exited with ${exitcode}, output: ${output}" \
+				"6" \
+				"$count"
+
+	# 2x borg prune
+	assertEquals "does not call borg correctly; exited with ${exitcode}, output: ${output}" \
+				"create
+create
+create
+prune
+prune
+prune" \
+				"$( cat "$TMPDIR/borg/maincommand" )"
 }
 
 testNotRetry(){
 	# must not retry
 	addConfigFile "notRetryTest.sh" "RETRY_NUM=0"
 
-	doNotCountVersionRequestsInBorg
-	doNotCountLockBreakingsInBorg
-	doNotCountInfoAndListsRequestsInBorg
+	ignoreVersionRequestsInBorg
+	ignoreLockBreakingsInBorg
+	ignoreInfoAndListsRequestsInBorg
 
 	# always exit with critical error
 	addFakeBorgCommand 'exit 2'
@@ -385,10 +502,84 @@ testNotRetry(){
 				"$exitcode"
 
 	# must not retry backup, i.e. only call it once
-	count=$( cat "$BASE_DIR/custombin/counter" )
+	count=$( cat "$TMPDIR/borg/counter" )
 	assertEquals "retries backup; exited with ${exitcode}, output: ${output}" \
 				"1" \
 				"$count"
+}
+
+testNotRetryPrune(){
+	# must not retry in any case
+	addConfigFile "notRetryPruneTest.sh" 'RETRY_NUM=0
+	RETRY_NUM_PRUNE=0
+	PRUNE_PARAMS="--something-fake"
+	PRUNE_PREFIX=""
+	'
+
+	ignoreVersionRequestsInBorg
+	ignoreLockBreakingsInBorg
+	ignoreInfoAndListsRequestsInBorg
+
+	# when creating backups, do not cause problems in order to execute prune
+	addFakeBorgCommand '[ $1 = "create" ] && exit 0'
+	# otherwise, always exit with critical error
+	addFakeBorgCommand 'exit 2'
+
+	output="$( $TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath notRetryPruneTest.sh )" 2>&1 )"
+	exitcode=$?
+
+	assertEquals "process does not fail with correct exit code; exited with ${exitcode}, output: ${output}" \
+				"2" \
+				"$exitcode"
+
+	# must not retry backup, i.e. only call it create and prune once = 2 times
+	count=$( cat "$TMPDIR/borg/counter" )
+	assertEquals "retries pruning; exited with ${exitcode}, output: ${output}" \
+				"2" \
+				"$count"
+}
+
+testPruneFail(){
+	# enable prune and retry all things 1 or 2 times
+	addConfigFile "allRetryPruneFail.sh" 'RETRY_NUM=1
+	RETRY_NUM_PRUNE=2
+	PRUNE_PARAMS="--something-fake"
+	PRUNE_PREFIX=""
+	'
+
+	ignoreVersionRequestsInBorg
+	ignoreLockBreakingsInBorg
+	ignoreInfoAndListsRequestsInBorg
+
+	# all create commands should work
+	# shellcheck disable=SC2016
+	addFakeBorgCommand '[ $1 = "create" ] && exit 0'
+	# always exit, otherwise
+	# shellcheck disable=SC2016
+	addFakeBorgCommand 'exit 2'
+
+	# run command
+	output="$( $TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath allRetryPruneFail.sh )" 2>&1 )"
+	exitcode=$?
+
+	# as all prune retries fail, it should exit with 2
+	assertEquals "process returns wrong exit code; exited with ${exitcode}, output: ${output}" \
+				"2" \
+				"$exitcode"
+
+	# all in all, calls borg 4 times
+	count=$( cat "$TMPDIR/borg/counter" )
+	assertEquals "does not retry correctly; exited with ${exitcode}, output: ${output}" \
+				"4" \
+				"$count"
+
+	# 1x create works + 3x prune fails
+	assertEquals "does not call borg correctly; exited with ${exitcode}, output: ${output}" \
+				"create
+prune
+prune
+prune" \
+				"$( cat "$TMPDIR/borg/maincommand" )"
 }
 
 # shellcheck source=../shunit2/shunit2
