@@ -367,7 +367,7 @@ info_log "Backup $BACKUP_NAME started with $( $BORG_BIN -V ), helper PID: $$."
 guiShowBackupBegin
 
 for i in $( seq "$(( RETRY_NUM+1 ))" ); do
-	backupIterationLockCheck $i
+	backupIterationLockCheck "$i"
 
 	# add local lock
 	do_lock
@@ -418,7 +418,7 @@ if [ "$PRUNE_PARAMS" ] && [ "$PRUNE_PREFIX" != "null" ] && [ "$exitcode" -lt 2 ]
 	[ "$RETRY_NUM_PRUNE" = "" ] && RETRY_NUM_PRUNE=$RETRY_NUM
 
 	for i in $( seq "$(( RETRY_NUM_PRUNE+1 ))" ); do
-		backupIterationLockCheck $i
+		backupIterationLockCheck "$i"
 
 		# add local lock
 		do_lock
