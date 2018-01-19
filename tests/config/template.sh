@@ -2,20 +2,20 @@
 # shellcheck disable=SC2034
 # (shebang duplicated so shellcheck can check script)
 
-# CURRDIR is set by unit test
+# RUNDIR is set by unit test
 # FILENAME is set by unit test
 
 # count execution
-if [ -f "$CURRDIR/counter" ]; then
-	count=$( cat "$CURRDIR/counter" )
+if [ -f "$RUNDIR/counter" ]; then
+	count=$( cat "$RUNDIR/counter" )
 	count=$(( count+1 ))
 else
 	count=1
 fi
 
-echo $count > "$CURRDIR/counter"
+echo $count > "$RUNDIR/counter"
 # log execution (order)
-echo "$FILENAME" >> "$CURRDIR/list"
+echo "$FILENAME" >> "$RUNDIR/list"
 
 # set required variables, so borgcron.sh does not fail
 BACKUP_NAME='unit-test-fake-backup'
