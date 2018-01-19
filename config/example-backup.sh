@@ -2,9 +2,6 @@
 # shellcheck disable=SC2034
 # config file for the settings of this backup
 
-# (Shellcheck cannot know that this file is sourced and variables will be used later.
-#  That's why we disable this check.)
-
 # basic, required information
 BACKUP_NAME='example-backup' # name for this backup, avoid spaces
 export BORG_REPO='ssh://user@somewhere.example:22/./dir'
