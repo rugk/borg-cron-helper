@@ -48,7 +48,7 @@ fi
 # parse parameters
 case "$1" in
 	'' ) # process all backup config files in $CONFIG_DIR
-		for configfile in $CONFIG_DIR/*.sh;
+		for configfile in "$CONFIG_DIR"/*.sh;
 		do
 			"$CURRENT_DIR/borgcron.sh" "$( get_full_path "$configfile" )"
 			track_exitcode "$?"
