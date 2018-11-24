@@ -20,6 +20,7 @@ before_script:
   - tests/helper/installBorg.sh
   # install shunit2
   - tests/helper/installShUnit.sh
+  # tell Travis to use color anyways
   - export SHUNIT_COLOR='always'
 
 script:
