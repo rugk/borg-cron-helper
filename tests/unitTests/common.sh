@@ -21,7 +21,7 @@ escapeStringForSed(){
 }
 # thanks to https://stackoverflow.com/questions/16989598/bash-comparing-version-numbers#answer-24067243
 version_gt() {
-	test "$(echo "$@" | tr " " "\n" | sort -V | head -n 1)" != "$1";
+	test "$(printf '%s\n' "$@" | sort -V | head -n 1)" != "$1";
 }
 get_full_path() {
 	# thanks https://stackoverflow.com/questions/5265702/how-to-get-full-path-of-a-file
