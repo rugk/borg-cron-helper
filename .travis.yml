@@ -1,5 +1,5 @@
 language: shell # (unofficial)
-distro: trusty
+distro: xenial
 sudo: false
 
 env:
