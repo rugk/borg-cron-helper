@@ -14,7 +14,7 @@ dir_contains_files() {
 wait=0
 # check for borg backup notes
 if [ -d "$LAST_BACKUP_DIR" ] && [ "$( dir_contains_files $LAST_BACKUP_DIR )" ]; then
-	for file in $LAST_BACKUP_DIR/*; do
+	for file in "$LAST_BACKUP_DIR"/*; do
 		name=$( basename "$file" .time )
 		time=$( cat "$file" )
 		relvtime=$(( $(date +%s) - time ))
