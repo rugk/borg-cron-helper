@@ -2,12 +2,23 @@
 #
 # Runs shellcheck over all .sh files to catch errors.
 #
-set -e
-
 echo "Shellcheck version:"
 shellcheck -V
 
-# run test for each *.sh file and exit on errors
-find . -type f -iname "*.sh" -not -path "./tests/shunit2/*" -exec sh -c 'for n in "$@"; do ./tests/testShellcheckExec.sh "$n" || exit 1; done' _ {} +
+# Run test(s) for each *.sh file
+find .  -type f -iname "*.sh" -not -path "./tests/shunit2/*" -exec sh -c '
+	errorCount=0
+	for n in "$@"; do
+		./tests/testShellcheckExec.sh "$n" || errorCount=$((errorCount + 1))
+	done
+	[ $errorCount -ne 0 ] && echo "Shellcheck found errors within $errorCount file(s)."
+	exit $errorCount' \
+	_ {} +
 
-echo "Finished shellcheck test."
+# find doesn't forward the return values of its sub-commands.
+# Any exit code >=1 results in error code = 1.
+foundErrors=$?
+
+[ $foundErrors -eq 0 ] && echo "Finished shellcheck test(s) without error(s)."
+
+exit $foundErrors
