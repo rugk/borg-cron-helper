@@ -33,7 +33,7 @@ get_full_path() {
 	fi
 }
 
-addConfigFileToDir(){
+addConfigFileToDir() {
 	# syntax: dir filename.sh "[shell commands to inject, overwrite previous ones]"
 	# add static head
 	{
