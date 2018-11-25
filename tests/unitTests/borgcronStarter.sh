@@ -70,25 +70,22 @@ testRemovedConfigDir(){
 	output=$( $TEST_SHELL "$BASE_DIR/borgcron_starter.sh" 2>&1 )
 	exitcode=$?
 
-	# shellcheck disable=SC2016
 	assertFalse "does not stop on missing config dir; exited with ${exitcode}, output: ${output}" \
 				"$exitcode"
 
-	# shellcheck disable=SC2016
-	assertTrue "does not show correct error message; exited with ${exitcode}, output: ${output}" \
-				'echo "$output"|grep "No backup settings file(s) could be found"'
+	assertContains "does not show correct error message; exited with ${exitcode}, output: ${output}" \
+				"$output" "No backup settings file(s) could be found"
 }
 testEmptyConfigDir(){
 	output=$( $TEST_SHELL "$BASE_DIR/borgcron_starter.sh" 2>&1 )
 	exitcode=$?
 
-	# shellcheck disable=SC2016
 	assertFalse "does not stop on empty config dir; exited with ${exitcode}, output: ${output}" \
 				"$exitcode"
 
-	# shellcheck disable=SC2016
-	assertTrue "stops on empty config dir; exited with ${exitcode}, output: ${output}" \
-				'echo "$output"|grep "No backup settings file(s) could be found"'
+	assertContains "stops on empty config dir; exited with ${exitcode}, output: ${output}" \
+				"$output"  "No backup settings file(s) could be found"
+
 }
 testShowsHelp(){
 	addConfigFile "doNotExecute.sh"
@@ -96,9 +93,8 @@ testShowsHelp(){
 	output=$( $TEST_SHELL "$BASE_DIR/borgcron_starter.sh" --help 2>&1 )
 	exitcode=$?
 
-	# shellcheck disable=SC2016
-	assertTrue "does not show help; exited with ${exitcode}, output: ${output}" \
-				'echo "$output"|grep "Usage:"'
+	assertContains "does not show help; exited with ${exitcode}, output: ${output}" \
+				"$output"  "Usage:"
 
 	# make sure, borgcron.sh did not execute
 	assertFalse "it did execute backup something else than just showing the help; exited with ${exitcode}, output: ${output}" \

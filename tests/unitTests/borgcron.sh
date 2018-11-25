@@ -80,9 +80,8 @@ testMissingParameter(){
 	assertFalse "does not exit with correct error code when parameter is missing; exited with ${exitcode}, output: ${output}" \
 				"$exitcode"
 
-	# shellcheck disable=SC2016
-	assertTrue "does not exit with correct error message when parameter is missing; exited with ${exitcode}, output: ${output}" \
-				'echo "$output"|grep "Please pass a path of a config file to borgcron.sh."'
+	assertContains "does not exit with correct error message when parameter is missing; exited with ${exitcode}, output: ${output}" \
+				"$output"  "Please pass a path of a config file to borgcron.sh."
 }
 
 testWrongFilename(){
@@ -217,13 +216,11 @@ export BORG_REPO="ssh://9876_uniquestring_BORG_REPO__user@somewhere.example:22/.
 	output="$( $TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath secDataLeak.sh )" 2>&1 )"
 	exitcode=$?
 
-	# shellcheck disable=SC2016
-	assertFalse "does output passphrase; exited with ${exitcode}, output: ${output}" \
-				'echo "$output"|grep "1234_uniquestring_BORG_REPO"'
+	assertNotContains "does output passphrase; exited with ${exitcode}, output: ${output}" \
+				"$output" "1234_uniquestring_BORG_REPO"
 
-	# shellcheck disable=SC2016
-	assertFalse "does output repo address; exited with ${exitcode}, output: ${output}" \
-				'echo "$output"|grep "9876_uniquestring_BORG_REPO"'
+	assertNotContains "does output repo address; exited with ${exitcode}, output: ${output}" \
+				"$output"  "9876_uniquestring_BORG_REPO"
 }
 
 testLockDisable(){
@@ -251,9 +248,8 @@ testLockStopsWhenLocked(){
 
 	assertFalse "does not end with error exit code when locked at start; exited with ${exitcode}, output: ${output}" \
 				"$exitcode"
-	# shellcheck disable=SC2016
-	assertTrue "does not stop with error message when locked at start" \
-				'echo "$output"|grep "is locked"'
+	assertContains "does not stop with error message when locked at start" \
+				"$output" "is locked"
 
 	rmLock
 
@@ -267,9 +263,8 @@ testLockStopsWhenLocked(){
 
 	assertFalse "does not end with error exit code when locked during sleep period; exited with ${exitcode}, output: ${output}" \
 				"$exitcode"
-	# shellcheck disable=SC2016
-	assertTrue "does not stop with error message when locked during sleep period" \
-				'echo "$output"|grep "is locked"'
+	assertContains "does not stop with error message when locked during sleep period" \
+				"$output" "is locked"
 
 	rmLock
 }

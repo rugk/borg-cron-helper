@@ -89,27 +89,25 @@ testShowBackupInfo(){
 
 	# shellcheck disable=2034
 	message='The borg backup named "backup-bad-26h" is outdated.'
-	# shellcheck disable=SC2016
-	assertTrue "does not show correct backup info; exited with ${exitcode}, output: ${output}" \
-				'echo "$output"|grep "$message"'
+	assertContains "does not show correct backup info; exited with ${exitcode}, output: ${output}" \
+					"$output" "$message"
 
 	# shellcheck disable=2034
 	message='The borg backup named "backup-bad-32h" is outdated.'
-	# shellcheck disable=SC2016
-	assertTrue "does not show correct backup info; exited with ${exitcode}, output: ${output}" \
-				'echo "$output"|grep "$message"'
+	assertContains "does not show correct backup info; exited with ${exitcode}, output: ${output}" \
+					"$output" "$message"
 
 	# shellcheck disable=2034
 	message='The borg backup named "backup-bad-2h" is outdated.'
-	# shellcheck disable=SC2016
-	assertFalse "does not show correct backup info; exited with ${exitcode}, output: ${output}" \
-				'echo "$output"|grep "$message"'
+	assertNotContains "does not show correct backup info; exited with ${exitcode}, output: ${output}" \
+						"$output" "$message"
+
 
 	# shellcheck disable=2034
 	message='The borg backup named "backup-bad-3d" is outdated.'
-	# shellcheck disable=SC2016
-	assertTrue "does not show correct backup info; exited with ${exitcode}, output: ${output}" \
-				'echo "$output"|grep "$message"'
+	assertContains "does not show correct backup info; exited with ${exitcode}, output: ${output}" \
+				"$output" "$message"
+
 }
 
 # shellcheck source=../shunit2/shunit2

@@ -12,7 +12,7 @@ You need to [`shunit2`](https://github.com/kward/shunit2) (clone it into this `/
 
 All tests are usual `.sh` files. They may require a specific shell or be POSIX-compatible, just look at the [shebang](https://en.wikipedia.org/wiki/Shebang_(Unix)). If the shell is installed, the shebang should take care of it.
 
-Each tests can, however, usually run separately, i.e. you can still run the unit tests, even when you do not want to install shellcheck.
+Each tests can, however, usually run separately, i.e. you can still run the unit tests, even when you do not want to install shellcheck. However, do not try to run them in parallel. 😃
 
 ## Automatic execution
 

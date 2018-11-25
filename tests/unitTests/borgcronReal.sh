@@ -150,21 +150,18 @@ testBorgUnencrypted(){
 
 	archiveName="$HOSTNAME-unit-test-fake-backup-$( date +"%F" )-UNIQUESTRING-for-test918"
 	# and to really verify, look for borg output
-	# shellcheck disable=SC2016
-	assertTrue "backup does not show backup name; exited with ${exitcode}, output: ${output}" \
-				'echo "$output"|grep "Archive name: $archiveName"'
+	assertContains "backup does not show backup name; exited with ${exitcode}, output: ${output}" \
+				"$output" "Archive name: $archiveName"
 
 	# also list backup content again to check whether archive really contains expected stuff
 	# shellcheck disable=SC2034
 	archiveContent=$( $TEST_SHELL -c "borg list '/tmp/borg_repodir::$archiveName'" )
-	# shellcheck disable=SC2016
-	assertTrue "has incorrect or no content; exited with ${exitcode}, output: ${output}" \
-				'echo "$archiveContent"|grep ".git/"'
+	assertContains "has incorrect or no content; exited with ${exitcode}, output: ${output}" \
+				"$archiveContent" ".git/"
 
 	# also check that prune executed
-	# shellcheck disable=SC2016
-	assertTrue "prune did not execute; exited with ${exitcode}, output: ${output}" \
-				'echo "$output"|grep "Keeping archive"'
+	assertContains "prune did not execute; exited with ${exitcode}, output: ${output}" \
+				"$output" "Keeping archive"
 }
 
 testBorgEncrypted(){
@@ -277,9 +274,8 @@ testBorgPrune(){
 				"[ $(( endTime-startTime )) -le 15 ]"
 
 	# check that prune deleted prefix2_ and showed that in output
-	# shellcheck disable=SC2016
-	assertTrue "prune did not delete prefix2; exited with ${exitcode}, output: ${output}" \
-				'echo "$output"|grep "Pruning archive: prefix2_"'
+	assertContains "prune did not delete prefix2; exited with ${exitcode}, output: ${output}" \
+				"$output" "Pruning archive: prefix2_"
 
 	# check that prefix1_ and newly created prefix3_ are still there (not prefixed versions are not shown in prune output)
 	# shellcheck disable=SC2034
