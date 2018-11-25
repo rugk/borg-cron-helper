@@ -29,7 +29,7 @@ RETRY_NUM="3" # = retry after a failed backup for n number of times
 # GUI settings
 GUI_OVERWRITE_ICON="$PWD/icon.png" # custom icon for notifications (needs absolute path)
 # You can also overwrite the guiShow…() functions here to modify their behaviour.
-# For more information, see the wiki: https://github.com/rugk/borg-cron-helper/wiki/More-GUI-integration
+# For more information, see the wiki: https://github.com/rugk/borg-cron-helper/wiki/Additional-GUI-integration
 
 # borg-internal settings
 # (see https://borgbackup.readthedocs.io/en/stable/usage.html#environment-variables)
