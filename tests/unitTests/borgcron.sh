@@ -285,7 +285,8 @@ testLockPid(){
 	assertTrue "does not ignore not running processes, i.e. fails; exited with ${exitcode}, output: ${output}" \
 				"$exitcode"
 
-	rmLock
+	# lock is already removed after successful backup run
+	# rmLock
 }
 testLocksWhenBorgRuns(){
 	# adding prune params to also test prune borg call (& lock there)
@@ -345,8 +346,6 @@ testLockRemoved(){
 
 	assertFalse "does remove lock when borg finished" \
 				"[ -e /tmp/RUN_PID_DIR/testFail ]"
-
-	rmLock
 }
 
 testRetry(){
