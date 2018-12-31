@@ -21,7 +21,11 @@ PRUNE_PARAMS="--keep-daily=14 --keep-weekly=8 --keep-monthly=6 --keep-yearly=0"
 # for web servers (only disaster recovery): --keep-daily=7 --keep-weekly=5 --keep-monthly=2 --keep-yearly=0
 
 # additional settings
-ADD_BACKUP_PARAMS="" # --one-file-system for backing up root file dir
+ADD_BACKUP_PARAMS="" # additional parameters to pass to borg create
+# examples:
+# --one-file-system for backing up root file dir
+# --exclude '/home/*/.cache' to exclude transient data in the home directory
+# Full list at https://borgbackup.readthedocs.io/en/stable/usage/create.html
 SLEEP_TIME="5m" # time, the script should wait until re-attempting the backup after a failed try
 RETRY_NUM="3" # = retry after a failed backup for n number of times
 # RETRY_NUM_PRUNE="1" # = use different number of retries for pruning backups
