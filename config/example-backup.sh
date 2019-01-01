@@ -40,8 +40,8 @@ GUI_OVERWRITE_ICON="$PWD/icon.png" # custom icon for notifications (needs absolu
 
 # You can include the default zenity_proxy, which sends notifications to active users.
 # FALLBACK_NOTIFICATION_USER="" # user to show to usually
-# shellcheck source=../tools/zenityProxy.sh
-#. "$( dirname "$0" )/tools/zenityProxy.sh"
+## shellcheck source=../tools/zenityProxy.sh
+# . "$( dirname "$0" )/tools/zenityProxy.sh" # evaluate full path
 
 # For more information, see the wiki: https://github.com/rugk/borg-cron-helper/wiki/Additional-GUI-integration
 
