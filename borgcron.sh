@@ -261,6 +261,9 @@ guiCanShowNotifications() {
 	# to disable all notifications.
 	command -v zenity >/dev/null
 }
+zenityProxy() {
+	sh -c "zenity $*"
+}
 guiShowNotification() {
 	# syntax: title text icon
 	title="BorgBackup: $BACKUP_NAME"
@@ -270,13 +273,8 @@ guiShowNotification() {
 	[ "$GUI_OVERWRITE_ICON" != "" ] && icon="$GUI_OVERWRITE_ICON"
 
 	# if proxy is set, use it, otherwise call zenity directly
-	if zenityProxy 2>/dev/null; then
-		zenityProxy "--notification --window-icon \"$icon\" --text '$title
+	zenityProxy "--notification --window-icon \"$icon\" --text '$title
 $2'"
-	else
-		zenity --notification --window-icon "$icon" --text "$title
-$2"
-	fi
 }
 guiShowBackupBegin() {
 	: # = do nothing, so do not show any notification
