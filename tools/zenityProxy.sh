@@ -39,10 +39,6 @@ getActiveUserId() {
 
 # overwrite actual
 zenityProxy() {
-    if [ -z "$1" ]; then # let script verify this proxy is there
-        return 0 # (true)
-    fi
-
 	# get active user
 	ACTIVE_USERNAME="$( getActiveUsername )"
 	ACTIVE_USERID="$( getActiveUserId )"
