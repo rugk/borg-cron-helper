@@ -58,9 +58,9 @@ Also, you can of course not use some features outlined here. That's why the whol
 - pruning after the backup
 - script to dump databases before backing up
 - privilege-separation (login scripts can have higher privilege than backup process)
-- tested in production (but no guarantees, use at your own risk! 😉)
+- tested and used in production (but no guarantees, use at your own risk! 😉)
 - logging if backup is interruped by signals (e.g. at shutdown)
-- tested with **more than 30** automated unit tests (see Travis-CI badge above)
+- tested with **more than 30** automated (unit) tests (see Travis-CI badge above)
 - more to come...
 
 ## What's in here?
