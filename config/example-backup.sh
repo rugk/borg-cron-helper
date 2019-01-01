@@ -33,6 +33,15 @@ RETRY_NUM="3" # = retry after a failed backup for n number of times
 # GUI settings
 GUI_OVERWRITE_ICON="$PWD/icon.png" # custom icon for notifications (needs absolute path)
 # You can also overwrite the guiShow…() functions here to modify their behaviour.
+# E.g.:
+# guiShowBackupBegin() {
+#    guiShowNotification "Backup just started."
+#}
+
+# You can include the default zenity_proxy, which sends notifications to active users.
+# FALLBACK_NOTIFICATION_USER="" # user to show to usually
+. "$( dirname "$0" )/tools/zenityProxy.sh" # evaluate full path
+
 # For more information, see the wiki: https://github.com/rugk/borg-cron-helper/wiki/Additional-GUI-integration
 
 # borg-internal settings
