@@ -329,7 +329,7 @@ trap 'trapterm TERM' TERM
 
 # abort, if started without backup config file as input
 if [ "$1" != '' ]; then
-	# shellcheck source=config/example-backup.sh
+	# shellcheck source=./config/example-backup.sh
 	. "$1"
 else
 	error_log "Please pass a path of a config file to $(basename "$0")."
