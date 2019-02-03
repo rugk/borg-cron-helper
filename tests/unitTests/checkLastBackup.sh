@@ -50,7 +50,7 @@ testRemovedLastDir(){
 	output="$( $TEST_SHELL "$LASTSCRIPT" 2>&1 )"
 	exitcode=$?
 
-	assertEquals "does not stop on missing last dir; exited with ${exitcode}, output: ${output}" \
+	assertEquals "$(outputAssertionMessage "does not stop on missing last dir" $exitcode "$output")" \
 				"ERROR: No borg backup 'last' dir…" \
 				"$output"
 }
@@ -58,7 +58,7 @@ testEmptyLastDir(){
 	output="$( $TEST_SHELL "$LASTSCRIPT" 2>&1 )"
 	exitcode=$?
 
-	assertEquals "does not stop on empty last dir; exited with ${exitcode}, output: ${output}" \
+	assertEquals "$(outputAssertionMessage "does not stop on empty last dir" $exitcode "$output")" \
 				"ERROR: No borg backup 'last' dir…" \
 				"$output"
 }
@@ -72,7 +72,7 @@ testIgnoresUpToDateBackups(){
 	output="$( $TEST_SHELL "$LASTSCRIPT" 2>&1 )"
 	exitcode=$?
 
-	assertEquals "does not silently ignores up-to-date backups; exited with ${exitcode}, output: ${output}" \
+	assertEquals "$(outputAssertionMessage "does not silently ignores up-to-date backups" $exitcode "$output")" \
 				"" \
 				"$output"
 }
@@ -89,23 +89,23 @@ testShowBackupInfo(){
 
 	# shellcheck disable=2034
 	message='The borg backup named "backup-bad-26h" is outdated.'
-	assertContains "does not show correct backup info; exited with ${exitcode}, output: ${output}" \
+	assertContains "$(outputAssertionMessage "does not show correct backup info" $exitcode "$output")" \
 					"$output" "$message"
 
 	# shellcheck disable=2034
 	message='The borg backup named "backup-bad-32h" is outdated.'
-	assertContains "does not show correct backup info; exited with ${exitcode}, output: ${output}" \
+	assertContains "$(outputAssertionMessage "does not show correct backup info" $exitcode "$output")" \
 					"$output" "$message"
 
 	# shellcheck disable=2034
 	message='The borg backup named "backup-bad-2h" is outdated.'
-	assertNotContains "does not show correct backup info; exited with ${exitcode}, output: ${output}" \
+	assertNotContains "$(outputAssertionMessage "does not show correct backup info" $exitcode "$output")" \
 						"$output" "$message"
 
 
 	# shellcheck disable=2034
 	message='The borg backup named "backup-bad-3d" is outdated.'
-	assertContains "does not show correct backup info; exited with ${exitcode}, output: ${output}" \
+	assertContains "$(outputAssertionMessage "does not show correct backup info" $exitcode "$output")" \
 				"$output" "$message"
 
 }
