@@ -139,7 +139,10 @@ outputAssertionMessage() {
 	testbasedMessage="$1"
 	testbasedExitCode="$2"
 	testbasedConsoleOutput="$3"
-	echo "${testbasedMessage}; exited with ${testbasedExitCode}, output: ${testbasedConsoleOutput}"
+	echo "${testbasedMessage} "
+	echo "exitcode ${testbasedExitCode} "
+	echo "console output: ${testbasedConsoleOutput}"
+	echo
 }
 
 CURRDIR="$( get_full_path "$CURRDIR" )"
