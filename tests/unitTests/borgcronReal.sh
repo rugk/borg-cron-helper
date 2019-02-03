@@ -138,29 +138,29 @@ testBorgUnencrypted(){
 	endTime=$( date +%s )
 
 	# check whether backup is sucessful
-	assertEquals "backup did not finish without an error; exited with ${exitcode}, output: ${output}" \
+	assertEquals "$(outputAssertionMessage "backup did not finish without an error" $exitcode "$output")" \
 				"0" \
 				"$exitcode"
 
 	# when it took more than 15 seconds, it likely retried the backup (sleep time: 20s)
 	# or did similar stupid things
 	# shellcheck disable=SC2016
-	assertTrue "borg backup was not in time and likely retried the backup; exited with ${exitcode}, output: ${output}" \
+	assertTrue "$(outputAssertionMessage "borg backup was not in time and likely retried the backup" $exitcode "$output")" \
 				"[ $(( endTime-startTime )) -le 15 ]"
 
 	archiveName="$HOSTNAME-unit-test-fake-backup-$( date +"%F" )-UNIQUESTRING-for-test918"
 	# and to really verify, look for borg output
-	assertContains "backup does not show backup name; exited with ${exitcode}, output: ${output}" \
+	assertContains "$(outputAssertionMessage "backup does not show backup name" $exitcode "$output")" \
 				"$output" "Archive name: $archiveName"
 
 	# also list backup content again to check whether archive really contains expected stuff
 	# shellcheck disable=SC2034
 	archiveContent=$( $TEST_SHELL -c "borg list '/tmp/borg_repodir::$archiveName'" )
-	assertContains "has incorrect or no content; exited with ${exitcode}, output: ${output}" \
+	assertContains "$(outputAssertionMessage "has incorrect or no content" $exitcode "$output")" \
 				"$archiveContent" ".git/"
 
 	# also check that prune executed
-	assertContains "prune did not execute; exited with ${exitcode}, output: ${output}" \
+	assertContains "$(outputAssertionMessage "prune did not execute" $exitcode "$output")" \
 				"$output" "Keeping archive"
 }
 
@@ -190,13 +190,13 @@ testBorgEncrypted(){
 	endTime=$( date +%s )
 
 	# check whether backup is fails due to missing passphrase
-	assertEquals "backup did not finish with error due to missing passphrase; exited with ${exitcode}, output: ${output}" \
+	assertEquals "$(outputAssertionMessage "backup did not finish with error due to missing passphrase" $exitcode "$output")" \
 				"2" \
 				"$exitcode"
 
 	# it fails, but must not retry as RETRY_NUM is set to 0
 	# shellcheck disable=SC2016
-	assertTrue "borg backup did retry altghough option is disabled; exited with ${exitcode}, output: ${output}" \
+	assertTrue "$(outputAssertionMessage "borg backup did retry altghough option is disabled" $exitcode "$output")" \
 				"[ $(( endTime-startTime )) -le 15 ]"
 
 	# 2nd try: set passphrase/password
@@ -221,14 +221,14 @@ testBorgEncrypted(){
 	endTime=$( date +%s )
 
 	# now it should have finished without an error
-	assertEquals "backup does not finish without error; exited with ${exitcode}, output: ${output}" \
+	assertEquals "$(outputAssertionMessage "backup does not finish without error" $exitcode "$output")" \
 				"0" \
 				"$exitcode"
 
 	archivePrefix="unit-test-fake-backup-$( date +"%F" )"
 	# also list backup content again to check that only the second backup was successful
 	archiveList=$( $TEST_SHELL -c "BORG_PASSPHRASE='123456789' borg list --short '/tmp/borg_repodir'" )
-	assertEquals "'borg list' does not list created backup; exited with ${exitcode}, output: ${output}" \
+	assertEquals "$(outputAssertionMessage "'borg list' does not list created backup" $exitcode "$output")" \
 				"$archivePrefix-working" \
 				"$archiveList"
 }
@@ -263,28 +263,28 @@ testBorgPrune(){
 	endTime=$( date +%s )
 
 	# check whether backup is sucessful
-	assertEquals "backup does not finish without error; exited with ${exitcode}, output: ${output}" \
+	assertEquals "$(outputAssertionMessage "backup does not finish without error" $exitcode "$output")" \
 				"0" \
 				"$exitcode"
 
 	# when it took more than 15 seconds, it likely retried the backup (sleep time: 20s)
 	# or did similar stupid things
 	# shellcheck disable=SC2016
-	assertTrue "borg was not in time and likely retried the backup; exited with ${exitcode}, output: ${output}" \
+	assertTrue "$(outputAssertionMessage "borg was not in time and likely retried the backup" $exitcode "$output")" \
 				"[ $(( endTime-startTime )) -le 15 ]"
 
 	# check that prune deleted prefix2_ and showed that in output
-	assertContains "prune did not delete prefix2; exited with ${exitcode}, output: ${output}" \
+	assertContains "$(outputAssertionMessage "prune did not delete prefix2" $exitcode "$output")" \
 				"$output" "Pruning archive: prefix2_"
 
 	# check that prefix1_ and newly created prefix3_ are still there (not prefixed versions are not shown in prune output)
 	# shellcheck disable=SC2034
 	archiveList=$( $TEST_SHELL -c "borg list --short '/tmp/borg_repodir'" )
 	# shellcheck disable=SC2016
-	assertTrue "prune did not keep prefix1; exited with ${exitcode}, output: ${output}" \
+	assertTrue "$(outputAssertionMessage "prune did not keep prefix1" $exitcode "$output")" \
 				'echo "$archiveList"|grep "^prefix1_"'
 	# shellcheck disable=SC2016
-	assertTrue "prune did not keep prefix3; exited with ${exitcode}, output: ${output}" \
+	assertTrue "$(outputAssertionMessage "prune did not keep prefix3" $exitcode "$output")" \
 				'echo "$archiveList"|grep "^prefix3_"'
 }
 
