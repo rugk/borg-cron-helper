@@ -339,7 +339,7 @@ testLockRemoved(){
 	assertTrue "$(outputAssertionMessage "process fails altghough one backup execution suceeded" $exitcode "$output")" \
 				"$exitcode"
 
-	assertFalse $(outputAssertionMessage "does remove lock when borg finished" $exitcode "$output")" \
+	assertFalse "$(outputAssertionMessage "does remove lock when borg finished" $exitcode "$output")" \
 				"[ -e /tmp/RUN_PID_DIR/testFail ]"
 }
 
