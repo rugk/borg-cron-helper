@@ -77,10 +77,10 @@ testMissingParameter(){
 	output="$( $TEST_SHELL "$BASE_DIR/borgcron.sh" 2>&1 )"
 	exitcode=$?
 
-	assertFalse "does not exit with correct error code when parameter is missing; exited with ${exitcode}, output: ${output}" \
+	assertFalse "$(outputAssertionMessage "does not exit with correct error code when parameter is missing" $exitcode "$output")" \
 				"$exitcode"
 
-	assertContains "does not exit with correct error message when parameter is missing; exited with ${exitcode}, output: ${output}" \
+	assertContains "$(outputAssertionMessage "does not exit with correct error message when parameter is missing" $exitcode "$output")" \
 				"$output"  "Please pass a path of a config file to borgcron.sh."
 }
 
@@ -90,7 +90,7 @@ testWrongFilename(){
 	output="$( $TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath testWrongName_WRONG.sh )" 2>&1 )"
 	exitcode=$?
 
-	assertFalse "does not exit with failing error code when specified config file is missing; exited with ${exitcode}, output: ${output}" \
+	assertFalse "$(outputAssertionMessage "does not exit with failing error code when specified config file is missing" $exitcode "$output")" \
 				"$output"
 }
 
@@ -103,15 +103,15 @@ testWorks(){
 	output="$( $TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath testWorks.sh )" 2>&1 )"
 	exitcode=$?
 
-	assertTrue "fails with basic errorfree template config; exited with ${exitcode}, output: ${output}" \
+	assertTrue "$(outputAssertionMessage "fails with basic errorfree template config" $exitcode "$output")" \
 				"$exitcode"
 
 	# checks that last backup time exists and it's size is larger than 0 and…
 	timeFile='/tmp/LAST_BACKUP_DIR/unit-test-fake-backup.time'
-	assertTrue "does not write/save backup time; exited with ${exitcode}, output: ${output}" \
+	assertTrue "$(outputAssertionMessage "does not write/save backup time" $exitcode "$output")" \
 				"[ -s '$timeFile' ]"
 	# …that the time is realistic (i.e. after start of script)
-	assertTrue "saved backup time is unrealistic; exited with ${exitcode}, output: ${output}" \
+	assertTrue "$(outputAssertionMessage "saved backup time is unrealistic" $exitcode "$output")" \
 				"[ '$( cat "$timeFile" )' -ge '$startTime' ]"
 }
 
@@ -131,16 +131,16 @@ testFails(){
 	output="$( $TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath testFails.sh )" 2>&1 )"
 	exitcode=$?
 
-	assertEquals "returns wrong exit code; exited with ${exitcode}, output: ${output}" \
+	assertEquals "$(outputAssertionMessage "returns wrong exit code" $exitcode "$output")" \
 				"2" \
 				"$exitcode"
 
 	# checks that backup time was *not* saved
 	timeFile='/tmp/LAST_BACKUP_DIR/unit-test-fake-backup.time'
-	assertFalse "saves last backup time altghough backup was not successful; exited with ${exitcode}, output: ${output}" \
+	assertFalse "$(outputAssertionMessage "saves last backup time altghough backup was not successful" $exitcode "$output")" \
 				"[ -f '$timeFile' ]"
 
-	assertEquals "retries an incorrect number of times, given; exited with ${exitcode}, output: ${output}" \
+	assertEquals "$(outputAssertionMessage "retries an incorrect number of times, given" $exitcode "$output")" \
 				"2" \
 				"$( cat "$TMPDIR/borg/counter" )"
 }
@@ -157,11 +157,11 @@ testUsesBorgBin(){
 	exitcode=$?
 
 	# run backup
-	assertTrue "execution fails; exited with ${exitcode}, output: ${output}" \
+	assertTrue "$(outputAssertionMessage "execution fails" $exitcode "$output")" \
 				"$exitcode"
 
 	# must not call the "real fake borg binary", but borg-ok.
-	assertFalse "still runs the borg binary when \$BORG_BIN is set, i.e. ignores \$BORG_BIN setting; exited with ${exitcode}, output: ${output}" \
+	assertFalse "$(outputAssertionMessage "still runs the borg binary when \$BORG_BIN is set, i.e. ignores \$BORG_BIN setting" $exitcode "$output")" \
 				"[ -f '$TMPDIR/borg/counter' ]"
 
 	# remove borg-ok
@@ -172,19 +172,19 @@ testMissingVariables(){
 	addConfigFile "missingVars1.sh" 'BACKUP_NAME=""'
 	output="$( $TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath missingVars1.sh )" 2>&1 )"
 	exitcode=$?
-	assertFalse "does not stop on missing BACKUP_NAME; exited with ${exitcode}, output: ${output}" \
+	assertFalse "$(outputAssertionMessage "does not stop on missing BACKUP_NAME" $exitcode "$output")" \
 				"$exitcode"
 
 	addConfigFile "missingVars2.sh" 'ARCHIVE_NAME=""'
 	output="$( $TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath missingVars2.sh )" 2>&1 )"
 	exitcode=$?
-	assertFalse "does not stop on missing ARCHIVE_NAME; exited with ${exitcode}, output: ${output}" \
+	assertFalse "$(outputAssertionMessage "does not stop on missing ARCHIVE_NAME" $exitcode "$output")" \
 				"$exitcode"
 
 	addConfigFile "missingVars3.sh" 'BACKUP_DIRS=""'
 	output="$( $TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath missingVars3.sh )" 2>&1 )"
 	exitcode=$?
-	assertFalse "does not stop on missing BACKUP_DIRS; exited with ${exitcode}, output: ${output}" \
+	assertFalse "$(outputAssertionMessage "does not stop on missing BACKUP_DIRS" $exitcode "$output")" \
 				"$exitcode"
 }
 
@@ -192,7 +192,7 @@ testMissingExportedVariables(){
 	addConfigFile "missingExportedVars1.sh" 'export BORG_REPO=""'
 	output="$( $TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath missingExportedVars1.sh )" 2>&1 )"
 	exitcode=$?
-	assertFalse "does not stop on missing exported BORG_REPO; exited with ${exitcode}, output: ${output}" \
+	assertFalse "$(outputAssertionMessage "does not stop on missing exported BORG_REPO" $exitcode "$output")" \
 				"$exitcode"
 
 	unexportCmd='export -n BORG_REPO'
@@ -202,7 +202,7 @@ testMissingExportedVariables(){
 	addConfigFile "missingExportedVars2.sh" "$unexportCmd"
 	output="$( $TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath missingExportedVars2.sh )" 2>&1 )"
 	exitcode=$?
-	assertFalse "does not stop on only locally set variable (not exported); exited with ${exitcode}, output: ${output}" \
+	assertFalse "$(outputAssertionMessage "does not stop on only locally set variable (not exported)" $exitcode "$output")" \
 				"$exitcode"
 }
 
@@ -216,10 +216,10 @@ export BORG_REPO="ssh://9876_uniquestring_BORG_REPO__user@somewhere.example:22/.
 	output="$( $TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath secDataLeak.sh )" 2>&1 )"
 	exitcode=$?
 
-	assertNotContains "does output passphrase; exited with ${exitcode}, output: ${output}" \
+	assertNotContains "$(outputAssertionMessage "does output passphrase" $exitcode "$output")" \
 				"$output" "1234_uniquestring_BORG_REPO"
 
-	assertNotContains "does output repo address; exited with ${exitcode}, output: ${output}" \
+	assertNotContains "$(outputAssertionMessage "does output repo address" $exitcode "$output")" \
 				"$output"  "9876_uniquestring_BORG_REPO"
 }
 
@@ -232,7 +232,7 @@ testLockDisable(){
 	output="$( $TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath lockTestDisabled.sh )" 2>&1 )"
 	exitcode=$?
 
-	assertTrue "fails even if locking is disabled; exited with ${exitcode}, output: ${output}" \
+	assertTrue "$(outputAssertionMessage "fails even if locking is disabled" $exitcode "$output")" \
 				"$exitcode"
 
 	rmLock
@@ -246,9 +246,9 @@ testLockStopsWhenLocked(){
 	output="$( $TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath lockTest.sh )" 2>&1 )"
 	exitcode=$?
 
-	assertFalse "does not end with error exit code when locked at start; exited with ${exitcode}, output: ${output}" \
+	assertFalse "$(outputAssertionMessage "does not end with error exit code when locked at start" $exitcode "$output")" \
 				"$exitcode"
-	assertContains "does not stop with error message when locked at start" \
+	assertContains "$(outputAssertionMessage "does not stop with error message when locked at start" $exitcode "$output")" \
 				"$output" "is locked"
 
 	rmLock
@@ -261,9 +261,9 @@ testLockStopsWhenLocked(){
 	output="$( $TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath lockTest.sh )" 2>&1 )"
 	exitcode=$?
 
-	assertFalse "does not end with error exit code when locked during sleep period; exited with ${exitcode}, output: ${output}" \
+	assertFalse "$(outputAssertionMessage "does not end with error exit code when locked during sleep period" $exitcode "$output")" \
 				"$exitcode"
-	assertContains "does not stop with error message when locked during sleep period" \
+	assertContains "$(outputAssertionMessage "does not stop with error message when locked during sleep period" $exitcode "$output")" \
 				"$output" "is locked"
 
 	rmLock
@@ -277,7 +277,7 @@ testLockPid(){
 	output="$( $TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath lockPidTest.sh )" 2>&1 )"
 	exitcode=$?
 
-	assertTrue "does not ignore not running processes, i.e. fails; exited with ${exitcode}, output: ${output}" \
+	assertTrue "$(outputAssertionMessage "does not ignore not running processes, i.e. fails" $exitcode "$output")" \
 				"$exitcode"
 
 	# lock is already removed after successful backup run
@@ -308,13 +308,13 @@ PRUNE_PREFIX="{hostname}-$BACKUP_NAME-"'
 	output="$( $TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath runningPidTest.sh )" 2>&1 )"
 	exitcode=$?
 
-	assertTrue "backup process fails; exited with ${exitcode}, output: ${output}" \
+	assertTrue "$(outputAssertionMessage "backup process fails" $exitcode "$output")" \
 				"$exitcode"
 
 	count=$( cat "$TMPDIR/borg/counter" )
 	lockCount=$( cat "$lockCountFile" )
 
-	assertEquals "does not lock in each case borg runs; exited with ${exitcode}, output: ${output}" \
+	assertEquals "$(outputAssertionMessage "does not lock in each case borg runs" $exitcode "$output")" \
 				"$count" \
 				"$lockCount"
 }
@@ -336,10 +336,10 @@ testLockRemoved(){
 	exitcode=$?
 
 	# altghough retry is triggered, as borg suceeds afterwards, it should return 0
-	assertTrue "process fails altghough one backup execution suceeded; exited with ${exitcode}, output: ${output}" \
+	assertTrue "$(outputAssertionMessage "process fails altghough one backup execution suceeded" $exitcode "$output")" \
 				"$exitcode"
 
-	assertFalse "does remove lock when borg finished" \
+	assertFalse "$(outputAssertionMessage "does remove lock when borg finished" $exitcode "$output")" \
 				"[ -e /tmp/RUN_PID_DIR/testFail ]"
 }
 
@@ -363,17 +363,17 @@ testRetry(){
 	output="$( $TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath retryTest.sh )" 2>&1 )"
 	exitcode=$?
 
-	assertEquals "process returns wrong exit code; exited with ${exitcode}, output: ${output}" \
+	assertEquals "$(outputAssertionMessage "process returns wrong exit code" $exitcode "$output")" \
 				"1" \
 				"$exitcode"
 
 	# 2x borg create
-	assertEquals "does not retry until backup suceeeds; exited with ${exitcode}, output: ${output}" \
+	assertEquals "$(outputAssertionMessage "does not retry until backup suceeeds" $exitcode "$output")" \
 				"2" \
 				"$( cat "$TMPDIR/borg/counter" )"
 
 	# 2x retry -> execute 3 times
-	assertEquals "does not call borg create correctly; exited with ${exitcode}, output: ${output}" \
+	assertEquals "$(outputAssertionMessage "does not call borg create correctly" $exitcode "$output")" \
 				"create
 create" \
 				"$( cat "$TMPDIR/borg/maincommand" )"
@@ -405,17 +405,17 @@ testRetryPrune(){
 	output="$( $TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath retryPruneTest.sh )" 2>&1 )"
 	exitcode=$?
 
-	assertEquals "process returns wrong exit code; exited with ${exitcode}, output: ${output}" \
+	assertEquals "$(outputAssertionMessage "process returns wrong exit code" $exitcode "$output")" \
 				"1" \
 				"$exitcode"
 
 	# 1x create+2x borg prune = 3x
-	assertEquals "does not retry until prune suceeeds; exited with ${exitcode}, output: ${output}" \
+	assertEquals "$(outputAssertionMessage "does not retry until prune suceeeds" $exitcode "$output")" \
 				"3" \
 				"$( cat "$TMPDIR/borg/counter" )"
 
 	# 1x create+2x retry
-	assertEquals "does not call borg prune correctly; exited with ${exitcode}, output: ${output}" \
+	assertEquals "$(outputAssertionMessage "does not call borg prune correctly" $exitcode "$output")" \
 				"create
 prune
 prune" \
@@ -457,18 +457,18 @@ testRetryBoth(){
 	exitcode=$?
 
 	# as we exited with 0 at the end here, it should exit with 0 globally, too
-	assertEquals "process returns wrong exit code; exited with ${exitcode}, output: ${output}" \
+	assertEquals "$(outputAssertionMessage "process returns wrong exit code" $exitcode "$output")" \
 				"0" \
 				"$exitcode"
 
 	# all in all, calls borg 6 times
 	count=$( cat "$TMPDIR/borg/counter" )
-	assertEquals "does not retry until backup and prune suceeed; exited with ${exitcode}, output: ${output}" \
+	assertEquals "$(outputAssertionMessage "does not retry until backup and prune suceeed" $exitcode "$output")" \
 				"6" \
 				"$count"
 
 	# 2x borg prune
-	assertEquals "does not call borg correctly; exited with ${exitcode}, output: ${output}" \
+	assertEquals "$(outputAssertionMessage "does not call borg correctly" $exitcode "$output")" \
 				"create
 create
 create
@@ -492,13 +492,13 @@ testNotRetry(){
 	output="$( $TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath notRetryTest.sh )" 2>&1 )"
 	exitcode=$?
 
-	assertEquals "process does not fail with correct exit code; exited with ${exitcode}, output: ${output}" \
+	assertEquals "$(outputAssertionMessage "process does not fail with correct exit code" $exitcode "$output")" \
 				"2" \
 				"$exitcode"
 
 	# must not retry backup, i.e. only call it once
 	count=$( cat "$TMPDIR/borg/counter" )
-	assertEquals "retries backup; exited with ${exitcode}, output: ${output}" \
+	assertEquals "$(outputAssertionMessage "retries backup" $exitcode "$output")" \
 				"1" \
 				"$count"
 }
@@ -525,13 +525,13 @@ testNotRetryPrune(){
 	output="$( $TEST_SHELL "$BASE_DIR/borgcron.sh" "$( getConfigFilePath notRetryPruneTest.sh )" 2>&1 )"
 	exitcode=$?
 
-	assertEquals "process does not fail with correct exit code; exited with ${exitcode}, output: ${output}" \
+	assertEquals "$(outputAssertionMessage "process does not fail with correct exit code" $exitcode "$output")" \
 				"2" \
 				"$exitcode"
 
 	# must not retry backup, i.e. only call it create and prune once = 2 times
 	count=$( cat "$TMPDIR/borg/counter" )
-	assertEquals "retries pruning; exited with ${exitcode}, output: ${output}" \
+	assertEquals "$(outputAssertionMessage "retries pruning" $exitcode "$output")" \
 				"2" \
 				"$count"
 }
@@ -560,18 +560,18 @@ testPruneFail(){
 	exitcode=$?
 
 	# as all prune retries fail, it should exit with 2
-	assertEquals "process returns wrong exit code; exited with ${exitcode}, output: ${output}" \
+	assertEquals "$(outputAssertionMessage "process returns wrong exit code" $exitcode "$output")" \
 				"2" \
 				"$exitcode"
 
 	# all in all, calls borg 4 times
 	count=$( cat "$TMPDIR/borg/counter" )
-	assertEquals "does not retry correctly; exited with ${exitcode}, output: ${output}" \
+	assertEquals "$(outputAssertionMessage "does not retry correctly" $exitcode "$output")" \
 				"4" \
 				"$count"
 
 	# 1x create works + 3x prune fails
-	assertEquals "does not call borg correctly; exited with ${exitcode}, output: ${output}" \
+	assertEquals "$(outputAssertionMessage "does not call borg correctly" $exitcode "$output")" \
 				"create
 prune
 prune

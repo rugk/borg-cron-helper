@@ -135,6 +135,15 @@ patchConfigSetVar(){
 	# run (once) recursive with export
 	[ "$5" != "notRecursive" ] && patchConfigSetVar "$1" "export $2" "$3" "$4" "notRecursive"
 }
+outputAssertionMessage() {
+	testbasedMessage="$1"
+	testbasedExitCode="$2"
+	testbasedConsoleOutput="$3"
+	echo "${testbasedMessage} "
+	echo "exitcode ${testbasedExitCode} "
+	echo "console output: ${testbasedConsoleOutput}"
+	echo
+}
 
 CURRDIR="$( get_full_path "$CURRDIR" )"
 BASE_DIR="$( get_full_path "$CURRDIR/../.." )"
