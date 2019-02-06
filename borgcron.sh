@@ -410,7 +410,7 @@ track_exitcode $exitcode_create
 # ($PRUNE_PARAMS intentionally not quoted)
 
 if [ "$PRUNE_PARAMS" ] && [ "$PRUNE_PREFIX" != "null" ] && [ "$exitcode" -lt 2 ]; then
-	echo "Running prune for \"$BACKUP_NAME\"…"
+	info_log "Running prune for \"$BACKUP_NAME\"…"
 
 	# if RETRY_NUM_PRUNE is not set, fall back to RETRY_NUM
 	[ "$RETRY_NUM_PRUNE" = "" ] && RETRY_NUM_PRUNE=$RETRY_NUM
