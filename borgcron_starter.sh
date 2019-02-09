@@ -40,7 +40,7 @@ exitcode=0 #exitcode on zero :)
 
 # check for error if config dir is empty
 if [ ! -d "$CONFIG_DIR" ] || [ ! "$( dir_contains_files "$CONFIG_DIR" )" ]; then
-	echo "No backup settings file(s) could be found in the config folder \"$CONFIG_DIR\"."
+	echo "No backup settings file(s) could be found in the config folder \"$CONFIG_DIR\"." >&2
 	echo "To get help enter: $( basename "$0" ) --help"
 	exit 1
 fi
