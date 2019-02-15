@@ -5,12 +5,14 @@ sudo: false
 env:
   # outdated/legacy
   - TEST_SHELL=sh BORG=1.0.2 BORG_SOURCE=binary BORG_VARIANT=borg-linux64 # old, Ubuntu Xenial
-  # old stable
-  # - TEST_SHELL=sh BORG=stable BORG_VARIANT=borg-linux64 BORG_SOURCE=binary # stable, unsupported by current TravisCi config
-  - TEST_SHELL=zsh BORG=1.0.11 BORG_SOURCE=binary BORG_VARIANT=borg-linux64 # up-to-date/stable (most distros)
-  - TEST_SHELL=bash BORG=1.0.11 BORG_SOURCE=binary BORG_VARIANT=borg-linux64 # up-to-date/stable (most distros)
+  # outdated stable
+  - TEST_SHELL=zsh BORG=1.0.13 BORG_SOURCE=binary BORG_VARIANT=borg-linux64
+  - TEST_SHELL=bash BORG=1.0.13 BORG_SOURCE=binary BORG_VARIANT=borg-linux64
   # new stable
-  - TEST_SHELL=sh BORG=1.1.7 BORG_SOURCE=binary BORG_VARIANT=borg-linux64 # up-to-date/stable (upstream)
+  - TEST_SHELL=sh BORG=1.1.9 BORG_SOURCE=binary BORG_VARIANT=borg-linux64
+  - TEST_SHELL=zsh BORG=1.1.9 BORG_SOURCE=binary BORG_VARIANT=borg-linux64
+  - TEST_SHELL=bash BORG=1.1.9 BORG_SOURCE=binary BORG_VARIANT=borg-linux64
+  # - TEST_SHELL=sh BORG=stable BORG_VARIANT=borg-linux64 BORG_SOURCE=binary # stable, unsupported by current TravisCi config
   # - TEST_SHELL=sh BORG=nightly # dev version, unsupported by current TravisCi config
 before_script:
   # add custom binary path
