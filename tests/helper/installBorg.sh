@@ -53,7 +53,7 @@ case "$BORG" in
 		exit 1
 		;;
 	# usual version number --> download prebuilt binaries from GitHub
-	[0-9]*\.[0-9]*\.[0-9]*)
+	*)
 		importgpgkey
 
 		case "$BORG_SOURCE" in
@@ -86,9 +86,5 @@ case "$BORG" in
 				;;
 		esac
 
-		;;
-	*)
-		echo "Invalid value for borg version: $BORG"
-		exit 1
 		;;
 esac
