@@ -64,3 +64,11 @@ GUI_OVERWRITE_ICON="$PWD/icon.png" # custom icon for notifications (needs absolu
 # DEB-based:
 # apt list --installed > "/path/to/backup/apt.list" 2>/dev/null
 # dpkg --get-selections > "/path/to/backup/dpkg.list" 2>/dev/null
+
+# create MySQL dumps
+# export SQL_BACKUP_USER="root"
+# export SQL_BACKUP_PASSCOMMAND='cat "/root/.mysqlPassword"'
+# export SQL_BACKUP_DESTINATION="/root/backup/db"
+
+# backup specified databases, or all if you do not pass any parameter
+# ../tools/databasedump.sh "db1 db2 db3"
