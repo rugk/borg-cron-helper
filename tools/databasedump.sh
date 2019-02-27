@@ -30,9 +30,9 @@ error_log() {
 
 case "$1" in
 	--help|-h|-? ) # show help message
-	  echo "Usage:"
-	  echo "$( basename "$0" ) [<db_name(s) …>] [<destination>] [<user>] [<passphrase>]"
-	  echo
+		echo "Usage:"
+		echo "$( basename "$0" ) [<db_name(s) …>] [<destination>] [<user>] [<passphrase>]"
+		echo
 		echo "db_name(s)	– databases to backup, separated with spaces"
 		echo "destination	– directory to save MySQL dumps with a per-database name"
 		echo "user		– MySQL username to use for dumping databases"
