@@ -3,6 +3,13 @@
 # before the backup is executed.
 # thanks https://stackoverflow.com/questions/9497869/export-and-import-all-mysql-databases-at-one-time#answer-26096339, modified
 
+exitcode=0
+track_exitcode() {
+	if [ "$1" -gt "$exitcode" ]; then
+		exitcode="$1"
+	fi
+}
+
 # log system
 log_line() {
 	echo "[$( date +'%F %T' )]"
@@ -18,7 +25,7 @@ error_log() {
 USER="backup"
 PASSWORD="password"
 DIR="/root/backup/db"
-
+info_log "MySQL Backup $DESCRIPTION started."
 if [ "$PASSWORD" ]; then
 	PASSWORD="-p$PASSWORD"
 fi
