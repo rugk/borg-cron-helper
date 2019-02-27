@@ -1,7 +1,7 @@
 #!/bin/sh
 # Dumps each database separately into a single file. Execute this (as another user with more privileges)
 # before the backup is executed.
-# thanks https://stackoverflow.com/questions/9497869/export-and-import-all-mysql-DATABASES-at-one-time#answer-26096339, modified
+# thanks https://stackoverflow.com/questions/9497869/export-and-import-all-mysql-databses-at-one-time#answer-26096339, modified
 
 # You can hardcode variables here.
 USER="backup"
