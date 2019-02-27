@@ -3,6 +3,18 @@
 # before the backup is executed.
 # thanks https://stackoverflow.com/questions/9497869/export-and-import-all-mysql-databases-at-one-time#answer-26096339, modified
 
+# log system
+log_line() {
+	echo "[$( date +'%F %T' )]"
+}
+info_log() {
+	echo "$( log_line ) $*" >&1
+}
+error_log() {
+	echo "$( log_line ) $*" >&2
+}
+
+
 USER="backup"
 PASSWORD="password"
 DIR="/root/backup/db"
