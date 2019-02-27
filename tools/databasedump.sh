@@ -95,10 +95,10 @@ for db in $DATABASES; do
 	# (specialParams intentionally not quoted as it is contains custom directives)
 	# shellcheck disable=SC2086
 	mysqldump -u "$USER" "$PASSWORD" $specialParams --databases "$db" > "$DESTINATION/$db.sql"
-	exitcode_dump=$?
-	track_exitcode $exitcode_dump
+	exitcodeDump=$?
+	track_exitcode $exitcodeDump
 
-	if [ $exitcode_dump -eq 0 ]; then
+	if [ $exitcodeDump -eq 0 ]; then
 		info_log "MySQL Backup succesful for \"$db\"."
 	else
 		error_log "MySQL Backup not succesful for \"$db\"."
