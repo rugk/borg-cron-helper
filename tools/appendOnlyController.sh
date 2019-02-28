@@ -66,7 +66,7 @@ repoSaveModificationStatus() {
 }
 # repoIsModified repoPath repoName
 repoIsModified() {
-	[ "$( cat "$BACKUP_OPEN_STATUS/$2.stat" )" = "$( repoGetCurrentTransactionNumber "$1" )" ]
+	[ "$( cat "$BACKUP_OPEN_STATUS/$2.stat" )" != "$( repoGetCurrentTransactionNumber "$1" )" ]
 }
 
 # ignore checks if command is forced
