@@ -42,6 +42,11 @@ repoGetOpeningDate() {
 	stat "$file" --format=%X # in seconds
 }
 
+# deleteOpenFile repoName
+deleteOpenFile() {
+	rm "$BACKUP_OPEN_STATUS/$1.stat"
+}
+
 # repoIsOverCloseTime repoName
 #
 # Checks if the repository has been opened such a long time ago, so that it is
@@ -57,23 +62,33 @@ repoIsOverCloseTime() {
 
 # repoSaveModificationStatus repoPath repoName
 repoSaveModificationStatus() {
-	repoGetModificationStatus "$1" > "$BACKUP_OPEN_STATUS/$2.stat"
+	repoGetCurrentTransactionNumber "$1" > "$BACKUP_OPEN_STATUS/$2.stat"
 }
 # repoIsModified repoPath repoName
 repoIsModified() {
-	[ "$( cat "$BACKUP_OPEN_STATUS/$2.stat" )" = "$( repoGetModificationStatus "$1" )" ]
+	[ "$( cat "$BACKUP_OPEN_STATUS/$2.stat" )" = "$( repoGetCurrentTransactionNumber "$1" )" ]
 }
+
+# ignore checks if command is forced
+if [ "$2" != "--force" ]; then
+	isForced=1 # true
+else
+	isForced="" # false
+fi
 
 case "$1" in
 	open ) # open repository to allow client modifications
 		shift
+
+		# remove --force param
+		[ -z $isForced ] && shift
 
 		# iterate all other params
 		while [ -n "$1" ]; do
 			repoPath="$1"
 			repoName=$( basename "$repoPath" )
 
-			if repoIsOpened "$repoName"; then
+			if [ -n "$isForced" ] && repoIsOpened "$repoName"; then
 				openingDate="$( repoGetOpeningDate "$repoName" )"
 				error_log "Repository ${repoName} has already been opened at $( date --date=@"$openingDate" +'%A, %F %T' )."
 				track_exitcode 2
@@ -91,7 +106,7 @@ case "$1" in
 				repoSaveModificationStatus "$repoPath" "$repoName"
 
 				# log success
-				info_log "Repo ${repoName} has been opened."
+				info_log "Repo ${repoName} opened."
 			fi
 
 			shift
@@ -100,21 +115,15 @@ case "$1" in
 	close ) # close repository to prevent client modifications
 		shift
 
-		# ignore checks if command is forced
-		if [ "$1" != "--force" ]; then
-			isForced=0 # true
-		else
-			isForced=1 # false
-			# remove --force param
-			shift
-		fi
+		# remove --force param
+		[ -z $isForced ] && shift
 
 		# iterate all other params
 		while [ -n "$1" ]; do
 			repoPath="$1"
 			repoName=$( basename "$repoPath" )
 
-			if ! $isForced; then
+			if [ -n "$isForced" ]; then
 				if ! repoIsModified "$repoPath" "$repoName"; then
 					if ! repoIsOverCloseTime "$repoName"; then
 						# everything is okay, we can retry closing it later
@@ -142,6 +151,10 @@ case "$1" in
 
 			if [ $exitcodeClose -eq 0 ]; then
 				info_log "Repo closed at: $( date --date=@"$closingDate" +'%A, %F %T' )"
+
+				# delete open file
+				deleteOpenFile "$repoName"
+				track_exitcode $?
 			fi
 
 			shift
@@ -153,9 +166,9 @@ case "$1" in
 		echo "$( basename "$0" ) <--help|-h|-?>"
 		echo
 		echo "<open|close>	– whether to open or close the repo(s)"
-		echo "--force	– if you are closing the repo(s) you can pass this to ignore"
-		echo "			any checks whether the client accessed the repo and just"
-		echo "			close the repo instantly."
+		echo "--force	– you can pass this to ignore any safety checks e.g. "
+		echo "			whether the client accessed the repo and just"
+		echo "			open or close the repo instantly."
 		echo "repo1 [repo2] […]		– paths to the repos you want to change"
 		echo "<--help|-h|-?>		– shows this help"
 		exit
