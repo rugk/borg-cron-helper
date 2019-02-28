@@ -4,15 +4,15 @@
 
 **Automate backups with borg in a more convenient and reliable way!** These scripts are some small and handy shell scripts to automate the backup process with [BorgBackup](https://borgbackup.readthedocs.io/). They are POSIX-compatible, so they should run with all shells. You're free to modify them for your needs!
 
-They add some convienent features around borg, regarding environments with only **one client**.
+They add some convenient features around borg, regarding environments with only **one client**.
 
 ## Features
 
-- **[Local lock system](#local-lock-borg--v110):** Cirumvent the issue of [stale](https://github.com/borgbackup/borg/issues/813) [lock files](https://github.com/borgbackup/borg/issues/2306).
+- **[Local lock system](#local-lock-borg--v110):** Circumvent the issue of [stale](https://github.com/borgbackup/borg/issues/813) [lock files](https://github.com/borgbackup/borg/issues/2306).
 - **[Automated retries](#less-maintenance-more-safety):** When backups [stop mid-way](https://borgbackup.readthedocs.io/en/stable/faq.html#if-a-backup-stops-mid-way-does-the-already-backed-up-data-stay-there) they are automatically restarted.
 - **[Simple configuration](config/example-backup.sh):** Using shell-scripts you can configure each backup and then execute it in the order/way you want.
 - **[Status information](#less-maintenance-more-safety):** You can use a login script to get a notice when backups failed.
-- **[For servers & desktops](#desktop-integration):** The script is also uable on desktops. But rest assured: We'll never forget servers.
+- **[For servers & desktops](#desktop-integration):** The script is also usable on desktops. But rest assured: We'll never forget servers.
 - **[Optional & adjustable](#modular-approach):** You do not have to use all features and you can adjust them in a simply way.
 
 ### Local lock (borg < v1.1.0)
