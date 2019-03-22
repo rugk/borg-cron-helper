@@ -72,7 +72,8 @@ GUI_OVERWRITE_ICON="$PWD/icon.png" # custom icon for notifications (needs absolu
 # flatpak list --app --show-details | \
 # awk '{print "flatpak install --assumeyes --user \""$2"\" \""$1}' | \
 # cut -d "/" -f1 | awk '{print $0"\""}' > "/path/to/backup/flatpaks.list" 2>/dev/null
-
+# user-friendly list:
+# flatpak list > "/path/to/backup/flatpaks-user-friendly.list" 2>/dev/null
 
 # create MySQL dumps
 # export SQL_BACKUP_USER="root"
