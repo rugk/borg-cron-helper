@@ -14,7 +14,7 @@ pp:/var/lib/flatpak
 # trash
 sh:/home/*/.local/share/Trash
 
-# big ISO files
+# big ISO files in download dir (e.g. created by GNOME Boxes)
 sh:/home/*/Downloads/*.iso
 sh:/home/*/Downloads/**/*.iso
 
