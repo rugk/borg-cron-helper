@@ -70,5 +70,13 @@ GUI_OVERWRITE_ICON="$PWD/icon.png" # custom icon for notifications (needs absolu
 # export SQL_BACKUP_PASSCOMMAND='cat "/root/.mysqlPassword"'
 # export SQL_BACKUP_DESTINATION="/root/backup/db"
 
+# for flatpak
+# ref: https://www.ctrl.blog/entry/backup-flatpak
+# repository metadata:
+# flatpak remotes --show-details | awk '{print "echo \"echo \\\x22$(base64 --wrap=0 < $HOME/.local/share/flatpak/repo/" $1 ".trustedkeys.gpg)\\\x22 | base64 -d | flatpak remote-add --if-not-exists --gpg-import=- --prio=\\\x22"$4"\\\x22 --title=\\\x22"$2"\\\x22 --user \\\x22"$1"\\\x22 \\\x22"$3"\\\x22\""}' | sh > "/path/to/backup/flatpak-repo-config.sh" 2>/dev/null
+# flatpak list --app --show-details | \
+# awk '{print "flatpak install --assumeyes --user \""$2"\" \""$1}' | \
+# cut -d "/" -f1 | awk '{print $0"\""}' > "/path/to/backup/flatpaks.list" 2>/dev/null
+
 # backup specified databases, or all if you do not pass any parameter
 # ../tools/databasedump.sh "db1 db2 db3"
