@@ -19,9 +19,9 @@ They add some convenient features around borg, regarding environments with only 
 
 When the backup process is interrupted, sometimes the remote borg repository stays locked. That's why further backups will fail.
 
-The issue [has been addressed](https://github.com/borgbackup/borg/pull/1674) in borg **v1.1.0** (currently beta), but I have not tested it and until it works there, here is my workaround.
+The issue [has been addressed](https://github.com/borgbackup/borg/pull/1674) in borg **v1.1.0**, but I have not tested it and until it works there, here is my workaround.
 
-Borg's current PID is written into a file. As long as the file exists the backup is considered to be "locked". At the end of the backup process (no matter whether it was succesful or not), the local lock is being removed, permitting further backups to start. The "local lock" is more reliable than the "remote lock" system, currently implemented in stable versions of borg.
+Borg's current PID is written into a file. As long as the file exists the backup is considered to be "locked". At the end of the backup process (no matter whether it was successful or not), the local lock is being removed, permitting further backups to start. The "local lock" is more reliable than the "remote lock" system, currently implemented in stable versions of borg.
 
 ### Less maintenance, more safety!
 
