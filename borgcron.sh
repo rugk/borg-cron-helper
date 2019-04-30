@@ -360,7 +360,6 @@ if isRunningOnBattery; then
 fi
 
 # log
-echo
 info_log "Backup $BACKUP_NAME started with $( $BORG_BIN -V ), helper PID: $$."
 guiShowBackupBegin
 
