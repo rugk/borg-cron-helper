@@ -256,6 +256,7 @@ getInfoAboutLastBackup() {
 
 # GUI functions (can be overwritten in config file)
 guiCanShowNotifications() {
+		# exclude headless installations from desktop notifications
 	if [ -z "$DISPLAY" ]; then
     	return 1
     else
