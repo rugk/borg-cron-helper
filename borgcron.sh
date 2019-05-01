@@ -259,10 +259,15 @@ getInfoAboutLastBackup() {
 
 # GUI functions (can be overwritten in config file)
 guiCanShowNotifications() {
-	# uses a command to get out, whether we can show notifications
-	# You can manually set this to return "false" (or 1, which is shell-speak for false)
-	# to disable all notifications.
-	command -v zenity >/dev/null
+	# exclude headless installations from desktop notifications
+	if [ -z "$DISPLAY" ]; then
+		return 1 # (false)
+	else
+		# command to get out, whether we can show notifications
+		# To disable notifications in every case, you can manually set this
+		# to return "false" (or 1, which is shell-speak for false)
+		command -v zenity >/dev/null
+	fi
 }
 zenityProxy() {
 	sh -c "zenity $*"
