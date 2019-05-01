@@ -6,7 +6,7 @@ This/These directory/directories contain the tests for the project.
 Generally, please have a look at [the Travis-CI configuration file](../.travis.yml). The tests should, however, be able to run locally fine.
 But there are some environmental variables you need to set before running the tests in order. Each test scripts mentions the required environmental variables, but basically you can `export` the ones set in the Travis-CI file.
 
-For test involving calling borg (many, actually), you need [to adjust your `PATH` to include the custom borg binary](https://github.com/rugk/borg-cron-helper/blob/master/.travis.yml#L18). It has to be placed in `$PWD//custombin`, named borg. The script `tests/helper/installBorg.sh` can do this for you.
+For test involving calling borg (many, actually), you need [to adjust your `PATH` to include the custom borg binary](https://github.com/rugk/borg-cron-helper/blob/master/.travis.yml#L18). It has to be placed in `$PWD/custombin`, named borg. The script `tests/helper/installBorg.sh` can do this for you.
 
 To run the shellcheck tests, you have to install [`shellcheck`](https://github.com/koalaman/shellcheck), of course.
 
