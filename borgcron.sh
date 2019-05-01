@@ -258,7 +258,7 @@ getInfoAboutLastBackup() {
 guiCanShowNotifications() {
 	# exclude headless installations from desktop notifications
 	if [ -z "$DISPLAY" ]; then
-		return 1
+		return 1 # (false)
 	else
 		# command to get out, whether we can show notifications
 		# To disable notifications in every case, you can manually set this
