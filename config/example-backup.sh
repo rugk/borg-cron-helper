@@ -71,4 +71,4 @@ GUI_OVERWRITE_ICON="$PWD/icon.png" # custom icon for notifications (needs absolu
 # export SQL_BACKUP_DESTINATION="/root/backup/db"
 
 # backup specified databases, or all if you do not pass any parameter
-# ../tools/databasedump.sh "db1 db2 db3"
+# "$( dirname "$0" )/tools/databasedump.sh" "db1 db2 db3"
