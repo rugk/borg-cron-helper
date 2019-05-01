@@ -92,9 +92,9 @@ for db in $DATABASES; do
 	fi
 
 	info_log "MySQL Backup dumping database: \"$db\""
+	mkdir -p "$DESTINATION"
 	# (specialParams intentionally not quoted as it is contains custom directives)
 	# shellcheck disable=SC2086
-	mkdir -p "$DESTINATION"
 	mysqldump -u "$USER" "$PASSWORD" $specialParams --databases "$db" > "$DESTINATION/$db.sql"
 	exitcodeDump=$?
 	track_exitcode $exitcodeDump
