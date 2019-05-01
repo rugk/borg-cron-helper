@@ -259,7 +259,12 @@ guiCanShowNotifications() {
 	# uses a command to get out, whether we can show notifications
 	# You can manually set this to return "false" (or 1, which is shell-speak for false)
 	# to disable all notifications.
-	command -v zenity >/dev/null
+	currentLoginManager=$(loginctl show-session $XDG_SESSION_ID -p Type)
+	if [ $currentLoginManager = "Type=tty" ]; then
+		return 1
+	else
+		return 0
+	fi
 }
 zenityProxy() {
 	sh -c "zenity $*"
