@@ -84,6 +84,9 @@ log_line() {
 info_log() {
 	echo "$( log_line ) $*" >&1
 }
+empty_line_log() {
+	echo >&1
+}
 error_log() {
 	echo "$( log_line ) $*" >&2
 }
@@ -360,6 +363,7 @@ if isRunningOnBattery; then
 fi
 
 # log
+empty_line_log
 info_log "Backup $BACKUP_NAME started with $( $BORG_BIN -V ), helper PID: $$."
 guiShowBackupBegin
 
