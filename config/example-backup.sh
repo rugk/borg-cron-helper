@@ -65,6 +65,18 @@ GUI_OVERWRITE_ICON="$PWD/icon.png" # custom icon for notifications (needs absolu
 # apt list --installed > "/path/to/backup/apt.list" 2>/dev/null
 # dpkg --get-selections > "/path/to/backup/dpkg.list" 2>/dev/null
 
+# flatpak backup:
+# repositories:
+# flatpak remotes --columns=name:f,title:f,url:f,options:f --show-disabled > "/path/to/backup/flatpak-remotes.list"
+# list of installed flatpaks:
+# flatpak list --app --columns=ref > "/path/to/backup/flatpak-list-app-refs.list"
+# user-friendly list:
+# flatpak list --app > "/path/to/backup/flatpak-list-apps.list"
+
+# rpm-ostree / silverblue system backup
+# rpm-ostree status > "/path/to/backup/rpm-ostree-status.list"
+# toolbox list > "/path/to/backup/toolbox.list"
+
 # create MySQL dumps
 # export SQL_BACKUP_USER="root"
 # export SQL_BACKUP_PASSCOMMAND='cat "/root/.mysqlPassword"'
