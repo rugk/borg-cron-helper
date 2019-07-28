@@ -64,16 +64,18 @@ GUI_OVERWRITE_ICON="$PWD/icon.png" # custom icon for notifications (needs absolu
 # DEB-based:
 # apt list --installed > "/path/to/backup/apt.list" 2>/dev/null
 # dpkg --get-selections > "/path/to/backup/dpkg.list" 2>/dev/null
-#
-# Flatpak:
-# ref: https://www.ctrl.blog/entry/backup-flatpak
-# repository metadata:
-# flatpak remotes --show-details | awk '{print "echo \"echo \\\x22$(base64 --wrap=0 < $HOME/.local/share/flatpak/repo/" $1 ".trustedkeys.gpg)\\\x22 | base64 -d | flatpak remote-add --if-not-exists --gpg-import=- --prio=\\\x22"$4"\\\x22 --title=\\\x22"$2"\\\x22 --user \\\x22"$1"\\\x22 \\\x22"$3"\\\x22\""}' | sh > "/path/to/backup/flatpak-repo-config.sh" 2>/dev/null
-# flatpak list --app --show-details | \
+
+# flatpak backup:
+# repositories:
+# flatpak remotes --columns=name:f,title:f,url:f,options:f --show-disabled > "/path/to/backup/flatpak-remotes.list"
 # list of installed flatpaks:
-# flatpak list --app --columns=ref|awk '{print "flatpak install --assumeyes --user" $1}' > "/path/to/backup/flatpaks-list.sh" 2>/dev/null
+# flatpak list --app --columns=ref > "/path/to/backup/flatpak-list-app-refs.list"
 # user-friendly list:
-# flatpak list --app > "/path/to/backup/flatpaks-user-friendly.list" 2>/dev/null
+# flatpak list --app > "/path/to/backup/flatpak-list-apps.list"
+
+# rpm-ostree / silverblue system backup
+# rpm-ostree status > "/path/to/backup/rpm-ostree-status.list"
+# toolbox list > "/path/to/backup/toolbox.list"
 
 # create MySQL dumps
 # export SQL_BACKUP_USER="root"
@@ -81,4 +83,4 @@ GUI_OVERWRITE_ICON="$PWD/icon.png" # custom icon for notifications (needs absolu
 # export SQL_BACKUP_DESTINATION="/root/backup/db"
 
 # backup specified databases, or all if you do not pass any parameter
-# ../tools/databasedump.sh "db1 db2 db3"
+# "$( dirname "$0" )/tools/databasedump.sh" "db1 db2 db3"
