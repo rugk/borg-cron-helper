@@ -1,0 +1,39 @@
+# temp files
+pp:/root/.cache
+pp:/root/.thumbnails
+sh:/home/*/.cache
+sh:/home/*/.thumbnails
+
+# flatpak temp
+sh:/home/*/.var/app/*/cache
+
+# flatpak (data files)
+sh:/home/*/.local/share/flatpak
+pp:/var/lib/flatpak
+
+# trash
+sh:/home/*/.local/share/Trash
+
+# big ISO files in download dir (e.g. created by GNOME Boxes)
+sh:/home/*/Downloads/*.iso
+sh:/home/*/Downloads/**/*.iso
+
+# Android Studio
+sh:/home/*/.android
+sh:/home/*/Android
+sh:/home/*/.AndroidStudio3.1
+sh:/home/*/.gradle
+
+# gnome-boxes VMs
+sh:/home/*/.local/share/gnome-boxes
+
+# antigen shell scripts
+sh:/home/*/.antigen
+
+# Atom
+sh:/home/*/.atom
+sh:/home/*/.config/Atom
+
+# Atom flatpak
+sh:/home/*/.var/app/io.atom.Atom/data
+sh:/home/*/.var/app/io.atom.Atom/config/Atom
